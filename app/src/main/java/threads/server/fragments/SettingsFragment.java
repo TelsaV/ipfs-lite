@@ -183,7 +183,7 @@ public class SettingsFragment extends Fragment {
             return true;
         } else if (itemId == R.id.action_issues) {
             try {
-                String uri = "https://gitlab.com/remmer.wilts/threads-server/issues";
+                String uri = "https://gitlab.com/remmer.wilts/ipfs-lite/issues";
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -196,7 +196,7 @@ public class SettingsFragment extends Fragment {
             return true;
         } else if (itemId == R.id.action_documentation) {
             try {
-                String uri = "https://gitlab.com/remmer.wilts/threads-server";
+                String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
