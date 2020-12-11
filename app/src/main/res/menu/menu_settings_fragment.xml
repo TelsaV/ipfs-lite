@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/action_documentation"
+        android:orderInCategory="50"
+        android:title="@string/documentation"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_issues"
+        android:orderInCategory="51"
+        android:title="@string/issues"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_licences"
+        android:orderInCategory="52"
+        android:title="@string/licences"
+        android:visible="true"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_privacy_policy"
+        android:orderInCategory="53"
+        android:title="@string/privacy_policy"
+        app:showAsAction="never" />
+
+</menu>

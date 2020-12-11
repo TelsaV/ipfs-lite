@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/navigation_files"
+        android:icon="@drawable/selector_files"
+        android:title="@string/files" />
+    <item
+        android:id="@+id/navigation_peers"
+        android:icon="@drawable/selector_peers"
+        android:title="@string/peers" />
+    <item
+        android:id="@+id/navigation_browser"
+        android:icon="@drawable/view"
+        android:title="@string/browser"
+        app:iconTint="@color/colorAccent" />
+    <item
+        android:id="@+id/navigation_pins"
+        android:icon="@drawable/selector_pins"
+        android:title="@string/pins"
+        app:iconTint="@color/colorAccent" />
+
+    <item
+        android:id="@+id/navigation_settings"
+        android:icon="@drawable/tune"
+        android:title="@string/settings"
+        app:iconTint="@color/colorAccent" />
+</menu>
+

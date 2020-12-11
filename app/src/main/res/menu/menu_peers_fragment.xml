@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_id"
+        android:icon="@drawable/qrcode"
+        android:orderInCategory="10"
+        android:title="@string/identification"
+        app:iconTint="?android:textColorSecondary"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_swarm"
+        android:orderInCategory="20"
+        android:title="@string/swarm"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_select_all"
+        android:orderInCategory="45"
+        android:title="@string/action_select_all"
+        app:showAsAction="never" />
+
+</menu>

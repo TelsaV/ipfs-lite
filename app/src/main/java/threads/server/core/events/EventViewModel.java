@@ -1,0 +1,63 @@
+package threads.server.core.events;
+
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+
+public class EventViewModel extends AndroidViewModel {
+
+    private final EventsDatabase eventsDatabase;
+
+    public EventViewModel(@NonNull Application application) {
+        super(application);
+        eventsDatabase = EVENTS.getInstance(
+                application.getApplicationContext()).getEventsDatabase();
+    }
+
+    public LiveData<Event> getError() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.ERROR);
+    }
+
+    public LiveData<Event> getDelete() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.DELETE);
+    }
+
+    public LiveData<Event> getPermission() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.PERMISSION);
+    }
+
+    public LiveData<Event> getWarning() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.WARNING);
+    }
+
+    public LiveData<Event> getInfo() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.INFO);
+    }
+
+
+    public void removeEvent(@NonNull final Event event) {
+        new Thread(() -> eventsDatabase.eventDao().deleteEvent(event)).start();
+    }
+
+    public LiveData<Event> getProgress() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.PROGRESS);
+    }
+
+    public LiveData<Event> getExit() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.EXIT);
+    }
+
+    public LiveData<Event> getSeeding() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.SEEDING);
+    }
+
+    public LiveData<Event> getLeeching() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.LEECHING);
+    }
+
+    public LiveData<Event> getReachable() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.REACHABLE);
+    }
+}

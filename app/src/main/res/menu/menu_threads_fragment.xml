@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/action_edit_cid"
+        android:icon="@drawable/qrcode_edit"
+        android:orderInCategory="30"
+        android:title="@string/action_edit_cid"
+        app:iconTint="?android:textColorSecondary"
+        app:showAsAction="ifRoom" />
+
+
+    <item
+        android:id="@+id/action_sort"
+        android:icon="@drawable/sort_variant"
+        android:orderInCategory="40"
+        android:title="@string/sort"
+        android:visible="true"
+        app:iconTint="?android:textColorSecondary"
+        app:showAsAction="never">
+
+        <menu>
+            <group android:checkableBehavior="all">
+                <item
+                    android:id="@+id/sort_name"
+                    android:checked="true"
+                    android:title="@string/sort_name" />
+                <item
+                    android:id="@+id/sort_name_inverse"
+                    android:title="@string/sort_name_inverse" />
+                <item
+                    android:id="@+id/sort_date"
+                    android:title="@string/sort_date" />
+                <item
+                    android:id="@+id/sort_date_inverse"
+                    android:title="@string/sort_date_inverse" />
+                <item
+                    android:id="@+id/sort_size"
+                    android:title="@string/sort_size" />
+                <item
+                    android:id="@+id/sort_size_inverse"
+                    android:title="@string/sort_size_inverse" />
+            </group>
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_threads_search"
+        android:orderInCategory="44"
+        android:title="@string/find_page"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_select_all"
+        android:orderInCategory="45"
+        android:title="@string/action_select_all"
+        app:showAsAction="never" />
+
+
+    <group>
+
+        <item
+            android:id="@+id/action_new_folder"
+            android:orderInCategory="48"
+            android:title="@string/new_folder"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_add_folder"
+            android:orderInCategory="49"
+            android:title="@string/action_add_dir"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_text"
+            android:orderInCategory="50"
+            android:title="@string/new_text_file"
+            app:showAsAction="never" />
+
+        <item
+            android:id="@+id/action_backup"
+            android:orderInCategory="51"
+            android:title="@string/action_backup"
+            app:showAsAction="never" />
+
+    </group>
+</menu>
