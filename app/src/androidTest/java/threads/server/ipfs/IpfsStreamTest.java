@@ -32,13 +32,7 @@ public class IpfsStreamTest {
         String text = "Hello Moin und Zehn Elf";
         CID hash = ipfs.storeText(text);
         assertNotNull(hash);
-        List<LinkInfo> links = ipfs.ls(hash, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-        });
+        List<LinkInfo> links = ipfs.ls(hash, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 
@@ -50,14 +44,7 @@ public class IpfsStreamTest {
 
         CID hash2 = ipfs.storeText("TEST test");
         assertNotNull(hash2);
-        links = ipfs.ls(hash2, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-
-        });
+        links = ipfs.ls(hash2, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 

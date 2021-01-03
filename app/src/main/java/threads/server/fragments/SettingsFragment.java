@@ -64,7 +64,6 @@ import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.DaemonService;
 import threads.server.services.LiteService;
 import threads.server.utils.MimeType;
-import threads.server.utils.Network;
 import threads.server.utils.StorageLocation;
 import threads.server.work.PageWorker;
 
@@ -313,11 +312,7 @@ public class SettingsFragment extends Fragment {
 
         ImageView daemonStart = view.findViewById(R.id.daemon_start);
         daemonStart.setOnClickListener(view1 -> {
-            if (Network.isConnected(mContext)) {
-                EVENTS.getInstance(mContext).warning(getString(R.string.server_mode));
-            } else {
-                EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-            }
+            EVENTS.getInstance(mContext).warning(getString(R.string.server_mode));
             DaemonService.start(mContext);
         });
 

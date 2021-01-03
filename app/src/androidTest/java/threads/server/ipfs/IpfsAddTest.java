@@ -68,13 +68,7 @@ public class IpfsAddTest {
         CID hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.ls(hash58Base, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-        });
+        List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 4);
 
@@ -109,13 +103,7 @@ public class IpfsAddTest {
         CID hash58Base = ipfs.storeFile(cacheDir);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.ls(hash58Base, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-        });
+        List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
         assertNotNull(links);
 
 
@@ -135,14 +123,7 @@ public class IpfsAddTest {
         IOUtils.contentEquals(new ByteArrayInputStream(bytes), new FileInputStream(inputFile));
         assertEquals(ciddir, hash58Base);
 
-        List<LinkInfo> artLinks = ipfs.ls(hash58Base, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-
-        });
+        List<LinkInfo> artLinks = ipfs.ls(hash58Base, () -> false);
         assertNotNull(artLinks);
         assertEquals(artLinks.size(), 1);
         assertEquals(artLinks.get(0), links.get(0));
@@ -182,13 +163,7 @@ public class IpfsAddTest {
         CID hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.ls(hash58Base, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-        });
+        List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 4);
         assertNotEquals(links.get(0).getCid(), hash58Base);
@@ -222,13 +197,7 @@ public class IpfsAddTest {
         CID hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.ls(hash58Base, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-        });
+        List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 
@@ -261,14 +230,7 @@ public class IpfsAddTest {
         CID hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.ls(hash58Base, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-
-        });
+        List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 

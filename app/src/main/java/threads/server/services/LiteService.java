@@ -35,7 +35,6 @@ import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileProvider;
-import threads.server.utils.Network;
 import threads.server.utils.StorageLocation;
 import threads.server.work.UploadThreadsWorker;
 import threads.server.work.UserConnectWorker;
@@ -123,15 +122,15 @@ public class LiteService {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             try {
-                if (Network.isConnected(context)) {
-                    IPFS ipfs = IPFS.getInstance(context);
-                    if (!Objects.equals(ipfs.getHost(), pid)) {
-                        if (!ipfs.isConnected(pid)) {
-                            int timeout = InitApplication.getConnectionTimeout(context);
-                            ipfs.swarmConnect(pid, timeout);
-                        }
+
+                IPFS ipfs = IPFS.getInstance(context);
+                if (!Objects.equals(ipfs.getHost(), pid)) {
+                    if (!ipfs.isConnected(pid)) {
+                        int timeout = InitApplication.getConnectionTimeout(context);
+                        ipfs.swarmConnect(pid, timeout);
                     }
                 }
+
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
             }
@@ -142,14 +141,14 @@ public class LiteService {
 
         try {
 
-            if (Network.isConnected(context)) {
-                IPFS ipfs = IPFS.getInstance(context);
 
-                if (!ipfs.isPrivateNetwork()) {
+            IPFS ipfs = IPFS.getInstance(context);
 
-                    ipfs.bootstrap(maxPeers, refresh, 10);
-                }
+            if (!ipfs.isPrivateNetwork()) {
+
+                ipfs.bootstrap(maxPeers, refresh, 10);
             }
+
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -194,11 +193,10 @@ public class LiteService {
 
 
                 OneTimeWorkRequest work = UserConnectWorker.getWork(user);
-                if (Network.isConnected(context)) {
-                    peers.setUserDialing(user);
-                }
+
                 WorkManager.getInstance(context).enqueue(work);
 
+                peers.setUserDialing(user);
                 peers.setUserWork(user, work.getId());
 
 

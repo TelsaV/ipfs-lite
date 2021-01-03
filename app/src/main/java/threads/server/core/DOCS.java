@@ -78,8 +78,9 @@ public class DOCS {
 
 
     @NonNull
-    public CID resolveName(@NonNull Uri uri, @NonNull String name, @NonNull Closeable closeable,
-                           final boolean offline) throws ResolveNameException {
+    public CID resolveName(@NonNull Uri uri,
+                           @NonNull String name,
+                           @NonNull Closeable closeable) throws ResolveNameException {
 
 
         if (Objects.equals(getHost(), name)) {
@@ -104,7 +105,7 @@ public class DOCS {
             ipns = user.getIpns();
         }
 
-        IPFS.ResolvedName resolvedName = ipfs.resolveName(name, sequence, closeable, offline);
+        IPFS.ResolvedName resolvedName = ipfs.resolveName(name, sequence, closeable);
         if (resolvedName == null) {
 
             if (ipns != null) {
@@ -708,7 +709,7 @@ public class DOCS {
 
 
     @Nullable
-    public CID getRoot(@NonNull Uri uri, @NonNull Closeable closeable, final boolean offline) throws ResolveNameException, InvalidNameException {
+    public CID getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
         String host = uri.getHost();
         Objects.requireNonNull(host);
 
@@ -718,7 +719,7 @@ public class DOCS {
             if (!ipfs.isValidCID(host)) {
                 throw new InvalidNameException(uri.toString());
             }
-            root = resolveName(uri, host, closeable, offline);
+            root = resolveName(uri, host, closeable);
 
         } else {
             if (!ipfs.isValidCID(host)) {
@@ -948,13 +949,13 @@ public class DOCS {
 
 
     @NonNull
-    public FileInfo getFileInfo(@NonNull Uri uri, @NonNull Closeable closeable, final boolean offline)
+    public FileInfo getFileInfo(@NonNull Uri uri, @NonNull Closeable closeable)
             throws InvalidNameException, ResolveNameException, TimeoutException {
 
         String host = uri.getHost();
         Objects.requireNonNull(host);
 
-        CID root = getRoot(uri, closeable, offline);
+        CID root = getRoot(uri, closeable);
         Objects.requireNonNull(root);
 
 
@@ -979,8 +980,8 @@ public class DOCS {
 
 
     @NonNull
-    public WebResourceResponse getResponse(@NonNull Uri uri, @NonNull Closeable closeable,
-                                           final boolean offline) throws Exception {
+    public WebResourceResponse getResponse(@NonNull Uri uri,
+                                           @NonNull Closeable closeable) throws Exception {
 
         String host = uri.getHost();
         Objects.requireNonNull(host);
@@ -992,7 +993,7 @@ public class DOCS {
 
         CID root;
         if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-            root = resolveName(uri, host, closeable, offline);
+            root = resolveName(uri, host, closeable);
         } else {
             root = CID.create(host);
         }

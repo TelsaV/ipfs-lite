@@ -53,7 +53,6 @@ import threads.server.services.LiteService;
 import threads.server.services.QRCodeService;
 import threads.server.services.ThreadsService;
 import threads.server.utils.MimeType;
-import threads.server.utils.Network;
 import threads.server.utils.PinsItemDetailsLookup;
 import threads.server.utils.PinsItemKeyProvider;
 import threads.server.utils.PinsViewAdapter;
@@ -176,10 +175,6 @@ public class PinsFragment extends Fragment implements
 
             mLastClickTime = SystemClock.elapsedRealtime();
 
-
-            if (!Network.isConnected(mContext)) {
-                EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-            }
 
             try {
                 DOCS docs = DOCS.getInstance(mContext);
@@ -328,12 +323,8 @@ public class PinsFragment extends Fragment implements
         mSwipeRefreshLayout.setRefreshing(true);
 
         try {
+            EVENTS.getInstance(mContext).warning(getString(R.string.publish_pins));
 
-            if (!Network.isConnected(mContext)) {
-                EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-            } else {
-                EVENTS.getInstance(mContext).warning(getString(R.string.publish_pins));
-            }
             PageWorker.publish(mContext, true);
 
         } catch (Throwable e) {

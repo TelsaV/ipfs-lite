@@ -141,13 +141,7 @@ public class IpfsTest {
 
         CID cid = ipfs.storeText("hallo");
         assertNotNull(cid);
-        List<LinkInfo> links = ipfs.ls(cid, new Closeable() {
-            @Override
-            public boolean isClosed() {
-                return false;
-            }
-
-        });
+        List<LinkInfo> links = ipfs.ls(cid, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
         links = ipfs.ls(cid, new TimeoutProgress(20));

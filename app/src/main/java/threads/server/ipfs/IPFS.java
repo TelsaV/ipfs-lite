@@ -76,7 +76,6 @@ public class IPFS implements Listener {
     private static final String PUBLIC_KEY = "publicKey";
     private static final String AGENT_KEY = "agentKey";
     private static final String PRIVATE_KEY = "privateKey";
-    private static final long TIMEOUT = 30000L;
     private static final String TAG = IPFS.class.getSimpleName();
     private static IPFS INSTANCE = null;
     private final File baseDir;
@@ -612,20 +611,17 @@ public class IPFS implements Listener {
                             }
                             LogUtils.error(TAG, "start daemon...");
                             node.daemon(privateSharing);
-                            LogUtils.error(TAG, "... daemon is stopped");
+                            LogUtils.error(TAG, "stop daemon...");
                         } catch (Throwable e) {
                             failure.set(true);
                             exception.set("" + e.getLocalizedMessage());
                             LogUtils.error(TAG, e);
                         }
                     });
-                    long time = 0L;
-                    while (!node.getRunning() && time <= TIMEOUT && !failure.get()) {
-                        time = time + 100L;
-                        try {
-                            Thread.sleep(100);
-                        } catch (Throwable e) {
-                            throw new RuntimeException(exception.get());
+
+                    while (!node.getRunning()) {
+                        if (failure.get()) {
+                            break;
                         }
                     }
                     if (failure.get()) {
@@ -831,7 +827,7 @@ public class IPFS implements Listener {
 
     @Nullable
     public ResolvedName resolveName(@NonNull String name, final long sequence,
-                                    @NonNull Closeable closeable, final boolean offline) {
+                                    @NonNull Closeable closeable) {
         if (!isDaemonRunning()) {
             return null;
         }
@@ -871,7 +867,7 @@ public class IPFS implements Listener {
                     }
 
                 }
-            }, name, offline, 8);
+            }, name, false, 8);
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

@@ -53,7 +53,6 @@ import threads.server.ipfs.IPFS;
 import threads.server.services.QRCodeService;
 import threads.server.services.UserService;
 import threads.server.utils.MimeType;
-import threads.server.utils.Network;
 import threads.server.utils.UserItemDetailsLookup;
 import threads.server.utils.UsersItemKeyProvider;
 import threads.server.utils.UsersViewAdapter;
@@ -344,10 +343,6 @@ public class PeersFragment extends Fragment implements
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
 
-                    if (!Network.isConnected(mContext)) {
-                        EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-                    }
-
                     try {
                         Selection<String> entries = mSelectionTracker.getSelection();
                         String[] pids = new String[entries.size()];
@@ -440,9 +435,6 @@ public class PeersFragment extends Fragment implements
 
 
                 if (item.getItemId() == R.id.popup_connect) {
-                    if (!Network.isConnected(mContext)) {
-                        EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-                    }
                     connectUser(user);
                     return true;
                 } else if (item.getItemId() == R.id.popup_delete) {
@@ -533,10 +525,6 @@ public class PeersFragment extends Fragment implements
 
         try {
 
-            if (!Network.isConnected(mContext)) {
-                EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-            }
-
 
             ExecutorService executor = Executors.newSingleThreadExecutor();
             executor.submit(() -> {
@@ -545,9 +533,8 @@ public class PeersFragment extends Fragment implements
                 List<OneTimeWorkRequest> works = new ArrayList<>();
                 for (User user : users) {
 
-                    if (Network.isConnected(mContext)) {
-                        peers.setUserDialing(user.getPid());
-                    }
+                    peers.setUserDialing(user.getPid());
+
                     OneTimeWorkRequest work = UserConnectWorker.getWork(user.getPid());
                     peers.setUserWork(user.getPid(), work.getId());
                     works.add(work);
@@ -629,9 +616,7 @@ public class PeersFragment extends Fragment implements
 
                 OneTimeWorkRequest work = UserConnectWorker.getWork(pid);
 
-                if (Network.isConnected(mContext)) {
-                    peers.setUserDialing(pid);
-                }
+                peers.setUserDialing(pid);
                 peers.setUserWork(pid, work.getId());
 
 
@@ -652,9 +637,7 @@ public class PeersFragment extends Fragment implements
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             PEERS peers = PEERS.getInstance(mContext);
-            if (Network.isConnected(mContext)) {
-                peers.setUserDialing(user.getPid());
-            }
+            peers.setUserDialing(user.getPid());
             peers.setUserWork(user.getPid(), work.getId());
         });
 

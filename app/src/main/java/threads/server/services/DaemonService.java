@@ -32,7 +32,6 @@ import threads.server.R;
 import threads.server.core.peers.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.ipfs.IPFS;
-import threads.server.utils.Network;
 import threads.server.work.SwarmConnectWorker;
 
 public class DaemonService extends Service {
@@ -45,11 +44,7 @@ public class DaemonService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             try {
-
-                if (Network.isConnected(getApplicationContext())) {
-                    SwarmConnectWorker.connect(getApplicationContext(), true);
-                }
-
+                SwarmConnectWorker.connect(getApplicationContext(), true);
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }

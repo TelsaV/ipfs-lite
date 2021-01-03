@@ -79,7 +79,6 @@ import threads.server.services.ThreadsService;
 import threads.server.services.UploadService;
 import threads.server.utils.Folder;
 import threads.server.utils.MimeType;
-import threads.server.utils.Network;
 import threads.server.utils.SelectionViewModel;
 import threads.server.utils.ThreadItemDetailsLookup;
 import threads.server.utils.ThreadsItemKeyProvider;
@@ -1440,10 +1439,6 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
     @Override
     public void invokeLoadAction(@NonNull Thread thread) {
 
-
-        if (!Network.isConnected(mContext)) {
-            EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-        }
 
         UUID uuid = UploadThreadWorker.load(mContext, thread.getIdx(), true);
 

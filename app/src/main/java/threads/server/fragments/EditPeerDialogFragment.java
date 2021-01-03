@@ -37,7 +37,6 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.peers.Content;
 import threads.server.ipfs.IPFS;
 import threads.server.services.LiteService;
-import threads.server.utils.Network;
 
 
 public class EditPeerDialogFragment extends BottomSheetDialogFragment {
@@ -364,10 +363,6 @@ public class EditPeerDialogFragment extends BottomSheetDialogFragment {
                 return;
             }
 
-            // CHECKED
-            if (!Network.isConnected(mContext)) {
-                EVENTS.getInstance(mContext).warning(getString(R.string.offline_mode));
-            }
 
             LiteService.connect(mContext, pid, name, address, issueMessage.get());
         } finally {

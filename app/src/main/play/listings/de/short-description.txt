@@ -1,0 +1,1 @@
+IPFS Lite node to support the standard use cases of IPFS

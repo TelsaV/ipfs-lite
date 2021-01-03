@@ -58,7 +58,6 @@ import threads.server.provider.FileProvider;
 import threads.server.services.ConnectService;
 import threads.server.services.LiteService;
 import threads.server.utils.MimeType;
-import threads.server.utils.Network;
 
 public class UploadThreadWorker extends Worker {
 
@@ -250,9 +249,9 @@ public class UploadThreadWorker extends Worker {
                     Objects.equals(uri.getScheme(), Content.IPFS)) {
 
                 try {
-                    boolean offline = !Network.isConnected(getApplicationContext());
+
                     if (threads.getThreadContent(idx) == null) {
-                        DOCS.FileInfo fileInfo = docs.getFileInfo(uri, this::isStopped, offline);
+                        DOCS.FileInfo fileInfo = docs.getFileInfo(uri, this::isStopped);
 
 
                         String name = fileInfo.getFilename();

@@ -38,7 +38,7 @@ public class IpfsAutoRelayTest {
     }
 
     //@Test
-    public void testAutoRelay() throws Exception {
+    public void testAutoRelay() {
 
 
         IPFS ipfs = TestEnv.getTestInstance(context);

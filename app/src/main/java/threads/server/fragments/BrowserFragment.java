@@ -54,11 +54,9 @@ import threads.server.core.page.Bookmark;
 import threads.server.core.page.PAGES;
 import threads.server.core.peers.Content;
 import threads.server.core.threads.THREADS;
-import threads.server.ipfs.IPFS;
 import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;
 import threads.server.utils.MimeType;
-import threads.server.utils.Network;
 import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearCacheWorker;
 import threads.server.work.UploadThreadWorker;
@@ -130,13 +128,6 @@ public class BrowserFragment extends Fragment implements
         DOCS docs = DOCS.getInstance(mContext);
 
 
-        if (!docs.isLocalUri(uri)) {
-            if (!Network.isConnected(mContext)) {
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.offline_mode));
-            }
-        }
-
         mSwipeRefreshLayout.setDistanceToTriggerSync(999999);
         preload(Uri.parse(uri));
         checkBookmark(uri);
@@ -160,7 +151,6 @@ public class BrowserFragment extends Fragment implements
 
                 EVENTS.getInstance(mContext).progress(5);
 
-                waitForOfflineConnections(uri);
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }
@@ -489,13 +479,13 @@ public class BrowserFragment extends Fragment implements
                         String res = uri.getQueryParameter("download");
                         if (Objects.equals(res, "1")) {
                             final AtomicLong time = new AtomicLong(System.currentTimeMillis());
-                            boolean offline = !Network.isConnected(mContext);
+
                             long timeout = InitApplication.getConnectionTimeout(mContext) * 1000;
                             DOCS.FileInfo fileInfo = docs.getFileInfo(uri, () -> {
                                 boolean abort = Thread.currentThread().isInterrupted();
                                 boolean hasTimeout = (System.currentTimeMillis() - time.get() > timeout);
                                 return abort || hasTimeout;
-                            }, offline);
+                            });
                             Objects.requireNonNull(fileInfo);
                             downloader(uri, fileInfo.getFilename(), fileInfo.getMimeType(),
                                     fileInfo.getSize());
@@ -575,11 +565,11 @@ public class BrowserFragment extends Fragment implements
                             }
                         }
 
-                        boolean offline = !Network.isConnected(mContext);
+
                         final AtomicLong time = new AtomicLong(System.currentTimeMillis());
                         long timeout = InitApplication.getConnectionTimeout(mContext) * 1000;
                         return docs.getResponse(uri, () ->
-                                (System.currentTimeMillis() - time.get() > timeout), offline);
+                                (System.currentTimeMillis() - time.get() > timeout));
                     }
                 } catch (Throwable throwable) {
                     return createErrorMessage(throwable);
@@ -771,24 +761,6 @@ public class BrowserFragment extends Fragment implements
 
     }
 
-    private void waitForOfflineConnections(@NonNull Uri uri) {
-        try {
-            if (!Network.isConnected(mContext)) {
-                DOCS docs = DOCS.getInstance(mContext);
-                if (!Objects.equals(getHost(uri.toString()), docs.getHost())) {
-                    if (InitApplication.getWaitFlag(mContext)) {
-                        InitApplication.setWaitFlag(mContext, false);
-                        IPFS ipfs = IPFS.getInstance(mContext);
-                        if (ipfs.swarmPeers().isEmpty()) {
-                            java.lang.Thread.sleep(3000);
-                        }
-                    }
-                }
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
 
     @NonNull
     public WebView getWebView() {

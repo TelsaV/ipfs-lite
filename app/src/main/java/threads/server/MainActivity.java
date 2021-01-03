@@ -77,7 +77,6 @@ import threads.server.services.UploadService;
 import threads.server.services.UserService;
 import threads.server.utils.CodecDecider;
 import threads.server.utils.MimeType;
-import threads.server.utils.Network;
 import threads.server.utils.PermissionAction;
 import threads.server.utils.SelectionViewModel;
 import threads.server.work.LocalConnectWorker;
@@ -327,9 +326,7 @@ public class MainActivity extends AppCompatActivity implements
 
             try {
                 if (docs.isPinsPageOutdated()) {
-                    if (Network.isConnected(getApplicationContext())) {
-                        PageWorker.publish(getApplicationContext(), true);
-                    }
+                    PageWorker.publish(getApplicationContext(), true);
                 }
 
                 openBrowserView(docs.getPinsPageUri());
