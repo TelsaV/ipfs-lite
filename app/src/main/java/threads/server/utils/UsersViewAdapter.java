@@ -127,6 +127,7 @@ public class UsersViewAdapter extends
 
                 {
                     if (user.hasName()) {
+                        userViewHolder.user_image.clearColorFilter();
                         Bitmap bitmap = MimeTypeService.getNameImage(mContext, user.getAlias());
                         Glide.with(mContext).
                                 load(bitmap).
