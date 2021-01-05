@@ -109,7 +109,7 @@ dependencies {
     implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
 
     // API (IPFS lite)
-    implementation 'lite.ipfs:lite:1.0.0'
+    implementation 'lite.ipfs:lite:1.0.1'
 
     annotationProcessor 'androidx.room:room-compiler:2.2.6'
 
