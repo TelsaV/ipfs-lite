@@ -107,10 +107,6 @@ public class PAGES {
         pageDatabase.bookmarkDao().removeBookmark(bookmark);
     }
 
-    public boolean isReferenced(@NonNull CID cid) {
-        return resolverDatabase.resolverDao().references(cid.getCid()) > 0;
-    }
-
     public List<Bookmark> getBookmarksByQuery(@NonNull String query) {
 
         String searchQuery = query.trim();

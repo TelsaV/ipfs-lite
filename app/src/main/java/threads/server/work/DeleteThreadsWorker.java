@@ -18,6 +18,7 @@ import java.util.Objects;
 
 import threads.LogUtils;
 import threads.server.core.peers.Content;
+import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 
 public class DeleteThreadsWorker extends Worker {
@@ -73,6 +74,10 @@ public class DeleteThreadsWorker extends Worker {
                         getApplicationContext(), uri);
                 Objects.requireNonNull(document);
                 document.delete();
+            }
+
+            {
+                IPFS.getInstance(getApplicationContext()).gc();
             }
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

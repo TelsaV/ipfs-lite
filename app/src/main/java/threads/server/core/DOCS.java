@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import threads.LogUtils;
-import threads.server.core.contents.CDS;
 import threads.server.core.page.PAGES;
 import threads.server.core.page.Page;
 import threads.server.core.page.Resolver;
@@ -45,7 +44,6 @@ public class DOCS {
     private static DOCS INSTANCE = null;
     private final IPFS ipfs;
     private final THREADS threads;
-    private final CDS cds;
     private final PAGES pages;
     private final PEERS peers;
     private final String host;
@@ -55,7 +53,6 @@ public class DOCS {
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
         threads = THREADS.getInstance(context);
-        cds = CDS.getInstance(context);
         pages = PAGES.getInstance(context);
         peers = PEERS.getInstance(context);
         host = ipfs.getHost();
@@ -212,15 +209,17 @@ public class DOCS {
 
                     List<Thread> entries = threads.getSelfAndAllChildren(
                             ipfs.getLocation(), thread);
+                    threads.removeThreads(entries);
+
                     for (Thread entry : entries) {
                         CID cid = entry.getContent();
                         if (cid != null) {
-                            cds.insertContent(cid.getCid(),
-                                    System.currentTimeMillis(), !entry.isDir());
+                            if (!threads.isReferenced(ipfs.getLocation(), cid)) {
+                                ipfs.rm(cid.getCid(), !entry.isDir());
+                            }
                         }
-
                     }
-                    threads.removeThreads(entries);
+
                 }
             }
         } catch (Throwable e) {

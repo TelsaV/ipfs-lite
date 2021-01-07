@@ -15,9 +15,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
-import threads.server.core.contents.CDS;
-import threads.server.core.contents.Content;
-import threads.server.core.page.PAGES;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.CID;
@@ -64,26 +61,10 @@ public class CleanupWorker extends Worker {
         try {
 
             THREADS threads = THREADS.getInstance(getApplicationContext());
-            CDS contentService = CDS.getInstance(getApplicationContext());
+
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
-            PAGES pages = PAGES.getInstance(getApplicationContext());
-
             try {
-                // remove all content
-                List<Content> entries = contentService.getContents();
-
-                for (Content content : entries) {
-                    if (content.isExpired()) {
-                        String cid = content.getCid();
-                        contentService.removeContent(cid);
-                        if (!threads.isReferenced(ipfs.getLocation(), CID.create(cid)) &&
-                                !pages.isReferenced(CID.create(cid))) {
-                            ipfs.rm(cid, content.isRecursively());
-                        }
-                    }
-                }
-
-
+                // just in case (normally should not occur)
                 List<Thread> list = threads.getDeletedThreads(ipfs.getLocation());
                 threads.removeThreads(list);
                 for (Thread thread : list) {

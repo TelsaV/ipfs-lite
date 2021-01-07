@@ -17,7 +17,4 @@ public interface ResolverDao {
 
     @Query("DELETE FROM Resolver WHERE name = :name")
     void removeResolver(String name);
-
-    @Query("SELECT COUNT(name) FROM Resolver WHERE content =:content")
-    int references(String content);
 }
