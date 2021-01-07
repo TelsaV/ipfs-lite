@@ -26,19 +26,27 @@ public class ThreadsAPI {
 
 
     public void setThreadsDeleting(long... idxs) {
-        getThreadsDatabase().threadDao().setDeleting(idxs);
+        for (long idx : idxs) {
+            getThreadsDatabase().threadDao().setDeleting(idx);
+        }
     }
 
     public void removePins(long... idxs) {
-        getThreadsDatabase().threadDao().removePins(idxs);
+        for (long idx : idxs) {
+            getThreadsDatabase().threadDao().removePin(idx);
+        }
     }
 
     public void addPins(long... idxs) {
-        getThreadsDatabase().threadDao().addPins(idxs);
+        for (long idx : idxs) {
+            getThreadsDatabase().threadDao().addPin(idx);
+        }
     }
 
     public void resetThreadsDeleting(long... idxs) {
-        getThreadsDatabase().threadDao().resetDeleting(idxs);
+        for (long idx : idxs) {
+            getThreadsDatabase().threadDao().resetDeleting(idx);
+        }
     }
 
     public void setThreadLeaching(long idx) {

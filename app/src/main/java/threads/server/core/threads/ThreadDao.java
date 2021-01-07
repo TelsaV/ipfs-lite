@@ -41,17 +41,17 @@ public interface ThreadDao {
     @Query("SELECT leaching FROM Thread WHERE idx =:idx")
     boolean isLeaching(long idx);
 
-    @Query("UPDATE Thread SET deleting = 1 WHERE idx IN ( :idxs )")
-    void setDeleting(long... idxs);
+    @Query("UPDATE Thread SET deleting = 1 WHERE idx = :idx")
+    void setDeleting(long idx);
 
-    @Query("UPDATE Thread SET deleting = 0 WHERE idx IN ( :idxs )")
-    void resetDeleting(long... idxs);
+    @Query("UPDATE Thread SET deleting = 0 WHERE idx = :idx")
+    void resetDeleting(long idx);
 
-    @Query("UPDATE Thread SET pinned = 0  WHERE idx IN (:idxs)")
-    void removePins(long... idxs);
+    @Query("UPDATE Thread SET pinned = 0  WHERE idx = :idx")
+    void removePin(long idx);
 
-    @Query("UPDATE Thread SET pinned = 1  WHERE idx IN (:idxs)")
-    void addPins(long... idxs);
+    @Query("UPDATE Thread SET pinned = 1  WHERE idx = :idx")
+    void addPin(long idx);
 
     @Query("SELECT * FROM Thread WHERE content = :cid AND parent = :parent AND location =:location")
     @TypeConverters({Converter.class})

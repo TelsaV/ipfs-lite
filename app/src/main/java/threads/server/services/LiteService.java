@@ -36,6 +36,7 @@ import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileProvider;
 import threads.server.utils.StorageLocation;
+import threads.server.work.DeleteThreadsWorker;
 import threads.server.work.UploadThreadsWorker;
 import threads.server.work.UserConnectWorker;
 
@@ -82,6 +83,33 @@ public class LiteService {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putInt(PIN_SERVICE_TIME_KEY, timeout);
         editor.apply();
+    }
+
+
+    public static void threads(@NonNull Context context, long... idxs) {
+
+        try {
+            FileProvider fileProvider =
+                    FileProvider.getInstance(context);
+            File file = fileProvider.createTempDataFile();
+
+            try (PrintStream out = new PrintStream(file)) {
+                for (long idx : idxs) {
+                    out.println(idx);
+                }
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+
+            Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                    context, BuildConfig.APPLICATION_ID, file);
+            Objects.requireNonNull(uri);
+
+            WorkManager.getInstance(context).enqueue(DeleteThreadsWorker.getWork(uri));
+
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
     public static void files(@NonNull Context context, @NonNull ClipData data, long parent) {

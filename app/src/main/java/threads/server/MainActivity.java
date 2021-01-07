@@ -31,7 +31,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ShareCompat;
 import androidx.core.view.MenuCompat;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.WorkContinuation;
@@ -72,6 +71,7 @@ import threads.server.fragments.ThreadsFragment;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.DiscoveryService;
+import threads.server.services.LiteService;
 import threads.server.services.RegistrationService;
 import threads.server.services.UploadService;
 import threads.server.services.UserService;
@@ -449,17 +449,7 @@ public class MainActivity extends AppCompatActivity implements
                                 @Override
                                 public void onDismissed(Snackbar snackbar, int event) {
                                     if (deleteThreads.get()) {
-                                        try {
-                                            for (long idx : idxs) {
-                                                Uri uri = FileDocumentsProvider.getUriForThread(idx);
-                                                DocumentFile document = DocumentFile.fromSingleUri(
-                                                        getApplicationContext(), uri);
-                                                Objects.requireNonNull(document);
-                                                document.delete();
-                                            }
-                                        } catch (Throwable throwable) {
-                                            LogUtils.error(TAG, throwable);
-                                        }
+                                        LiteService.threads(getApplicationContext(), idxs);
                                     }
                                     showFab(true);
 
