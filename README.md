@@ -1,10 +1,8 @@
 # IPFS Lite
-IPFS Lite node with modern UI to support standard use cases of IPFS
+IPFS Lite is an application to support the standard use cases of IPFS
 
 
 ## General 
-**IPFS Lite** supports the standard uses cases of IPFS (like add, cat, get, publish, etc).
-It provides a modern UI to realize such use cases.
 The basic characteristics of the app are decentralized, respect of personal data,
 open source, free of charge, transparent, free of advertising and legally impeccable.
 

@@ -379,7 +379,6 @@ public class UploadThreadWorker extends Worker {
                     }
                 }
 
-                java.lang.Thread.sleep(1000);
 
                 if (isStopped()) {
                     executor.shutdown();
