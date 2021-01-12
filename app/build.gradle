@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "threads.server"
-        minSdkVersion 24
+        minSdkVersion 26
         targetSdkVersion 30
-        versionCode 204
-        versionName "2.0.4"
+        versionCode 205
+        versionName "2.0.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         def documentsAuthorityValue = applicationId + ".provider"
@@ -110,7 +110,7 @@ dependencies {
     implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
 
     // API (IPFS lite)
-    implementation 'lite.ipfs:lite:1.0.1'
+    implementation 'lite.ipfs:lite:1.0.5'
 
     annotationProcessor 'androidx.room:room-compiler:2.2.6'
 
