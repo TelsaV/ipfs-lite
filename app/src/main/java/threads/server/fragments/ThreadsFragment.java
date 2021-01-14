@@ -636,7 +636,7 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
         }
     }
 
-    private void createFolderChips(@NonNull ChipGroup group, List<Folder> folders) {
+    private void createFolderChips(@NonNull ChipGroup group, @NonNull List<Folder> folders) {
 
         for (int i = folders.size(); i < group.getChildCount(); i++) {
             group.removeViewAt(i);

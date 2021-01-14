@@ -15,12 +15,8 @@ import threads.server.magic.entries.MagicFormatter;
  */
 public class LocalDateType extends IntegerType {
 
-    private final ThreadLocal<SimpleDateFormat> dateFormat = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US);
-        }
-    };
+    private final ThreadLocal<SimpleDateFormat> dateFormat =
+            ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z", Locale.US));
 
     public LocalDateType(EndianType endianType) {
         super(endianType);

@@ -354,7 +354,7 @@ public class UploadThreadWorker extends Worker {
 
     }
 
-    private void downloadThread(long idx) throws InterruptedException {
+    private void downloadThread(long idx) {
         ExecutorService executor = Executors.newFixedThreadPool(4);
 
         List<Thread> works = new ArrayList<>();
