@@ -639,7 +639,7 @@ public class IPFS implements Listener {
                     List<Callable<Boolean>> tasks = new ArrayList<>();
                     ExecutorService executor = Executors.newFixedThreadPool(bootstrap.size());
                     for (String address : bootstrap) {
-                        tasks.add(() -> swarmConnect(address, timeout));
+                        tasks.add(() -> swarmConnect(address, null, timeout));
                     }
 
                     List<Future<Boolean>> futures = executor.invokeAll(tasks, timeout, TimeUnit.SECONDS);
@@ -652,7 +652,7 @@ public class IPFS implements Listener {
                     tasks.clear();
                     executor = Executors.newFixedThreadPool(second.size());
                     for (String address : second) {
-                        tasks.add(() -> swarmConnect(address, timeout));
+                        tasks.add(() -> swarmConnect(address, null, timeout));
                     }
                     futures.clear();
                     futures = executor.invokeAll(tasks, timeout, TimeUnit.SECONDS);
