@@ -134,9 +134,7 @@ public class UserConnectWorker extends Worker {
                 Objects.requireNonNull(user);
                 String address = user.getAddress();
                 if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-                    String multiAddress = address.concat("/p2p/" + pid);
-
-                    if (ipfs.swarmConnect(multiAddress, pid, timeout)) {
+                    if (ipfs.swarmConnect(pid, timeout)) {
                         return;
                     }
                 }

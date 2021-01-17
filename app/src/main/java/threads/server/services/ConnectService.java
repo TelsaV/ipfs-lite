@@ -59,9 +59,7 @@ public class ConnectService {
         Objects.requireNonNull(user);
         String address = user.getAddress();
         if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-            String multiAddress = address.concat("/p2p/" + pid);
-
-            if (ipfs.swarmConnect(multiAddress, pid, 5)) {
+            if (ipfs.swarmConnect(pid, 5)) {
                 return true;
             }
         }
