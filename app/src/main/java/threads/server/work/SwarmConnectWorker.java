@@ -4,7 +4,6 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.work.Constraints;
-import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
@@ -13,7 +12,6 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import threads.LogUtils;
-import threads.server.core.peers.Content;
 import threads.server.services.ConnectService;
 import threads.server.services.LiteService;
 
@@ -28,24 +26,21 @@ public class SwarmConnectWorker extends Worker {
     }
 
 
-    private static OneTimeWorkRequest getWork(boolean refresh) {
+    private static OneTimeWorkRequest getWork() {
 
         Constraints.Builder builder = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED);
-        Data.Builder data = new Data.Builder();
-        data.putBoolean(Content.REFRESH, refresh);
 
         return new OneTimeWorkRequest.Builder(SwarmConnectWorker.class)
                 .addTag(TAG)
                 .setConstraints(builder.build())
-                .setInputData(data.build())
                 .build();
 
     }
 
-    public static void connect(@NonNull Context context, boolean refresh) {
+    public static void connect(@NonNull Context context) {
         WorkManager.getInstance(context).enqueueUniqueWork(
-                TAG, ExistingWorkPolicy.KEEP, getWork(refresh));
+                TAG, ExistingWorkPolicy.KEEP, getWork());
 
     }
 
@@ -54,11 +49,11 @@ public class SwarmConnectWorker extends Worker {
     public Result doWork() {
 
         long start = System.currentTimeMillis();
-        boolean refresh = getInputData().getBoolean(Content.REFRESH, false);
+
         LogUtils.info(TAG, " start ...");
         try {
 
-            LiteService.bootstrap(getApplicationContext(), 10, refresh);
+            LiteService.bootstrap(getApplicationContext(), 10);
 
 
             ConnectService.connect(getApplicationContext());

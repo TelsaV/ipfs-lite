@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            SwarmConnectWorker.connect(getApplicationContext(), false);
+            SwarmConnectWorker.connect(getApplicationContext());
         }
     };
     private final AtomicInteger currentFragment = new AtomicInteger();

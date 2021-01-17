@@ -165,7 +165,7 @@ public class LiteService {
         });
     }
 
-    public static void bootstrap(@NonNull Context context, int maxPeers, boolean refresh) {
+    public static void bootstrap(@NonNull Context context, int minPeers) {
 
         try {
 
@@ -174,7 +174,7 @@ public class LiteService {
 
             if (!ipfs.isPrivateNetwork()) {
 
-                ipfs.bootstrap(maxPeers, refresh, 10);
+                ipfs.bootstrap(minPeers, 10);
             }
 
         } catch (Throwable throwable) {

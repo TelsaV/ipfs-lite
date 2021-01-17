@@ -84,7 +84,7 @@ public class PageWorker extends Worker {
             if (!isStopped()) {
                 try {
 
-                    LiteService.bootstrap(getApplicationContext(), 20, false);
+                    LiteService.bootstrap(getApplicationContext(), 20);
 
                     if (ipfs.isPrivateNetwork()) {
                         ConnectService.connect(getApplicationContext());

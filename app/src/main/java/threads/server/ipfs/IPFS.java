@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.util.Base64;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -21,16 +22,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -49,18 +51,6 @@ import threads.LogUtils;
 import threads.server.core.events.EVENTS;
 
 public class IPFS implements Listener {
-    @NonNull
-    private static final List<String> DNS_ADDRS = new ArrayList<>();
-
-    @NonNull
-    private static final List<String> Bootstrap = new ArrayList<>(Arrays.asList(
-            "/ip4/147.75.80.110/tcp/4001/p2p/QmbFgm5zan8P6eWWmeyfncR5feYEMPbht5b1FW1C37aQ7y", // default relay  libp2p
-            "/ip4/147.75.195.153/tcp/4001/p2p/QmW9m57aiBDHAkKj9nmFSEn7ZqrcF1fZS4bipsTCHburei",// default relay  libp2p
-            "/ip4/147.75.70.221/tcp/4001/p2p/Qme8g49gm3q4Acp7xWBKg3nAa9fxZ1YmyDJdyGgoG6LsXh",// default relay  libp2p
-
-            "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ"// mars.i.ipfs.io
-
-    ));
     private static final String EMPTY_DIR_58 = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
     private static final String EMPTY_DIR_32 = "bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354";
     private static final String PREF_KEY = "prefKey";
@@ -506,23 +496,6 @@ public class IPFS implements Listener {
         }
     }
 
-    private static CopyOnWriteArrayList<String> getBootstrap(boolean refresh) {
-
-
-        CopyOnWriteArrayList<String> bootstrap = new CopyOnWriteArrayList<>(IPFS.Bootstrap);
-
-        if (refresh) {
-            IPFS.DNS_ADDRS.clear();
-        }
-
-        if (IPFS.DNS_ADDRS.isEmpty()) {
-            IPFS.DNS_ADDRS.addAll(DnsAddrResolver.getMultiAddresses());
-        }
-
-        CopyOnWriteArrayList<String> dnsAddrs = new CopyOnWriteArrayList<>(IPFS.DNS_ADDRS);
-        bootstrap.addAll(dnsAddrs);
-        return bootstrap;
-    }
 
     public void setPusher(@Nullable Pusher pusher) {
         node.setPushing(pusher != null);
@@ -656,13 +629,38 @@ public class IPFS implements Listener {
         return this.baseDir.getFreeSpace();
     }
 
-    public void bootstrap(int minPeers, boolean refresh, int timeout) {
+    public void bootstrap(int minPeers, int timeout) {
         if (isDaemonRunning()) {
-            if (numSwarmPeers() < minPeers || refresh) {
-                CopyOnWriteArrayList<String> bootstrap = IPFS.getBootstrap(refresh);
-                for (String address : bootstrap) {
-                    boolean result = swarmConnect(address, null, timeout);
-                    LogUtils.info(TAG, " \nBootstrap : " + address + " " + result);
+            if (numSwarmPeers() < minPeers) {
+                try {
+                    Pair<List<String>, List<String>> result = DnsAddrResolver.getBootstrap();
+
+                    List<String> bootstrap = result.first;
+                    List<Callable<Boolean>> tasks = new ArrayList<>();
+                    ExecutorService executor = Executors.newFixedThreadPool(bootstrap.size());
+                    for (String address : bootstrap) {
+                        tasks.add(() -> swarmConnect(address, timeout));
+                    }
+
+                    List<Future<Boolean>> futures = executor.invokeAll(tasks, timeout, TimeUnit.SECONDS);
+                    for (Future<Boolean> future : futures) {
+                        LogUtils.info(TAG, "\nBootstrap done " + future.isDone());
+                    }
+
+
+                    List<String> second = result.second;
+                    tasks.clear();
+                    executor = Executors.newFixedThreadPool(second.size());
+                    for (String address : second) {
+                        tasks.add(() -> swarmConnect(address, timeout));
+                    }
+                    futures.clear();
+                    futures = executor.invokeAll(tasks, timeout, TimeUnit.SECONDS);
+                    for (Future<Boolean> future : futures) {
+                        LogUtils.info(TAG, "\nConnect done " + future.isDone());
+                    }
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
                 }
             }
         }

@@ -1,6 +1,7 @@
 package threads.server.ipfs;
 
 import android.content.Context;
+import android.util.Pair;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -51,12 +52,22 @@ public class IpfsTest {
     public void test_dns_addr() {
 
         if (TestEnv.isConnected(context)) {
-            List<String> addresses = DnsAddrResolver.getMultiAddresses();
 
-            assertNotNull(addresses);
-            assertEquals(addresses.size(), 5);
+            Pair<List<String>, List<String>> result = DnsAddrResolver.getMultiAddresses();
+            List<String> first = result.first;
+            List<String> second = result.second;
+            assertNotNull(first);
+            assertEquals(first.size(), 1);
+            assertNotNull(second);
+            assertEquals(second.size(), 12);
 
-            for (String address : addresses) {
+
+            for (String address : first) {
+                LogUtils.error(TAG, address);
+            }
+
+
+            for (String address : second) {
                 LogUtils.error(TAG, address);
             }
         }

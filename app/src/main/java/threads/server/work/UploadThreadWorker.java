@@ -175,7 +175,7 @@ public class UploadThreadWorker extends Worker {
                 if (bootstrap) {
                     if (!isStopped()) {
                         try {
-                            LiteService.bootstrap(getApplicationContext(), 10, false);
+                            LiteService.bootstrap(getApplicationContext(), 10);
 
                             ConnectService.connect(getApplicationContext());
                         } catch (Throwable e) {
