@@ -34,3 +34,34 @@ There are some small differences which are described here. The reasons are outli
 <br>The WebUI feature is not supported (Performance,Security,Android 10)
 
 
+##Privacy Policy
+
+### Data Protection
+<p>As an application provider, we take the protection of all personal data very seriously.
+All personal information is treated confidentially and in accordance with the legal requirements,
+regulations, as explained in this privacy policy.</p>
+<p>This app is designed so that the user do not have to enter any personal data. Never will data
+collected by us, and especially not passed to third parties. The users behaviour is also not
+analyzed by this application.</p>
+<p>The user is responsible what kind of data is added or retrieved from the IPFS network.
+This kind of information is also not tracked by this application.</p>
+### Android Permissions
+<p>This section describes briefly why specific Android permissions are required.</p>
+            <ul>
+                <li>
+                    <h4>Camera</h4>
+                    <p>The camera permission is required to read QR codes, which contains
+                        information about peer ID's (PIDs) or content data ID's (CIDs).
+                    </p>
+                </li>
+                <li>
+                    <h4>Foreground Service</h4>
+                    <p>The foreground service permission is required to run the IPFS node over a
+                        longer period of time.
+                    </p>
+                </li>
+                <li>
+                    <h4>Internet</h4>
+                    <p>Kind of precondition for running the local IPFS node.</p>
+                </li>
+            </ul>
