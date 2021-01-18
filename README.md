@@ -34,9 +34,10 @@ There are some small differences which are described here. The reasons are outli
 <br>The WebUI feature is not supported (Performance,Security,Android 10)
 
 
-##Privacy Policy
+## Privacy Policy
 
 ### Data Protection
+
 <p>As an application provider, we take the protection of all personal data very seriously.
 All personal information is treated confidentially and in accordance with the legal requirements,
 regulations, as explained in this privacy policy.</p>
@@ -45,6 +46,7 @@ collected by us, and especially not passed to third parties. The users behaviour
 analyzed by this application.</p>
 <p>The user is responsible what kind of data is added or retrieved from the IPFS network.
 This kind of information is also not tracked by this application.</p>
+
 ### Android Permissions
 <p>This section describes briefly why specific Android permissions are required.</p>
             <ul>
