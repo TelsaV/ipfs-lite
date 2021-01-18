@@ -9,16 +9,4 @@
         android:title="@string/documentation"
         app:showAsAction="never" />
 
-    <item
-        android:id="@+id/action_issues"
-        android:orderInCategory="51"
-        android:title="@string/issues"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_licences"
-        android:orderInCategory="52"
-        android:title="@string/licences"
-        android:visible="true"
-        app:showAsAction="never" />
 </menu>

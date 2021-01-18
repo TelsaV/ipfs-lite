@@ -51,14 +51,11 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import de.psdev.licensesdialog.LicensesDialog;
 import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.R;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
-import threads.server.core.peers.Content;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.DaemonService;
@@ -156,20 +153,7 @@ public class SettingsFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         int itemId = item.getItemId();
-        if (itemId == R.id.action_issues) {
-            try {
-                String uri = "https://gitlab.com/remmer.wilts/ipfs-lite/issues";
-
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-            return true;
-        } else if (itemId == R.id.action_documentation) {
+        if (itemId == R.id.action_documentation) {
             try {
                 String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
 
@@ -177,19 +161,6 @@ public class SettingsFragment extends Fragment {
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent);
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-            return true;
-        } else if (itemId == R.id.action_licences) {
-            try {
-                new LicensesDialog.Builder(mContext)
-                        .setTitle(R.string.licences)
-                        .setNotices(R.raw.licenses)
-                        .setShowFullLicenseText(false)
-                        .setIncludeOwnLicense(true)
-                        .build().show();
-
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }

@@ -69,9 +69,6 @@ dependencies {
     // API (LICENSE done)
     implementation 'com.journeyapps:zxing-android-embedded:4.1.0'
 
-    // UI (for showing licences file) (LICENSE done)
-    implementation 'de.psdev.licensesdialog:licensesdialog:2.1.0'
-
     // API (LICENSE done)
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
