@@ -48,7 +48,7 @@ analyzed by this application.</p>
 This kind of information is also not tracked by this application.</p>
 
 ### Android Permissions
-<p>This section describes briefly why specific Android permissions are required.</p>
+            <p>This section describes briefly why specific Android permissions are required.</p>
             <ul>
                 <li>
                     <h4>Camera</h4>
