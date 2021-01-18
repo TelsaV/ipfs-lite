@@ -156,31 +156,7 @@ public class SettingsFragment extends Fragment {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         int itemId = item.getItemId();
-        if (itemId == R.id.action_privacy_policy) {
-
-            try {
-
-                String data;
-                if (LiteService.isDarkMode(mContext)) {
-                    data = LiteService.loadRawData(mContext, R.raw.privacy_policy_night);
-                } else {
-                    data = LiteService.loadRawData(mContext, R.raw.privacy_policy);
-                }
-
-                IPFS ipfs = IPFS.getInstance(mContext);
-                CID cid = ipfs.storeText(data);
-                Objects.requireNonNull(cid);
-                String uri = Content.IPFS + "://" + cid.getCid();
-
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-            return true;
-        } else if (itemId == R.id.action_issues) {
+        if (itemId == R.id.action_issues) {
             try {
                 String uri = "https://gitlab.com/remmer.wilts/ipfs-lite/issues";
 

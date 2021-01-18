@@ -268,23 +268,6 @@ public class LiteService {
         return false;
     }
 
-    @NonNull
-    public static String loadRawData(@NonNull Context context, @RawRes int id) {
-        Objects.requireNonNull(context);
-
-        try (InputStream inputStream = context.getResources().openRawResource(id)) {
-            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-
-                IPFS.copy(inputStream, outputStream);
-                return new String(outputStream.toByteArray());
-
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-            return "";
-        }
-    }
-
     public static List<StorageLocation> getStorageLocations(@NonNull Context context) {
 
         List<StorageLocation> locations = new ArrayList<>();
