@@ -181,14 +181,14 @@ public class DOCS {
                 LogUtils.error(TAG, throwable);
             }
         }
+
+
         for (long idx : idxs) {
             deleteThread(idx);
         }
-        try {
-            updatePage();
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
+
+
+        setPinsPageOutdated();
     }
 
     private void deleteThread(long idx) {
@@ -298,14 +298,20 @@ public class DOCS {
         return searchName;
     }
 
-    public void finishDocument(long idx, long parent) {
+    public void finishDocument(long idx, long parent, boolean pinsOutdated) {
         updateParentDocument(idx, parent);
         updateDirectorySize(parent);
+        if (pinsOutdated) {
+            setPinsPageOutdated();
+        }
     }
 
-    public void finishDocument(long idx) {
+    public void finishDocument(long idx, boolean pinsOutdated) {
         updateParentDocument(idx);
         updateParentSize(idx);
+        if (pinsOutdated) {
+            setPinsPageOutdated();
+        }
     }
 
     private void updateParentSize(long idx) {
@@ -344,16 +350,6 @@ public class DOCS {
         }
     }
 
-    /*
-    public void addPagePins(long... idxs) {
-        threads.addPins(idxs);
-        updatePage();
-    }
-
-    public void removePagePins(long... idxs) {
-        threads.removePins(idxs);
-        updatePage();
-    }*/
 
     private void removeFromParentDocument(long idx) {
 
@@ -431,7 +427,7 @@ public class DOCS {
 
         long result = threads.storeThread(thread);
 
-        finishDocument(result);
+        finishDocument(result, true);
         return result;
     }
 
@@ -482,7 +478,7 @@ public class DOCS {
         if (!Objects.equals(oldName, displayName)) {
             threads.setThreadName(idx, displayName);
 
-            updatePage();
+            setPinsPageOutdated();
 
             updateParentDocument(idx, oldName);
         }
@@ -502,22 +498,23 @@ public class DOCS {
                 page.setContent(dir);
                 pages.storePage(page);
             } else {
-                updatePage();
+                updatePinsPage();
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
     }
 
-    public void resetPinsPageOutdated() {
-        pages.resetPageOutdated(getHost());
+
+    public void setPinsPageOutdated() {
+        pages.setPageOutdated(getHost());
     }
 
     public boolean isPinsPageOutdated() {
         return pages.isPageOutdated(getHost());
     }
 
-    private void updatePage() {
+    public void updatePinsPage() {
         try {
 
             Page page = getPinsPage();
@@ -540,7 +537,7 @@ public class DOCS {
             }
 
             page.setTimestamp(System.currentTimeMillis());
-            page.setOutdated(true);
+            page.setOutdated(false);
             page.setContent(dir);
             pages.storePage(page);
 

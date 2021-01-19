@@ -314,19 +314,7 @@ public class MainActivity extends AppCompatActivity implements
 
         });
 
-        mActionHome.setOnClickListener(view -> {
-
-            try {
-                if (docs.isPinsPageOutdated()) {
-                    PageWorker.publish(getApplicationContext(), true);
-                }
-
-                openBrowserView(docs.getPinsPageUri());
-
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-        });
+        mActionHome.setOnClickListener(view -> openBrowserView(docs.getPinsPageUri()));
 
 
         if (savedInstanceState != null) {
@@ -716,8 +704,13 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void openBrowserView(@NonNull Uri uri) {
-        mSelectionViewModel.setUri(uri.toString());
-        mNavigation.setSelectedItemId(R.id.navigation_browser);
+        try {
+            mSelectionViewModel.setUri(uri.toString());
+            mNavigation.setSelectedItemId(R.id.navigation_browser);
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
+
     }
 
     private void handleSend(ShareCompat.IntentReader intentReader) {

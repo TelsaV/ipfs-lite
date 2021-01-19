@@ -54,7 +54,8 @@ public class UploadService {
                         long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid,
                                 null, cid.getCid(), text.length(), true, false);
 
-                        docs.finishDocument(idx);
+                        docs.finishDocument(idx, true);
+
                     } else {
                         EVENTS.getInstance(context).warning(
                                 context.getString(R.string.content_already_exists, cid.getCid()));
@@ -73,7 +74,7 @@ public class UploadService {
                     long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid,
                             null, name, text.length(), true, false);
 
-                    docs.finishDocument(idx);
+                    docs.finishDocument(idx, true);
                 }
 
             } catch (Throwable e) {

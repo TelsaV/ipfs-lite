@@ -205,13 +205,15 @@ public class UploadThreadsWorker extends Worker {
 
                             threads.setThreadDone(idx, cid);
 
-                            docs.finishDocument(idx, parent);
+                            docs.finishDocument(idx, parent, false);
 
                         } else {
                             docs.deleteDocument(idx);
                         }
                     } catch (Throwable e) {
                         threads.setThreadError(idx);
+                    } finally {
+                        docs.setPinsPageOutdated();
                     }
                 }
             }
@@ -222,9 +224,6 @@ public class UploadThreadsWorker extends Worker {
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
 
-        if (isStopped()) {
-            return Result.failure();
-        }
         return Result.success();
 
     }

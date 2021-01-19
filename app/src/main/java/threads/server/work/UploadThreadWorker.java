@@ -327,7 +327,7 @@ public class UploadThreadWorker extends Worker {
                         Objects.requireNonNull(cid);
 
                         threads.setThreadDone(idx, cid);
-                        docs.finishDocument(idx);
+                        docs.finishDocument(idx, true);
 
                     }
                 } catch (Throwable e) {

@@ -632,7 +632,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
             long idx = docs.createDocument(parent, type, content, null, displayName,
                     0L, seeding, init);
             if (content != null) {
-                docs.finishDocument(idx);
+                docs.finishDocument(idx, true);
             }
             return String.valueOf(idx);
         } catch (Throwable throwable) {

@@ -207,7 +207,7 @@ public class LiteService {
                     context, BuildConfig.APPLICATION_ID, file);
             Objects.requireNonNull(uri);
 
-            WorkManager.getInstance(context).enqueue(DeleteThreadsWorker.getWork(uri));
+            DeleteThreadsWorker.delete(context, uri);
 
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);

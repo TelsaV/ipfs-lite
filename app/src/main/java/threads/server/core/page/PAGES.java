@@ -80,6 +80,10 @@ public class PAGES {
         pageDatabase.pageDao().setOutdated(hash, false);
     }
 
+    public void setPageOutdated(@NonNull String hash) {
+        pageDatabase.pageDao().setOutdated(hash, true);
+    }
+
     public boolean isPageOutdated(@NonNull String hash) {
         return pageDatabase.pageDao().isOutdated(hash);
     }

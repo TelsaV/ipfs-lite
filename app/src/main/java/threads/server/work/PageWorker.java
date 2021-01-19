@@ -78,7 +78,7 @@ public class PageWorker extends Worker {
 
         try {
 
-            docs.resetPinsPageOutdated();
+            docs.updatePinsPage();
 
 
             if (!isStopped()) {
