@@ -298,13 +298,6 @@ public class DOCS {
         return searchName;
     }
 
-    public void finishDocument(long idx, long parent, boolean pinsOutdated) {
-        updateParentDocument(idx, parent);
-        updateDirectorySize(parent);
-        if (pinsOutdated) {
-            setPinsPageOutdated();
-        }
-    }
 
     public void finishDocument(long idx, boolean pinsOutdated) {
         updateParentDocument(idx);
