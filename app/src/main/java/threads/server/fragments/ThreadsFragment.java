@@ -43,6 +43,7 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.work.WorkManager;
 
 import com.google.android.exoplayer2.util.MimeTypes;
@@ -84,13 +85,15 @@ import threads.server.utils.ThreadItemDetailsLookup;
 import threads.server.utils.ThreadsItemKeyProvider;
 import threads.server.utils.ThreadsViewAdapter;
 import threads.server.work.BackupWorker;
+import threads.server.work.PageWorker;
 import threads.server.work.UploadDirectoryWorker;
 import threads.server.work.UploadFileWorker;
 import threads.server.work.UploadFolderWorker;
 import threads.server.work.UploadThreadWorker;
 
 
-public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.ThreadsViewAdapterListener {
+public class ThreadsFragment extends Fragment implements
+        SwipeRefreshLayout.OnRefreshListener, ThreadsViewAdapter.ThreadsViewAdapterListener {
 
     private static final String TAG = ThreadsFragment.class.getSimpleName();
 
@@ -298,6 +301,7 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
     private ActionMode mActionMode;
     private ActionMode mSearchActionMode;
     private SelectionTracker<Long> mSelectionTracker;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private ThreadItemDetailsLookup mThreadItemDetailsLookup;
 
     private SortOrder sortOrder = SortOrder.DATE;
@@ -499,6 +503,42 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
             updateDirectory(ipfs.getLocation(), mSelectionViewModel.getParentThread().getValue(),
                     mSelectionViewModel.getQuery().getValue(), true);
             return true;
+        } else if (itemId == R.id.action_share) {
+
+            try {
+
+                if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
+                    return true;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
+
+                DOCS docs = DOCS.getInstance(mContext);
+                Uri uri = docs.getPinsPageUri();
+
+
+                ComponentName[] names = {new ComponentName(mContext, MainActivity.class)};
+
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
+                intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
+                intent.setType(MimeType.PLAIN_MIME_TYPE);
+                intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+
+                Intent chooser = Intent.createChooser(intent, getText(R.string.share));
+                chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, names);
+                chooser.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(chooser);
+
+            } catch (Throwable ignore) {
+                EVENTS.getInstance(mContext).warning(
+                        getString(R.string.no_activity_found_to_handle_uri));
+            }
+
+            return true;
+
         } else if (itemId == R.id.action_select_all) {
 
 
@@ -587,6 +627,34 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
             clickNewFolder();
             return true;
 
+
+        } else if (itemId == R.id.action_view) {
+
+
+            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
+                return true;
+            }
+
+            mLastClickTime = SystemClock.elapsedRealtime();
+
+
+            try {
+                DOCS docs = DOCS.getInstance(mContext);
+                String content = docs.getHost();
+                String gateway = LiteService.getGateway(mContext);
+                String url = gateway + "/" + Content.IPNS + "/" + content;
+
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+            } catch (Throwable e) {
+                EVENTS.getInstance(mContext).warning(
+                        getString(R.string.no_activity_found_to_handle_uri));
+            }
+
+            return true;
 
         }
         return super.onOptionsItemSelected(item);
@@ -773,6 +841,17 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
 
         mThreadItemDetailsLookup = new ThreadItemDetailsLookup(mRecyclerView);
 
+
+
+
+        mSwipeRefreshLayout = view.findViewById(R.id.swipe_container);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent,
+                android.R.color.holo_green_dark,
+                android.R.color.holo_orange_dark,
+                android.R.color.holo_blue_dark);
+
+
         mSelectionTracker = new SelectionTracker.Builder<>(TAG, mRecyclerView,
                 new ThreadsItemKeyProvider(mThreadsViewAdapter),
                 mThreadItemDetailsLookup,
@@ -917,37 +996,6 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
     }
 
 
-    private void pinsAction() {
-
-        Selection<Long> selection = mSelectionTracker.getSelection();
-
-        if (selection.size() == 0) {
-            EVENTS.getInstance(mContext).warning(getString(R.string.no_marked_file_send));
-            return;
-        } else {
-            EVENTS.getInstance(mContext).warning(getString(R.string.added_files_to_pins));
-        }
-
-        try {
-
-            long[] entries = convert(selection);
-
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                try {
-                    DOCS docs = DOCS.getInstance(mContext);
-                    docs.addPagePins(entries);
-                } catch (Throwable e) {
-                    LogUtils.error(TAG, e);
-                }
-            });
-
-            mSelectionTracker.clearSelection();
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
-
 
     private long[] convert(Selection<Long> entries) {
         int i = 0;
@@ -995,19 +1043,11 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
 
         try {
             boolean isSeeding = thread.isSeeding();
-            boolean isPinned = thread.isPinned();
             boolean isOpenActive = isSeeding && !thread.isDir();
 
 
             PopupMenu menu = new PopupMenu(mContext, view);
             menu.inflate(R.menu.popup_threads_menu);
-            if (isSeeding) {
-                menu.getMenu().findItem(R.id.popup_pin).setVisible(!isPinned);
-                menu.getMenu().findItem(R.id.popup_unpin).setVisible(isPinned);
-            } else {
-                menu.getMenu().findItem(R.id.popup_pin).setVisible(false);
-                menu.getMenu().findItem(R.id.popup_unpin).setVisible(false);
-            }
             menu.getMenu().findItem(R.id.popup_rename).setVisible(true);
             menu.getMenu().findItem(R.id.popup_share).setVisible(true);
             menu.getMenu().findItem(R.id.popup_delete).setVisible(true);
@@ -1033,17 +1073,14 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
                 } else if (item.getItemId() == R.id.popup_copy_to) {
                     clickThreadCopy(thread);
                     return true;
-                } else if (item.getItemId() == R.id.popup_unpin) {
-                    clickThreadPin(thread, false);
-                    return true;
-                } else if (item.getItemId() == R.id.popup_pin) {
-                    clickThreadPin(thread, true);
-                    return true;
                 } else if (item.getItemId() == R.id.popup_rename) {
                     clickThreadRename(thread);
                     return true;
                 } else if (item.getItemId() == R.id.popup_open_with) {
                     clickThreadOpen(thread);
+                    return true;
+                } else if (item.getItemId() == R.id.popup_view) {
+                    viewGateway(thread);
                     return true;
                 } else {
                     return false;
@@ -1134,31 +1171,6 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
 
     }
 
-    private void clickThreadPin(@NonNull Thread thread, boolean pinned) {
-
-        final EVENTS events = EVENTS.getInstance(mContext);
-        final DOCS docs = DOCS.getInstance(mContext);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            try {
-                if (pinned) {
-                    docs.addPagePins(thread.getIdx());
-                } else {
-                    docs.removePagePins(thread.getIdx());
-                }
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            } finally {
-                if (pinned) {
-                    events.warning(getString(R.string.added_thread_to_pins, thread.getName()));
-                } else {
-                    events.warning(getString(R.string.removed_thread_from_pins, thread.getName()));
-                }
-            }
-        });
-
-    }
-
     private ActionMode.Callback createActionModeCallback() {
         return new ActionMode.Callback() {
             @Override
@@ -1167,9 +1179,6 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
 
                 MenuItem action_delete = menu.findItem(R.id.action_mode_delete);
                 action_delete.setVisible(true);
-
-                MenuItem action_mode_pins = menu.findItem(R.id.action_mode_pins);
-                action_mode_pins.setVisible(true);
 
                 mListener.showFab(false);
 
@@ -1208,18 +1217,6 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
                     deleteAction();
 
                     return true;
-                } else if (itemId == R.id.action_mode_pins) {
-
-
-                    if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                        return true;
-                    }
-                    mLastClickTime = SystemClock.elapsedRealtime();
-
-                    pinsAction();
-
-                    return true;
-
                 }
                 return false;
             }
@@ -1490,6 +1487,26 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
         }
     }
 
+
+
+    private void viewGateway(@NonNull Thread thread) {
+
+        try {
+            CID cid = thread.getContent();
+            Objects.requireNonNull(cid);
+
+            String gateway = LiteService.getGateway(mContext);
+            String uri = gateway + "/" + Content.IPFS + "/" + cid.getCid();
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (Throwable e) {
+            EVENTS.getInstance(mContext).warning(
+                    getString(R.string.no_activity_found_to_handle_uri));
+        }
+    }
+
     public void clickFilesAdd() {
         Long idx = mSelectionViewModel.getParentThread().getValue();
         Objects.requireNonNull(idx);
@@ -1565,6 +1582,23 @@ public class ThreadsFragment extends Fragment implements ThreadsViewAdapter.Thre
                 }
             }
         };
+
+    }
+
+    @Override
+    public void onRefresh() {
+        mSwipeRefreshLayout.setRefreshing(true);
+
+        try {
+            EVENTS.getInstance(mContext).warning(getString(R.string.publish_content));
+
+            PageWorker.publish(mContext, true);
+
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        } finally {
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
 
     }
 

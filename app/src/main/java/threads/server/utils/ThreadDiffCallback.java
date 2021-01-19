@@ -44,7 +44,6 @@ public class ThreadDiffCallback extends DiffUtil.Callback {
 
         if (t == o) return true;
         return t.getProgress() == o.getProgress() &&
-                t.isPinned() == o.isPinned() &&
                 t.isLeaching() == o.isLeaching() &&
                 t.isSeeding() == o.isSeeding() &&
                 t.isDeleting() == o.isDeleting() &&

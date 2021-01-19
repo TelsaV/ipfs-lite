@@ -10,21 +10,17 @@
     <string name="peer_id">对等ID</string>
     <string name="peer_access">QR码包含的对等ID \"%1$s\"</string>
     <string name="account_access">QR码包含我的对等ID</string>
-    <string name="licences">执照</string>
     <string name="multi_hash">多哈希</string>
     <string name="multi_hash_access">QR码包含一个CID以访问数据内容。\"%1$s\"</string>
     <string name="feature_camera_required">需要功能相机</string>
     <string name="share">分享</string>
     <string name="settings">设定值</string>
     <string name="daemon_restart_config_changed">由于配置更改，请重新启动应用程序。</string>
-    <string name="privacy_policy">隐私政策</string>
-    <string name="issues">问题报告</string>
     <string name="cid_not_valid">CID无效</string>
     <string name="pid_not_valid">对等ID无效</string>
     <string name="codec_not_supported">不支持编解码器</string>
     <string name="peers">同行</string>
     <string name="files">档案</string>
-    <string name="offline_mode">离线模式</string>
     <string name="peer_exists_with_pid">联系人中已存在具有ID的对等方</string>
     <string name="same_pid_like_host">对等ID是您的主机对等ID</string>
     <string name="peer_rename_title">编辑同伴</string>
@@ -38,8 +34,6 @@
     <string name="permission_camera_denied">许可摄像机被拒绝</string>
     <string name="documentation">文献资料</string>
     <string name="no_marked_file_delete">沒有標記為刪除的文件</string>
-    <string name="no_marked_file_send">沒有可發送的標記文件</string>
-    <string name="no_marked_file_unpin">沒有標記為取消固定的文件</string>
     <string name="gateway">网关</string>
     <string name="swarm">一群</string>
     <string name="file_not_found">无法下载文件</string>
@@ -50,14 +44,9 @@
     <string name="download_failed">的下载失败 \"%1$s\"</string>
     <string name="added_pid_to_peers">\"%1$s\"被添加到您的同行</string>
     <string name="search">搜索</string>
-    <string name="pin">销</string>
-    <string name="unpin">取消固定</string>
     <string name="view">视图</string>
     <string name="copy_to">复制到</string>
     <string name="content_already_exists">内容已经存在CID \"%1$s\"</string>
-    <string name="pins">别针</string>
-    <string name="added_thread_to_pins">"%1$s\" 添加到同行</string>
-    <string name="removed_thread_from_pins">\"%1$s\" 从同行中删除</string>
     <string name="identification">对等ID</string>
     <string name="account_address">帐户 - 对等ID</string>
     <string name="user_account_address_message">Y您可以与他人共享您的帐户对等ID。因此，他们只需扫描QR码即可与您联系。</string>
@@ -112,12 +101,11 @@
     <string name="homepage">主页</string>
 
 
-    <string name="publish_pins">发布图钉</string>
+    <string name="publish_content">发布图钉</string>
     <string name="uploading">上载…</string>
     <string name="server_mode">服务器模式</string>
 
 
-    <string name="added_files_to_pins">文件已添加到图钉</string>
     <string name="browser">浏览器</string>
     <string name="download_title">下载文件</string>
     <string name="bookmarks">书签</string>

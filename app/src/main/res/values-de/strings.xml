@@ -4,18 +4,14 @@
     <string name="channel_name">Daten Benachrichtigung</string>
     <string name="channel_description">Benachrichtigungen für Up- und Downloads</string>
     <string name="daemon_channel_name">Service Benachrichtigungen</string>
-    <string name="licences">Lizenzen</string>
     <string name="multi_hash">Multihash</string>
     <string name="content_id">Content ID (CID)</string>
     <string name="peer_id">Peer ID</string>
     <string name="share">Teilen</string>
     <string name="settings">Settings</string>
-    <string name="offline_mode">Offline Modus</string>
     <string name="peer_rename_title">Peer Umbenennen</string>
     <string name="action_select_all">Alle Auswählen</string>
-    <string name="unpin">Unpin</string>
-    <string name="pin">Pin</string>
-    <string name="pins">Pins</string>
+
     <string name="codec_not_supported">Codec ist nicht unterstützt</string>
     <string name="peers">Peers</string>
     <string name="app_settings">Einstellungen</string>
@@ -39,8 +35,6 @@
     <string name="multi_hash_access">The QR Code enthält die CID um auf die Daten \"%1$s\" zuzugreifen.</string>
     <string name="feature_camera_required">Feature Kamera benötigt</string>
     <string name="daemon_restart_config_changed">Bitte starte die Applikation neu, da sich die Konfiguration geändert hat.</string>
-    <string name="privacy_policy">Datenschutzbestimmung</string>
-    <string name="issues">Support</string>
     <string name="cid_not_valid">Content ID ist nicht gültig</string>
     <string name="pid_not_valid">Peer ID ist nicht gültig</string>
     <string name="peer_exists_with_pid">Eine Peer mit der ID existiert bereits in Deinen Kontakten</string>
@@ -49,15 +43,11 @@
     <string name="publisher_service_time">Publisher Service Interval %1$s[h]</string>
     <string name="permission_camera_denied">Permission Kamera</string>
     <string name="no_marked_file_delete">Keine Dateien zum Löschen</string>
-    <string name="no_marked_file_send">Keine Dateien zum Senden</string>
-    <string name="no_marked_file_unpin">Keine Dateien zun Unpinnen</string>
     <string name="action_peer_add">Peer hinzufügen…</string>
     <string name="download_failed">Download schlug fehl für \"%1$s\"</string>
     <string name="added_pid_to_peers">\"%1$s\" wurde zu Deinen Peers hinzugefügt</string>
     <string name="view">Ansicht</string>
     <string name="content_already_exists">Datei mit der Content ID \"%1$s\" existiert bereits</string>
-    <string name="added_thread_to_pins">Datei \"%1$s\" wurde zu Deinen Pins hinzugefügt</string>
-    <string name="removed_thread_from_pins">Datei \"%1$s\" wurde aus Deinen Pins entfernt</string>
     <string name="identification">Peer ID</string>
     <string name="account_address">Account - Peer ID</string>
     <string name="user_account_address_message">Der angegebenen QR Code enthält Deine Peer ID. Darüber können Andere Dich erreichen, wenn Du online bist.</string>
@@ -112,9 +102,7 @@
     <string name="new_text_file">Neue Text Datei</string>
     <string name="homepage">Homepage</string>
 
-    <string name="added_files_to_pins">Dateien zu Pins hinzugefügt</string>
-
-    <string name="publish_pins">Publish Pins</string>
+    <string name="publish_content">Veröffentliche Inhalt …</string>
     <string name="uploading">Hochladen…</string>
     <string name="server_mode">Server Mode</string>
     <string name="browser">Browser</string>

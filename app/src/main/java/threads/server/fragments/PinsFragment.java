@@ -30,13 +30,9 @@ import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.work.WorkManager;
 
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import threads.LogUtils;
 import threads.server.MainActivity;
@@ -45,7 +41,6 @@ import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.peers.Content;
 import threads.server.core.threads.PinsViewModel;
-import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
@@ -323,7 +318,7 @@ public class PinsFragment extends Fragment implements
         mSwipeRefreshLayout.setRefreshing(true);
 
         try {
-            EVENTS.getInstance(mContext).warning(getString(R.string.publish_pins));
+            EVENTS.getInstance(mContext).warning(getString(R.string.publish_content));
 
             PageWorker.publish(mContext, true);
 
@@ -336,47 +331,6 @@ public class PinsFragment extends Fragment implements
     }
 
 
-    private void unpinAction() {
-
-        Selection<Long> selection = mSelectionTracker.getSelection();
-        if (selection.size() == 0) {
-            EVENTS.getInstance(mContext).warning(getString(R.string.no_marked_file_unpin));
-            return;
-        }
-
-        try {
-
-            long[] entries = convert(selection);
-
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                try {
-                    THREADS threads = THREADS.getInstance(mContext);
-                    DOCS docs = DOCS.getInstance(mContext);
-
-                    docs.removePagePins(entries);
-
-                    for (long idx : entries) {
-                        Thread thread = threads.getThreadByIdx(idx);
-                        if (thread != null) {
-                            UUID uuid = thread.getWorkUUID();
-                            if (uuid != null) {
-                                WorkManager.getInstance(mContext).cancelWorkById(uuid);
-                            }
-                        }
-                    }
-
-                } catch (Throwable e) {
-                    LogUtils.error(TAG, e);
-                }
-            });
-
-
-            mSelectionTracker.clearSelection();
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
 
     private long[] convert(Selection<Long> entries) {
         int i = 0;
@@ -426,7 +380,6 @@ public class PinsFragment extends Fragment implements
             PopupMenu menu = new PopupMenu(mContext, view);
             menu.inflate(R.menu.popup_pins_menu);
             menu.getMenu().findItem(R.id.popup_rename).setVisible(true);
-            menu.getMenu().findItem(R.id.popup_unpin).setVisible(true);
 
             menu.setOnMenuItemClickListener((item) -> {
 
@@ -444,10 +397,7 @@ public class PinsFragment extends Fragment implements
                 } else if (item.getItemId() == R.id.popup_delete) {
                     clickThreadDelete(thread.getIdx());
                     return true;
-                } else if (item.getItemId() == R.id.popup_unpin) {
-                    clickUnpin(thread);
-                    return true;
-                } else if (item.getItemId() == R.id.popup_rename) {
+                }  else if (item.getItemId() == R.id.popup_rename) {
                     clickThreadRename(thread);
                     return true;
                 }
@@ -476,24 +426,6 @@ public class PinsFragment extends Fragment implements
     }
 
 
-    private void clickUnpin(@NonNull Thread thread) {
-
-        final DOCS docs = DOCS.getInstance(mContext);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            try {
-                docs.removePagePins(thread.getIdx());
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-        });
-
-
-        UUID uuid = thread.getWorkUUID();
-        if (uuid != null) {
-            WorkManager.getInstance(mContext).cancelWorkById(uuid);
-        }
-    }
 
     private ActionMode.Callback createActionModeCallback() {
         return new ActionMode.Callback() {
@@ -540,19 +472,7 @@ public class PinsFragment extends Fragment implements
                     deleteAction();
 
                     return true;
-                } else if (itemId == R.id.action_mode_unpin) {
-
-
-                    if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                        return true;
-                    }
-                    mLastClickTime = SystemClock.elapsedRealtime();
-
-                    unpinAction();
-
-                    return true;
                 }
-
                 return false;
             }
 
@@ -576,13 +496,12 @@ public class PinsFragment extends Fragment implements
 
     private void clickThreadInfo(@NonNull Thread thread) {
         try {
-            String uri = "";
 
             CID cid = thread.getContent();
             Objects.requireNonNull(cid);
-            if (thread.isPinned()) {
-                uri = Content.IPFS + "://" + cid.getCid();
-            }
+
+            String uri = Content.IPFS + "://" + cid.getCid();
+
             String multihash = cid.getCid();
             Uri uriImage = QRCodeService.getImage(mContext, multihash);
             ContentDialogFragment.newInstance(uriImage, multihash,

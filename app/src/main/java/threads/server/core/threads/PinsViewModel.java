@@ -18,8 +18,9 @@ public class PinsViewModel extends AndroidViewModel {
                 application.getApplicationContext()).getThreadsDatabase();
     }
 
+    // TODO delete
 
     public LiveData<List<Thread>> getVisiblePinnedThreads(int location) {
-        return threadsDatabase.threadDao().getLiveDataPinnedThreads(location);
+        return threadsDatabase.threadDao().getLiveDataVisibleChildrenByQuery(location, 0L, "");
     }
 }

@@ -31,17 +31,6 @@ public class ThreadsAPI {
         }
     }
 
-    public void removePins(long... idxs) {
-        for (long idx : idxs) {
-            getThreadsDatabase().threadDao().removePin(idx);
-        }
-    }
-
-    public void addPins(long... idxs) {
-        for (long idx : idxs) {
-            getThreadsDatabase().threadDao().addPin(idx);
-        }
-    }
 
     public void resetThreadsDeleting(long... idxs) {
         for (long idx : idxs) {
@@ -139,7 +128,7 @@ public class ThreadsAPI {
 
     @NonNull
     public List<Thread> getPins(int location) {
-        return getThreadsDatabase().threadDao().getThreadsByPinned(location, true);
+        return getChildren(location, 0L);
     }
 
     @NonNull
@@ -261,9 +250,6 @@ public class ThreadsAPI {
         getThreadsDatabase().threadDao().setParent(idx, targetIdx);
     }
 
-    public boolean isThreadPinned(long idx) {
-        return getThreadsDatabase().threadDao().isPinned(idx);
-    }
 
     @Nullable
     public UUID getThreadWork(long idx) {

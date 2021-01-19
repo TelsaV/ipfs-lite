@@ -305,12 +305,6 @@ public class MainActivity extends AppCompatActivity implements
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
                 return true;
-            } else if (itemId == R.id.navigation_pins) {
-
-                loadFragment(new PinsFragment(), R.id.navigation_pins);
-                showFab(false);
-                mSelectionViewModel.setParentThread(0L);
-                return true;
             } else if (itemId == R.id.navigation_settings) {
 
                 loadFragment(new SettingsFragment(), R.id.navigation_settings);

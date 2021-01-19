@@ -9,21 +9,17 @@
     <string name="peer_id">Peer ID</string>
     <string name="peer_access">The QR code contains the peer ID of \"%1$s\".</string>
     <string name="account_access">The QR code contains my peer ID.</string>
-    <string name="licences">Licences</string>
     <string name="multi_hash">Multihash</string>
     <string name="multi_hash_access">The QR code contains a CID to access the content of the data \"%1$s\".</string>
     <string name="feature_camera_required">Feature camera required</string>
     <string name="share">Share</string>
     <string name="settings">Settings</string>
     <string name="daemon_restart_config_changed">Please restart the application due to the configuration changes.</string>
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="issues">Issue Report</string>
     <string name="cid_not_valid">CID is not valid</string>
     <string name="pid_not_valid">Peer ID is not valid</string>
     <string name="codec_not_supported">Codec is not supported</string>
     <string name="peers">Peers</string>
     <string name="files">Files</string>
-    <string name="offline_mode">Offline Mode</string>
     <string name="peer_exists_with_pid">A peer with the ID already exists in your contacts</string>
     <string name="same_pid_like_host">Peer ID is your Host Peer ID</string>
     <string name="peer_rename_title">Rename Peer</string>
@@ -37,8 +33,6 @@
     <string name="permission_camera_denied">Permission camera denied</string>
     <string name="documentation">Documentation</string>
     <string name="no_marked_file_delete">No files marked for deletion</string>
-    <string name="no_marked_file_send">No marked files for sending</string>
-    <string name="no_marked_file_unpin">No marked files for unpin</string>
     <string name="gateway">Gateway</string>
     <string name="swarm">Swarm</string>
     <string name="file_not_found">File could not be downloaded</string>
@@ -49,14 +43,10 @@
     <string name="download_failed">Download failed for \"%1$s\"</string>
     <string name="added_pid_to_peers">Added \"%1$s\" to your peers</string>
     <string name="search">Search</string>
-    <string name="pin">Pin</string>
-    <string name="unpin">Unpin</string>
     <string name="view">View</string>
     <string name="copy_to">Copy to…</string>
     <string name="content_already_exists">Content exists already with CID \"%1$s\"</string>
-    <string name="pins">Pins</string>
-    <string name="added_thread_to_pins">Added \"%1$s\" to Pins</string>
-    <string name="removed_thread_from_pins">Removed \"%1$s\" from Pins</string>
+
     <string name="identification">Peer ID</string>
     <string name="account_address">Account - Peer ID</string>
     <string name="user_account_address_message">You can share your account Peer ID with others. So they can contact you, by simply scanning the QR code.</string>
@@ -113,11 +103,10 @@
     <string name="homepage">Homepage</string>
 
 
-    <string name="publish_pins">Publish Pins</string>
+    <string name="publish_content">Publish content …</string>
     <string name="uploading">Uploading…</string>
     <string name="server_mode">Server Mode</string>
 
-    <string name="added_files_to_pins">Added files to Pins</string>
     <string name="browser">Browser</string>
     <string name="download_title">Download File</string>
     <string name="bookmarks">Bookmarks</string>

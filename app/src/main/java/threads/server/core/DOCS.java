@@ -172,13 +172,7 @@ public class DOCS {
             }
         }
 
-        boolean pinned = false;
-        for (long idx : idxs) {
-            pinned = threads.isThreadPinned(idx);
-            if (pinned) {
-                break;
-            }
-        }
+
         threads.setThreadsDeleting(idxs);
         for (long idx : idxs) {
             try {
@@ -191,9 +185,7 @@ public class DOCS {
             deleteThread(idx);
         }
         try {
-            if (pinned) {
-                updatePinsPage();
-            }
+            updatePage();
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -352,15 +344,16 @@ public class DOCS {
         }
     }
 
+    /*
     public void addPagePins(long... idxs) {
         threads.addPins(idxs);
-        updatePinsPage();
+        updatePage();
     }
 
     public void removePagePins(long... idxs) {
         threads.removePins(idxs);
-        updatePinsPage();
-    }
+        updatePage();
+    }*/
 
     private void removeFromParentDocument(long idx) {
 
@@ -489,9 +482,7 @@ public class DOCS {
         if (!Objects.equals(oldName, displayName)) {
             threads.setThreadName(idx, displayName);
 
-            if (threads.isThreadPinned(idx)) {
-                updatePinsPage();
-            }
+            updatePage();
 
             updateParentDocument(idx, oldName);
         }
@@ -511,7 +502,7 @@ public class DOCS {
                 page.setContent(dir);
                 pages.storePage(page);
             } else {
-                updatePinsPage();
+                updatePage();
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -526,7 +517,7 @@ public class DOCS {
         return pages.isPageOutdated(getHost());
     }
 
-    private void updatePinsPage() {
+    private void updatePage() {
         try {
 
             Page page = getPinsPage();

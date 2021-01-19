@@ -58,6 +58,7 @@ public class Thread {
     @Nullable
     @ColumnInfo(name = "work")
     private String work;
+    @Deprecated
     @ColumnInfo(name = "pinned")
     private boolean pinned; // checked
     @Deprecated
@@ -179,11 +180,11 @@ public class Thread {
         this.publishing = publishing;
     }
 
-    public boolean isPinned() {
+    boolean isPinned() {
         return pinned;
     }
 
-    public void setPinned(boolean pinned) {
+    void setPinned(boolean pinned) {
         this.pinned = pinned;
     }
 

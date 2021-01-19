@@ -42,8 +42,7 @@ public class PinsDiffCallback extends DiffUtil.Callback {
     private boolean sameContent(@NonNull Thread t, @NonNull Thread o) {
 
         if (t == o) return true;
-        return t.isPinned() == o.isPinned() &&
-                t.isDeleting() == o.isDeleting() &&
+        return t.isDeleting() == o.isDeleting() &&
                 Objects.equals(t.getName(), o.getName()) &&
                 Objects.equals(t.getParent(), o.getParent()) &&
                 Objects.equals(t.getLastModified(), o.getLastModified());

@@ -17,12 +17,6 @@
         android:title="@string/browser"
         app:iconTint="@color/colorAccent" />
     <item
-        android:id="@+id/navigation_pins"
-        android:icon="@drawable/selector_pins"
-        android:title="@string/pins"
-        app:iconTint="@color/colorAccent" />
-
-    <item
         android:id="@+id/navigation_settings"
         android:icon="@drawable/tune"
         android:title="@string/settings"

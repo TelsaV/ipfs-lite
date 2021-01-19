@@ -10,17 +10,12 @@
         android:title="@string/share" />
 
     <item
+        android:id="@+id/popup_view"
+        android:title="@string/view" />
+
+    <item
         android:id="@+id/popup_copy_to"
         android:title="@string/copy_to" />
-
-
-    <item
-        android:id="@+id/popup_pin"
-        android:title="@string/pin" />
-
-    <item
-        android:id="@+id/popup_unpin"
-        android:title="@string/unpin" />
 
 
     <item

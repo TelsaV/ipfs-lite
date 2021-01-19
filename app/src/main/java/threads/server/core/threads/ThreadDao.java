@@ -22,12 +22,6 @@ public interface ThreadDao {
     @Query("UPDATE Thread SET error = 1 WHERE idx = :idx")
     void setError(long idx);
 
-    @Query("SELECT * FROM Thread WHERE pinned = 1 AND location =:location AND deleting = 0")
-    LiveData<List<Thread>> getLiveDataPinnedThreads(int location);
-
-    @Query("SELECT * FROM Thread WHERE pinned = :pinned  AND location =:location")
-    List<Thread> getThreadsByPinned(int location, boolean pinned);
-
     @Query("SELECT content FROM Thread WHERE idx = :idx")
     @TypeConverters({Converter.class})
     CID getContent(long idx);
@@ -46,12 +40,6 @@ public interface ThreadDao {
 
     @Query("UPDATE Thread SET deleting = 0 WHERE idx = :idx")
     void resetDeleting(long idx);
-
-    @Query("UPDATE Thread SET pinned = 0  WHERE idx = :idx")
-    void removePin(long idx);
-
-    @Query("UPDATE Thread SET pinned = 1  WHERE idx = :idx")
-    void addPin(long idx);
 
     @Query("SELECT * FROM Thread WHERE content = :cid AND parent = :parent AND location =:location")
     @TypeConverters({Converter.class})
@@ -145,9 +133,6 @@ public interface ThreadDao {
 
     @Query("SELECT position FROM Thread WHERE idx = :idx")
     long getPosition(long idx);
-
-    @Query("SELECT pinned FROM Thread WHERE idx =:idx")
-    boolean isPinned(long idx);
 
     @Query("UPDATE Thread SET uri =:uri WHERE idx = :idx")
     void setUri(long idx, String uri);

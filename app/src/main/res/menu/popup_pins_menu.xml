@@ -9,11 +9,6 @@
         android:id="@+id/popup_view"
         android:title="@string/view" />
 
-
-    <item
-        android:id="@+id/popup_unpin"
-        android:title="@string/unpin" />
-
     <item
         android:id="@+id/popup_rename"
         android:title="@string/action_rename" />

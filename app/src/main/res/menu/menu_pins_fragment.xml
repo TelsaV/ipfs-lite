@@ -3,13 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
-    <item
-        android:id="@+id/action_view"
-        android:icon="@drawable/view"
-        android:orderInCategory="15"
-        android:title="@string/view"
-        app:iconTint="?android:textColorSecondary"
-        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_share"
