@@ -138,4 +138,5 @@
     <string name="leeching">Leeching</string>
     <string name="reachable">Reachable</string>
     <string name="service_is_running">Service is running…</string>
+    <string name="edit_text">Edit text …</string>
 </resources>

@@ -137,5 +137,6 @@
     <string name="leeching">Leeching</string>
     <string name="reachable">Reachable</string>
     <string name="service_is_running">Service läuft…</string>
+    <string name="edit_text">Text editieren …</string>
 
 </resources>

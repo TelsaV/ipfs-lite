@@ -138,5 +138,6 @@
     <string name="leeching">浸出</string>
     <string name="reachable">可达的</string>
     <string name="service_is_running">服务正在运行</string>
+    <string name="edit_text">Edit text …</string>
 
 </resources>
