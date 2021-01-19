@@ -181,7 +181,7 @@ public class PageWorker extends Worker {
                     if (linkInfo.isFile() || linkInfo.isDirectory()) {
                         LogUtils.error(TAG, "publishContent " + linkInfo.getName());
                         Executors.newSingleThreadExecutor().execute(() ->
-                                publishContent(linkInfo.getCid()));
+                                publishContent(linkInfo.getContent()));
                     }
                 }
             }

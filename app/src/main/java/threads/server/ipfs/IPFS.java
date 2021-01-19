@@ -172,6 +172,27 @@ public class IPFS implements Listener {
         return nread;
     }
 
+    public static void copy(@NonNull InputStream source, @NonNull OutputStream sink, @NonNull ReaderProgress progress) throws IOException {
+        long nread = 0L;
+        byte[] buf = new byte[4096];
+        int remember = 0;
+        int n;
+        while ((n = source.read(buf)) > 0) {
+            sink.write(buf, 0, n);
+            nread += n;
+
+            if (progress.doProgress()) {
+                if (progress.getSize() > 0) {
+                    int percent = (int) ((nread * 100.0f) / progress.getSize());
+                    if (remember < percent) {
+                        remember = percent;
+                        progress.setProgress(percent);
+                    }
+                }
+            }
+        }
+    }
+
     @Nullable
     public static File getExternalStorageDirectory(@NonNull Context context) {
 
@@ -950,7 +971,7 @@ public class IPFS implements Listener {
         for (String name : path) {
             linkInfo = getLinkInfo(root, name, closeable);
             if (linkInfo != null) {
-                root = linkInfo.getCid();
+                root = linkInfo.getContent();
             } else {
                 break;
             }
@@ -1148,7 +1169,7 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    private InputStream getLoaderStream(@NonNull CID cid, @NonNull Progress progress) throws Exception {
+    public InputStream getLoaderStream(@NonNull CID cid, @NonNull Progress progress) throws Exception {
 
         Loader loader = getLoader(cid, progress);
 

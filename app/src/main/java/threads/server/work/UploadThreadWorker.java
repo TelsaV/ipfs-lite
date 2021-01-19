@@ -685,7 +685,7 @@ public class UploadThreadWorker extends Worker {
 
         for (LinkInfo link : links) {
 
-            CID cid = link.getCid();
+            CID cid = link.getContent();
             Thread entry = getFolderThread(parent, cid);
             if (entry != null) {
                 if (!entry.isSeeding()) {

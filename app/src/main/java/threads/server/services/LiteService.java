@@ -12,13 +12,10 @@ import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RawRes;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +28,7 @@ import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.R;
 import threads.server.core.events.EVENTS;
+import threads.server.core.peers.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
@@ -48,7 +46,153 @@ public class LiteService {
     private static final String APP_KEY = "AppKey";
     private static final String GATEWAY_KEY = "gatewayKey";
     private static final String PIN_SERVICE_TIME_KEY = "pinServiceTimeKey";
+    private static final String CONTENT_KEY = "contentKey";
 
+
+    @NonNull
+    public static FileInfo getFileInfo(@NonNull Context context) {
+
+        Objects.requireNonNull(context);
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                APP_KEY, Context.MODE_PRIVATE);
+        String filename = sharedPref.getString(Content.INFO + Content.NAME, null);
+        Objects.requireNonNull(filename);
+        String mimeType = sharedPref.getString(Content.INFO + Content.TYPE, null);
+        Objects.requireNonNull(mimeType);
+        String uri = sharedPref.getString(Content.INFO + Content.URI, null);
+        Objects.requireNonNull(uri);
+        long size = sharedPref.getLong(Content.INFO + Content.SIZE, 0L);
+
+        return new FileInfo(Uri.parse(uri), filename, mimeType, size);
+    }
+
+    public static void setFileInfo(@NonNull Context context, @NonNull Uri uri,
+                                   @NonNull String filename, @NonNull String mimeType,
+                                   long size) {
+
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(uri);
+        Objects.requireNonNull(filename);
+        Objects.requireNonNull(mimeType);
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                APP_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+
+        editor.putString(Content.INFO + Content.NAME, filename);
+        editor.putString(Content.INFO + Content.TYPE, mimeType);
+        editor.putLong(Content.INFO + Content.SIZE, size);
+        editor.putString(Content.INFO + Content.URI, uri.toString());
+        editor.apply();
+    }
+
+    @Nullable
+    private static String getHost(@NonNull Uri uri) {
+        try {
+            if (Objects.equals(uri.getScheme(), Content.IPNS)) {
+                return uri.getHost();
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+        return null;
+    }
+
+    public static void connectUri(@NonNull Context context, @NonNull Uri uri) {
+
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.submit(() -> {
+            try {
+
+                String host = getHost(uri);
+                if (host != null) {
+                    IPFS ipfs = IPFS.getInstance(context);
+
+                    if (!ipfs.isConnected(host)) {
+                        ipfs.swarmConnect("/p2p/" + host, 10);
+                    }
+                }
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+        });
+
+
+    }
+
+    @NonNull
+    public static String getFileName(@NonNull Uri uri) {
+
+        List<String> paths = uri.getPathSegments();
+        if (!paths.isEmpty()) {
+            return paths.get(paths.size() - 1);
+        } else {
+            return "" + uri.getHost();
+        }
+
+    }
+
+    @Nullable
+    public static Uri getContentUri(@NonNull Context context) {
+        Objects.requireNonNull(context);
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                APP_KEY, Context.MODE_PRIVATE);
+        String content = sharedPref.getString(CONTENT_KEY, null);
+        if (content != null) {
+            return Uri.parse(content);
+        }
+        return null;
+    }
+
+    public static void setContentUri(@NonNull Context context, @NonNull Uri contentUri) {
+        Objects.requireNonNull(context);
+        Objects.requireNonNull(contentUri);
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                APP_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(CONTENT_KEY, contentUri.toString());
+        editor.apply();
+
+    }
+
+    public static class FileInfo {
+        @NonNull
+        private final Uri uri;
+        @NonNull
+        private final String filename;
+        @NonNull
+        private final String mimeType;
+
+        private final long size;
+
+        public FileInfo(@NonNull Uri uri, @NonNull String filename,
+                        @NonNull String mimeType, long size) {
+            this.uri = uri;
+            this.filename = filename;
+            this.mimeType = mimeType;
+            this.size = size;
+        }
+
+        @NonNull
+        public Uri getUri() {
+            return uri;
+        }
+
+        @NonNull
+        public String getFilename() {
+            return filename;
+        }
+
+        @NonNull
+        public String getMimeType() {
+            return mimeType;
+        }
+
+
+        public long getSize() {
+            return size;
+        }
+    }
 
     @NonNull
     public static String getGateway(@NonNull Context context) {

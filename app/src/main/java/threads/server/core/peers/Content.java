@@ -27,4 +27,8 @@ public class Content extends Hashtable<String, String> {
     public static final String REFRESH = "refresh";
     public static final String POS = "pos";
     public static final String SEQ = "seq";
+    public static final String INFO = "info";
+    public static final String SIZE = "size";
+    public static final String TYPE = "type";
+    public static final String FILE = "file";
 }

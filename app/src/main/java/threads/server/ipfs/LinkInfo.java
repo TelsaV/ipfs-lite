@@ -32,7 +32,7 @@ public class LinkInfo {
     }
 
     @NonNull
-    public CID getCid() {
+    public CID getContent() {
         return CID.create(hash);
     }
 

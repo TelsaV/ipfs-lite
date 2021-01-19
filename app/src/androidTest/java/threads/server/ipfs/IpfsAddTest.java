@@ -111,7 +111,7 @@ public class IpfsAddTest {
         LinkInfo link = links.get(0);
         assertTrue(link.isFile());
         assertEquals(link.getSize(), size);
-        CID content = link.getCid();
+        CID content = link.getContent();
 
         ciddir = ipfs.addLinkToDir(ciddir, link.getName(), content);
         assertNotNull(ciddir);
@@ -166,7 +166,7 @@ public class IpfsAddTest {
         List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 4);
-        assertNotEquals(links.get(0).getCid(), hash58Base);
+        assertNotEquals(links.get(0).getContent(), hash58Base);
 
         byte[] bytes = ipfs.getData(hash58Base);
         assertNotNull(bytes);

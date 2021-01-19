@@ -811,25 +811,25 @@ public class DOCS {
             }
             Objects.requireNonNull(linkInfo);
 
-            if (ipfs.isEmptyDir(linkInfo.getCid())) {
-                List<LinkInfo> links = ipfs.getLinks(linkInfo.getCid(), closeable);
+            if (ipfs.isEmptyDir(linkInfo.getContent())) {
+                List<LinkInfo> links = ipfs.getLinks(linkInfo.getContent(), closeable);
                 String answer = generateDirectoryHtml(uri, root, paths, links);
 
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE,
                         "UTF-8", new ByteArrayInputStream(answer.getBytes()));
             } else if (linkInfo.isDirectory()) {
-                List<LinkInfo> links = ipfs.getLinks(linkInfo.getCid(), closeable);
+                List<LinkInfo> links = ipfs.getLinks(linkInfo.getContent(), closeable);
                 String answer = generateDirectoryHtml(uri, root, paths, links);
 
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE,
                         "UTF-8", new ByteArrayInputStream(answer.getBytes()));
 
             } else {
-                String mimeType = getMimeType(uri, linkInfo.getCid(), closeable);
+                String mimeType = getMimeType(uri, linkInfo.getContent(), closeable);
                 if (closeable.isClosed()) {
                     throw new TimeoutException(uri.toString());
                 }
-                return getContentResponse(uri, linkInfo.getCid(), mimeType,
+                return getContentResponse(uri, linkInfo.getContent(), mimeType,
                         linkInfo.getSize(), closeable);
             }
 
@@ -963,13 +963,13 @@ public class DOCS {
             String filename = linkInfo.getName();
             if (linkInfo.isDirectory()) {
                 return new FileInfo(filename, MimeType.DIR_MIME_TYPE,
-                        linkInfo.getCid(), linkInfo.getSize());
+                        linkInfo.getContent(), linkInfo.getSize());
             } else {
 
-                String mimeType = getMimeType(uri, linkInfo.getCid(), closeable);
+                String mimeType = getMimeType(uri, linkInfo.getContent(), closeable);
 
                 return new FileInfo(filename, mimeType,
-                        linkInfo.getCid(), linkInfo.getSize());
+                        linkInfo.getContent(), linkInfo.getSize());
             }
 
         } else {

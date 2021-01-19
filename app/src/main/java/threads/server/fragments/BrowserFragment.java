@@ -1,5 +1,6 @@
 package threads.server.fragments;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +28,8 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -39,7 +42,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import threads.LogUtils;
@@ -53,20 +55,21 @@ import threads.server.core.events.EventViewModel;
 import threads.server.core.page.Bookmark;
 import threads.server.core.page.PAGES;
 import threads.server.core.peers.Content;
-import threads.server.core.threads.THREADS;
+import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;
 import threads.server.utils.MimeType;
 import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearCacheWorker;
-import threads.server.work.UploadThreadWorker;
+import threads.server.work.DownloadContentWorker;
+import threads.server.work.DownloadFileWorker;
 
 public class BrowserFragment extends Fragment implements
         SwipeRefreshLayout.OnRefreshListener {
 
 
     private static final String TAG = BrowserFragment.class.getSimpleName();
-
+    private static final String DOWNLOADS = "content://com.android.externalstorage.documents/document/primary:Download";
     private static final long CLICK_OFFSET = 500;
     private Context mContext;
     private WebView mWebView;
@@ -77,6 +80,57 @@ public class BrowserFragment extends Fragment implements
     private long mLastClickTime = 0;
     private MenuItem mActionBookmark;
     private CustomWebChromeClient mCustomWebChromeClient;
+
+    private final ActivityResultLauncher<Intent> mFileForResult = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    try {
+                        Objects.requireNonNull(data);
+
+                        Uri uri = data.getData();
+                        Objects.requireNonNull(uri);
+                        if (!FileDocumentsProvider.hasWritePermission(mContext, uri)) {
+                            EVENTS.getInstance(mContext).error(
+                                    getString(R.string.file_has_no_write_permission));
+                            return;
+                        }
+                        LiteService.FileInfo fileInfo = LiteService.getFileInfo(mContext);
+                        Objects.requireNonNull(fileInfo);
+                        DownloadFileWorker.download(mContext, uri, fileInfo.getUri(),
+                                fileInfo.getFilename(), fileInfo.getMimeType(), fileInfo.getSize());
+
+
+                    } catch (Throwable e) {
+                        LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+                    }
+                }
+            });
+
+    private final ActivityResultLauncher<Intent> mContentForResult = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    try {
+                        Objects.requireNonNull(data);
+                        Uri uri = data.getData();
+                        Objects.requireNonNull(uri);
+                        if (!FileDocumentsProvider.hasWritePermission(mContext, uri)) {
+                            EVENTS.getInstance(mContext).error(
+                                    getString(R.string.file_has_no_write_permission));
+                            return;
+                        }
+                        Uri contentUri = LiteService.getContentUri(mContext);
+                        Objects.requireNonNull(contentUri);
+                        DownloadContentWorker.download(mContext, uri, contentUri);
+
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    }
+                }
+            });
 
     @Override
     public void onDetach() {
@@ -125,8 +179,6 @@ public class BrowserFragment extends Fragment implements
 
 
     private void loadUrl(@NonNull String uri) {
-        DOCS docs = DOCS.getInstance(mContext);
-
 
         mSwipeRefreshLayout.setDistanceToTriggerSync(999999);
         preload(Uri.parse(uri));
@@ -383,13 +435,14 @@ public class BrowserFragment extends Fragment implements
 
             try {
                 LogUtils.error(TAG, "downloadUrl : " + url);
-                String filename = URLUtil.guessFileName(url, contentDisposition, mimeType);
+
                 Uri uri = Uri.parse(url);
                 if (Objects.equals(uri.getScheme(), Content.IPFS) ||
                         Objects.equals(uri.getScheme(), Content.IPNS)) {
-                    downloader(uri, filename, mimeType, contentLength);
+                    contentDownloader(uri);
                 } else {
-                    downloader(uri, filename, mimeType, contentLength);
+                    String filename = URLUtil.guessFileName(url, contentDisposition, mimeType);
+                    fileDownloader(uri, filename, mimeType, contentLength);
                 }
 
 
@@ -478,20 +531,9 @@ public class BrowserFragment extends Fragment implements
 
                         String res = uri.getQueryParameter("download");
                         if (Objects.equals(res, "1")) {
-                            final AtomicLong time = new AtomicLong(System.currentTimeMillis());
-
-                            long timeout = InitApplication.getConnectionTimeout(mContext) * 1000;
-                            DOCS.FileInfo fileInfo = docs.getFileInfo(uri, () -> {
-                                boolean abort = Thread.currentThread().isInterrupted();
-                                boolean hasTimeout = (System.currentTimeMillis() - time.get() > timeout);
-                                return abort || hasTimeout;
-                            });
-                            Objects.requireNonNull(fileInfo);
-                            downloader(uri, fileInfo.getFilename(), fileInfo.getMimeType(),
-                                    fileInfo.getSize());
+                            contentDownloader(uri);
                             return true;
                         }
-
                         return false;
 
                     } else if (Objects.equals(uri.getScheme(), Content.MAGNET)) {
@@ -612,21 +654,50 @@ public class BrowserFragment extends Fragment implements
     }
 
 
-    private void downloader(@NonNull Uri uri, @NonNull String filename, @NonNull String mimeType,
-                            long size) {
-        final DOCS docs = DOCS.getInstance(mContext);
-        final THREADS threads = THREADS.getInstance(mContext);
+    private void fileDownloader(@NonNull Uri uri, @NonNull String filename, @NonNull String mimeType,
+                                long size) {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.download_title);
         builder.setMessage(filename);
 
         builder.setPositiveButton(getString(android.R.string.yes), (dialog, which) -> {
 
-            long idx = docs.createDocument(0L, mimeType, null, uri,
-                    filename, size, false, true);
 
-            UUID work = UploadThreadWorker.load(mContext, idx, false);
-            threads.setThreadWork(idx, work);
+            LiteService.setFileInfo(mContext, uri, filename, mimeType, size);
+
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(DOWNLOADS));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            mFileForResult.launch(intent);
+
+            EVENTS.getInstance(mContext).warning(filename);
+
+        });
+        builder.setNeutralButton(getString(android.R.string.cancel),
+                (dialog, which) -> dialog.cancel());
+        builder.show();
+        EVENTS.getInstance(mContext).progress(0);
+    }
+
+
+    private void contentDownloader(@NonNull Uri uri) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+        builder.setTitle(R.string.download_title);
+        String filename = LiteService.getFileName(uri);
+        builder.setMessage(filename);
+
+        builder.setPositiveButton(getString(android.R.string.yes), (dialog, which) -> {
+
+            LiteService.setContentUri(mContext, uri);
+
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+            intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(DOWNLOADS));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            mContentForResult.launch(intent);
 
             EVENTS.getInstance(mContext).warning(filename);
 
