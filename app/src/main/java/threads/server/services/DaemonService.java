@@ -44,7 +44,7 @@ public class DaemonService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             try {
-                SwarmConnectWorker.connect(getApplicationContext());
+                SwarmConnectWorker.dialing(getApplicationContext());
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }

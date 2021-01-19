@@ -18,6 +18,7 @@ public class User {
     @NonNull
     @ColumnInfo(name = "alias")
     private final String alias;
+    @Deprecated
     @Nullable
     @ColumnInfo(name = "publicKey")
     private String publicKey;
@@ -26,6 +27,7 @@ public class User {
     @Deprecated
     @ColumnInfo(name = "blocked")
     private boolean blocked;
+    @Deprecated
     @ColumnInfo(name = "dialing")
     private boolean dialing;
     @ColumnInfo(name = "lite")
@@ -40,6 +42,7 @@ public class User {
     @Nullable
     @ColumnInfo(name = "agent")
     private String agent;
+    @Deprecated
     @Nullable
     @ColumnInfo(name = "work")
     private String work;
@@ -105,11 +108,11 @@ public class User {
     }
 
     @Nullable
-    public String getWork() {
+    String getWork() {
         return work;
     }
 
-    public void setWork(@Nullable String work) {
+    void setWork(@Nullable String work) {
         this.work = work;
     }
 
@@ -138,7 +141,7 @@ public class User {
         this.connected = connected;
     }
 
-    public boolean isDialing() {
+    boolean isDialing() {
         return dialing;
     }
 
@@ -167,12 +170,12 @@ public class User {
 
 
     @Nullable
-    public String getPublicKey() {
+    String getPublicKey() {
         return publicKey;
     }
 
 
-    public void setPublicKey(@Nullable String publicKey) {
+    void setPublicKey(@Nullable String publicKey) {
         this.publicKey = publicKey;
     }
 
@@ -199,11 +202,8 @@ public class User {
 
         if (this == user) return true;
         return Objects.equals(connected, user.isConnected()) &&
-                Objects.equals(dialing, user.isDialing()) &&
                 Objects.equals(alias, user.getAlias()) &&
-                Objects.equals(lite, user.isLite()) &&
-                Objects.equals(blocked, user.isBlocked()) &&
-                Objects.equals(publicKey, user.getPublicKey());
+                Objects.equals(lite, user.isLite());
     }
 
     @Nullable

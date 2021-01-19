@@ -322,12 +322,7 @@ public class LiteService {
 
 
                 OneTimeWorkRequest work = UserConnectWorker.getWork(user);
-
                 WorkManager.getInstance(context).enqueue(work);
-
-                peers.setUserDialing(user);
-                peers.setUserWork(user, work.getId());
-
 
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);

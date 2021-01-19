@@ -38,7 +38,7 @@ public class SwarmConnectWorker extends Worker {
 
     }
 
-    public static void connect(@NonNull Context context) {
+    public static void dialing(@NonNull Context context) {
         WorkManager.getInstance(context).enqueueUniqueWork(
                 TAG, ExistingWorkPolicy.KEEP, getWork());
 

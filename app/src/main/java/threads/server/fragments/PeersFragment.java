@@ -29,13 +29,9 @@ import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,7 +52,7 @@ import threads.server.utils.MimeType;
 import threads.server.utils.UserItemDetailsLookup;
 import threads.server.utils.UsersItemKeyProvider;
 import threads.server.utils.UsersViewAdapter;
-import threads.server.work.UserConnectWorker;
+import threads.server.work.SwarmConnectWorker;
 
 public class PeersFragment extends Fragment implements
         SwipeRefreshLayout.OnRefreshListener, UsersViewAdapter.UsersViewAdapterListener {
@@ -336,28 +332,7 @@ public class PeersFragment extends Fragment implements
                     mUsersViewAdapter.selectAllUsers();
 
                     return true;
-                } else if (itemId == R.id.action_mode_connect) {
-
-                    if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                        return true;
-                    }
-                    mLastClickTime = SystemClock.elapsedRealtime();
-
-                    try {
-                        Selection<String> entries = mSelectionTracker.getSelection();
-                        String[] pids = new String[entries.size()];
-                        int i = 0;
-                        for (String pid : entries) {
-                            pids[i] = pid;
-                            i++;
-                        }
-                        connectUsers(pids);
-                        mSelectionTracker.clearSelection();
-
-                    } catch (Throwable e) {
-                        LogUtils.error(TAG, e);
-                    }
-                } else if (itemId == R.id.action_mode_delete) {
+                }  else if (itemId == R.id.action_mode_delete) {
 
                     if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
                         return true;
@@ -417,11 +392,8 @@ public class PeersFragment extends Fragment implements
         }
         mLastClickTime = SystemClock.elapsedRealtime();
         try {
-
-            boolean isConnected = user.isConnected();
             PopupMenu menu = new PopupMenu(mContext, view);
             menu.inflate(R.menu.popup_peers_menu);
-            menu.getMenu().findItem(R.id.popup_connect).setVisible(!isConnected);
             menu.getMenu().findItem(R.id.popup_share).setVisible(true);
             menu.getMenu().findItem(R.id.popup_view).setVisible(user.isLite());
             menu.setOnMenuItemClickListener((item) -> {
@@ -434,10 +406,7 @@ public class PeersFragment extends Fragment implements
                 mLastClickTime = SystemClock.elapsedRealtime();
 
 
-                if (item.getItemId() == R.id.popup_connect) {
-                    connectUser(user);
-                    return true;
-                } else if (item.getItemId() == R.id.popup_delete) {
+                if (item.getItemId() == R.id.popup_delete) {
                     clickUserDelete(user.getPid());
                     return true;
                 } else if (item.getItemId() == R.id.popup_info) {
@@ -475,24 +444,6 @@ public class PeersFragment extends Fragment implements
         }
     }
 
-    @Override
-    public void invokeAbortDialing(@NonNull User user) {
-
-        if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
-            return;
-        }
-        mLastClickTime = SystemClock.elapsedRealtime();
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() ->
-                PEERS.getInstance(mContext).resetUserDialing(user.getPid())
-        );
-        UUID uuid = user.getWorkUUID();
-        if (uuid != null) {
-            WorkManager.getInstance(mContext).cancelWorkById(uuid);
-        }
-
-    }
 
     @Override
     public void onClick(@NonNull User user) {
@@ -524,26 +475,9 @@ public class PeersFragment extends Fragment implements
         mSwipeRefreshLayout.setRefreshing(true);
 
         try {
+            SwarmConnectWorker.dialing(mContext);
 
-
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                PEERS peers = PEERS.getInstance(mContext);
-                List<User> users = peers.getUsers();
-                List<OneTimeWorkRequest> works = new ArrayList<>();
-                for (User user : users) {
-
-                    peers.setUserDialing(user.getPid());
-
-                    OneTimeWorkRequest work = UserConnectWorker.getWork(user.getPid());
-                    peers.setUserWork(user.getPid(), work.getId());
-                    works.add(work);
-
-                }
-                WorkManager.getInstance(mContext).enqueue(works);
-            });
-
-
+            EVENTS.getInstance(mContext).warning(getString(R.string.connecting));
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         } finally {
@@ -604,44 +538,7 @@ public class PeersFragment extends Fragment implements
         }
     }
 
-    private void connectUsers(@NonNull String... pids) {
 
-        PEERS peers = PEERS.getInstance(mContext);
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            List<OneTimeWorkRequest> works = new ArrayList<>();
-
-            for (String pid : pids) {
-
-
-                OneTimeWorkRequest work = UserConnectWorker.getWork(pid);
-
-                peers.setUserDialing(pid);
-                peers.setUserWork(pid, work.getId());
-
-
-                works.add(work);
-
-
-            }
-
-            WorkManager.getInstance(mContext).enqueue(works);
-        });
-    }
-
-    private void connectUser(@NonNull User user) {
-
-        OneTimeWorkRequest work = UserConnectWorker.getWork(user.getPid());
-        WorkManager.getInstance(mContext).enqueue(work);
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            PEERS peers = PEERS.getInstance(mContext);
-            peers.setUserDialing(user.getPid());
-            peers.setUserWork(user.getPid(), work.getId());
-        });
-
-    }
 
     private void clickUserRename(@NonNull String pid) {
 

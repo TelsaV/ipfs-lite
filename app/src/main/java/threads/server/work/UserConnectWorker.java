@@ -66,7 +66,6 @@ public class UserConnectWorker extends Worker {
 
             connect(pid);
 
-            peers.resetUserDialing(pid);
 
             if (!isStopped()) {
                 PeerInfo pInfo = ipfs.pidInfo(pid);
@@ -112,7 +111,6 @@ public class UserConnectWorker extends Worker {
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         } finally {
-            peers.resetUserWork(pid);
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
 

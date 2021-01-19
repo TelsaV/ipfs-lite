@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.Window;
-import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
@@ -15,8 +14,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.List;
@@ -59,7 +56,7 @@ public class SwarmDialogFragment extends BottomSheetDialogFragment implements
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        BottomSheetDialog dialog = (BottomSheetDialog) super.onCreateDialog(savedInstanceState);
+        Dialog dialog = new Dialog(mContext, R.style.ThreadsThemeDialog);
         dialog.setContentView(R.layout.swarm_view);
 
 
@@ -76,17 +73,6 @@ public class SwarmDialogFragment extends BottomSheetDialogFragment implements
             dismiss();
         });
 
-        dialog.setOnShowListener(dialog1 -> {
-            BottomSheetDialog d = (BottomSheetDialog) dialog1;
-
-            FrameLayout bottomSheet = d.findViewById(
-                    com.google.android.material.R.id.design_bottom_sheet);
-            if (bottomSheet != null) {
-                BottomSheetBehavior<View> behavior = BottomSheetBehavior.from(bottomSheet);
-                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-            }
-
-        });
 
         RecyclerView mRecyclerView = dialog.findViewById(R.id.recycler_peers);
         Objects.requireNonNull(mRecyclerView);
@@ -109,7 +95,7 @@ public class SwarmDialogFragment extends BottomSheetDialogFragment implements
 
         Window window = dialog.getWindow();
         if (window != null) {
-            window.getAttributes().windowAnimations = R.style.DialogAnimationFullscreen;
+            window.getAttributes().windowAnimations = R.style.DialogAnimation;
         }
         return dialog;
     }

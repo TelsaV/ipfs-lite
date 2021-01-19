@@ -131,23 +131,7 @@ public class PEERS {
         return getUsersDatabase().userDao().getSwarm();
     }
 
-    public void setUserWork(@NonNull String pid, @NonNull UUID id) {
-        getUsersDatabase().userDao().setWork(pid, id.toString());
-    }
 
-    public void resetUserWork(@NonNull String pid) {
-        getUsersDatabase().userDao().resetWork(pid);
-    }
-
-    public void setUserDialing(@NonNull String pid) {
-
-        getUsersDatabase().userDao().setDialing(pid, true);
-    }
-
-    public void resetUserDialing(@NonNull String pid) {
-
-        getUsersDatabase().userDao().setDialing(pid, false);
-    }
 
     public boolean isUserConnected(@NonNull String pid) {
 

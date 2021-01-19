@@ -45,14 +45,10 @@ public interface UserDao {
     @Query("UPDATE User SET work = null WHERE pid = :pid")
     void resetWork(String pid);
 
-
-    @Query("UPDATE User SET dialing = :dialing WHERE pid = :pid")
-    void setDialing(String pid, boolean dialing);
-
     @Query("SELECT COUNT(*) FROM User WHERE pid = :pid")
     long hasUser(String pid);
 
-    @Query("UPDATE User SET connected = 1, dialing = 0, timestamp = :timestamp WHERE pid = :pid")
+    @Query("UPDATE User SET connected = 1, timestamp = :timestamp WHERE pid = :pid")
     void setConnected(String pid, long timestamp);
 
     @Query("UPDATE User SET connected = 0 WHERE pid = :pid")

@@ -109,19 +109,13 @@ public class UsersViewAdapter extends
                         userViewHolder.user_action.setImageResource(R.drawable.checkbox_blank_circle_outline);
                     }
                 } else {
-                    if (user.isDialing()) {
-                        userViewHolder.user_action.setImageResource(R.drawable.pause);
-                        userViewHolder.user_action.setVisibility(View.VISIBLE);
-                        userViewHolder.user_action.setOnClickListener((v) ->
-                                mListener.invokeAbortDialing(user)
-                        );
-                    } else {
+
                         userViewHolder.user_action.setImageResource(R.drawable.dots);
                         userViewHolder.user_action.setVisibility(View.VISIBLE);
                         userViewHolder.user_action.setOnClickListener((v) ->
                                 mListener.invokeAction(user, v)
                         );
-                    }
+
                 }
 
 
@@ -252,7 +246,6 @@ public class UsersViewAdapter extends
 
         void invokeAction(@NonNull User user, @NonNull View view);
 
-        void invokeAbortDialing(@NonNull User user);
 
         void onClick(@NonNull User user);
     }
