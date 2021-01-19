@@ -842,8 +842,6 @@ public class ThreadsFragment extends Fragment implements
         mThreadItemDetailsLookup = new ThreadItemDetailsLookup(mRecyclerView);
 
 
-
-
         mSwipeRefreshLayout = view.findViewById(R.id.swipe_container);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent,
@@ -994,7 +992,6 @@ public class ThreadsFragment extends Fragment implements
             LogUtils.error(TAG, e);
         }
     }
-
 
 
     private long[] convert(Selection<Long> entries) {
@@ -1486,7 +1483,6 @@ public class ThreadsFragment extends Fragment implements
             LogUtils.error(TAG, e);
         }
     }
-
 
 
     private void viewGateway(@NonNull Thread thread) {

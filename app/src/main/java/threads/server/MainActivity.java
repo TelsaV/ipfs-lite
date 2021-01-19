@@ -659,7 +659,7 @@ public class MainActivity extends AppCompatActivity implements
         final String action = intent.getAction();
         try {
 
-            ShareCompat.IntentReader intentReader = new ShareCompat.IntentReader(this);
+            ShareCompat.IntentReader intentReader = ShareCompat.IntentReader.from(this);
             if (Intent.ACTION_SEND.equals(action) ||
                     Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                 handleSend(intentReader);

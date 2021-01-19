@@ -72,15 +72,6 @@ public class BrowserFragment extends Fragment implements
     private static final String DOWNLOADS = "content://com.android.externalstorage.documents/document/primary:Download";
     private static final long CLICK_OFFSET = 500;
     private Context mContext;
-    private WebView mWebView;
-    private FragmentActivity mActivity;
-    private BrowserFragment.ActionListener mListener;
-    private ProgressBar mProgressBar;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-    private long mLastClickTime = 0;
-    private MenuItem mActionBookmark;
-    private CustomWebChromeClient mCustomWebChromeClient;
-
     private final ActivityResultLauncher<Intent> mFileForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -107,7 +98,6 @@ public class BrowserFragment extends Fragment implements
                     }
                 }
             });
-
     private final ActivityResultLauncher<Intent> mContentForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -131,6 +121,14 @@ public class BrowserFragment extends Fragment implements
                     }
                 }
             });
+    private WebView mWebView;
+    private FragmentActivity mActivity;
+    private BrowserFragment.ActionListener mListener;
+    private ProgressBar mProgressBar;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private long mLastClickTime = 0;
+    private MenuItem mActionBookmark;
+    private CustomWebChromeClient mCustomWebChromeClient;
 
     @Override
     public void onDetach() {

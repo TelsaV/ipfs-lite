@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.SharedPreferences;
-
 import android.net.Uri;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
@@ -155,45 +154,6 @@ public class LiteService {
 
     }
 
-    public static class FileInfo {
-        @NonNull
-        private final Uri uri;
-        @NonNull
-        private final String filename;
-        @NonNull
-        private final String mimeType;
-
-        private final long size;
-
-        public FileInfo(@NonNull Uri uri, @NonNull String filename,
-                        @NonNull String mimeType, long size) {
-            this.uri = uri;
-            this.filename = filename;
-            this.mimeType = mimeType;
-            this.size = size;
-        }
-
-        @NonNull
-        public Uri getUri() {
-            return uri;
-        }
-
-        @NonNull
-        public String getFilename() {
-            return filename;
-        }
-
-        @NonNull
-        public String getMimeType() {
-            return mimeType;
-        }
-
-
-        public long getSize() {
-            return size;
-        }
-    }
-
     @NonNull
     public static String getGateway(@NonNull Context context) {
         Objects.requireNonNull(context);
@@ -214,7 +174,6 @@ public class LiteService {
 
     }
 
-
     public static int getPublishServiceTime(@NonNull Context context) {
         Objects.requireNonNull(context);
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
@@ -228,7 +187,6 @@ public class LiteService {
         editor.putInt(PIN_SERVICE_TIME_KEY, timeout);
         editor.apply();
     }
-
 
     public static void threads(@NonNull Context context, long... idxs) {
 
@@ -287,7 +245,6 @@ public class LiteService {
             LogUtils.error(TAG, throwable);
         }
     }
-
 
     public static void connect(@NonNull Context context, @NonNull String pid) {
 
@@ -378,7 +335,6 @@ public class LiteService {
         });
     }
 
-
     private static List<Pair<File, StorageVolume>> getExternalDirectories(@NonNull Context context) {
         List<Pair<File, StorageVolume>> externals = new ArrayList<>();
         StorageManager manager = (StorageManager)
@@ -398,7 +354,6 @@ public class LiteService {
         return externals;
     }
 
-
     public static List<StorageLocation> getStorageLocations(@NonNull Context context) {
 
         List<StorageLocation> locations = new ArrayList<>();
@@ -416,7 +371,6 @@ public class LiteService {
 
     }
 
-
     @NonNull
     public static StorageLocation getStorageLocation(@NonNull Context context) {
         File dir = IPFS.getExternalStorageDirectory(context);
@@ -433,6 +387,45 @@ public class LiteService {
         }
         return new StorageLocation(context.getString(R.string.harddisk),
                 context.getFilesDir(), 0, true);
+    }
+
+    public static class FileInfo {
+        @NonNull
+        private final Uri uri;
+        @NonNull
+        private final String filename;
+        @NonNull
+        private final String mimeType;
+
+        private final long size;
+
+        public FileInfo(@NonNull Uri uri, @NonNull String filename,
+                        @NonNull String mimeType, long size) {
+            this.uri = uri;
+            this.filename = filename;
+            this.mimeType = mimeType;
+            this.size = size;
+        }
+
+        @NonNull
+        public Uri getUri() {
+            return uri;
+        }
+
+        @NonNull
+        public String getFilename() {
+            return filename;
+        }
+
+        @NonNull
+        public String getMimeType() {
+            return mimeType;
+        }
+
+
+        public long getSize() {
+            return size;
+        }
     }
 
 
