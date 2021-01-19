@@ -102,7 +102,7 @@
     <string name="new_text_file">Neue Text Datei</string>
     <string name="homepage">Homepage</string>
 
-    <string name="publish_content">Veröffentliche Inhalt …</string>
+    <string name="publish_files">Veröffentliche Dateien …</string>
     <string name="uploading">Hochladen…</string>
     <string name="server_mode">Server Mode</string>
     <string name="browser">Browser</string>

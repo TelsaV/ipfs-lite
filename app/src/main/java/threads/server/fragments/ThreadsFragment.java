@@ -1590,7 +1590,7 @@ public class ThreadsFragment extends Fragment implements
         mSwipeRefreshLayout.setRefreshing(true);
 
         try {
-            EVENTS.getInstance(mContext).warning(getString(R.string.publish_content));
+            EVENTS.getInstance(mContext).warning(getString(R.string.publish_files));
 
             PageWorker.publish(mContext, true);
 
