@@ -65,7 +65,6 @@ import threads.server.fragments.BrowserFragment;
 import threads.server.fragments.EditContentDialogFragment;
 import threads.server.fragments.EditPeerDialogFragment;
 import threads.server.fragments.PeersFragment;
-import threads.server.fragments.PinsFragment;
 import threads.server.fragments.SettingsFragment;
 import threads.server.fragments.ThreadsFragment;
 import threads.server.ipfs.IPFS;
@@ -89,7 +88,6 @@ import threads.server.work.UploadUriWorker;
 public class MainActivity extends AppCompatActivity implements
         ThreadsFragment.ActionListener,
         BrowserFragment.ActionListener,
-        PinsFragment.ActionListener,
         PeersFragment.ActionListener,
         ActionListener {
 
@@ -661,7 +659,7 @@ public class MainActivity extends AppCompatActivity implements
         final String action = intent.getAction();
         try {
 
-            ShareCompat.IntentReader intentReader = ShareCompat.IntentReader.from(this);
+            ShareCompat.IntentReader intentReader = new ShareCompat.IntentReader(this);
             if (Intent.ACTION_SEND.equals(action) ||
                     Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                 handleSend(intentReader);

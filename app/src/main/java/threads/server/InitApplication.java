@@ -35,7 +35,6 @@ public class InitApplication extends Application {
     private static final String TIMEOUT_KEY = "timeoutKey";
     private static final String AUTO_DISCOVERY_KEY = "autoDiscoveryKey";
     private static final String SORT_KEY = "sortKey";
-    private static final String WAIT_KEY = "waitKey";
 
     public static void setAutoDiscovery(Context context, boolean auto) {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
@@ -48,19 +47,6 @@ public class InitApplication extends Application {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
         return sharedPref.getBoolean(AUTO_DISCOVERY_KEY, true);
 
-    }
-
-    public static boolean getWaitFlag(@NonNull Context context) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
-        return sharedPref.getBoolean(WAIT_KEY, true);
-    }
-
-    public static void setWaitFlag(@NonNull Context context, boolean wait) {
-        SharedPreferences sharedPref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean(WAIT_KEY, wait);
-        editor.apply();
     }
 
     @NonNull
@@ -213,7 +199,7 @@ public class InitApplication extends Application {
         // periodic jobs
         PageWorker.publish(getApplicationContext(), false);
         CleanupWorker.cleanup(getApplicationContext());
-        InitApplication.setWaitFlag(getApplicationContext(), true);
+
 
         if (LogUtils.isDebug()) {
             IPFS.logCacheDir(getApplicationContext());

@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
+
 import android.net.Uri;
 import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
@@ -398,19 +398,6 @@ public class LiteService {
         return externals;
     }
 
-    public static boolean isDarkMode(@NonNull Context context) {
-        int nightModeFlags =
-                context.getResources().getConfiguration().uiMode &
-                        Configuration.UI_MODE_NIGHT_MASK;
-        switch (nightModeFlags) {
-            case Configuration.UI_MODE_NIGHT_YES:
-                return true;
-            case Configuration.UI_MODE_NIGHT_UNDEFINED:
-            case Configuration.UI_MODE_NIGHT_NO:
-                return false;
-        }
-        return false;
-    }
 
     public static List<StorageLocation> getStorageLocations(@NonNull Context context) {
 
