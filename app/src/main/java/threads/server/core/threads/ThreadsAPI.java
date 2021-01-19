@@ -128,7 +128,7 @@ public class ThreadsAPI {
 
     @NonNull
     public List<Thread> getPins(int location) {
-        return getChildren(location, 0L);
+        return getThreadsDatabase().threadDao().getPins(location);
     }
 
     @NonNull

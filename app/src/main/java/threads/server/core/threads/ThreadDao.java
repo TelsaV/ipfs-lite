@@ -78,6 +78,10 @@ public interface ThreadDao {
     @Query("UPDATE Thread SET name =:name WHERE idx = :idx")
     void setName(long idx, String name);
 
+
+    @Query("SELECT * FROM Thread WHERE parent = 0 AND deleting = 0 AND seeding = 1 AND location =:location")
+    List<Thread> getPins(int location);
+
     @Query("SELECT * FROM Thread WHERE parent =:parent AND deleting = 0 AND location =:location")
     List<Thread> getVisibleChildren(int location, long parent);
 
