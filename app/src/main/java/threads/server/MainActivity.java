@@ -647,7 +647,6 @@ public class MainActivity extends AppCompatActivity implements
 
         final String action = intent.getAction();
         try {
-
             ShareCompat.IntentReader intentReader = ShareCompat.IntentReader.from(this);
             if (Intent.ACTION_SEND.equals(action) ||
                     Intent.ACTION_SEND_MULTIPLE.equals(action)) {
@@ -663,41 +662,7 @@ public class MainActivity extends AppCompatActivity implements
                         openBrowserView(uri);
                     }
                 }
-            } else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-                String query =
-                        intent.getStringExtra(SearchManager.QUERY);
-                if (query == null) {
-                    query = intent.getDataString();
-                }
-                try {
-
-                    if (mActionMode != null) {
-                        mActionMode.finish();
-                    }
-                    if (query != null && !query.isEmpty()) {
-                        Uri uri = Uri.parse(query);
-                        String scheme = uri.getScheme();
-                        if (Objects.equals(scheme, Content.IPNS) ||
-                                Objects.equals(scheme, Content.IPFS) ||
-                                Objects.equals(scheme, Content.HTTP) ||
-                                Objects.equals(scheme, Content.HTTPS)) {
-                            openBrowserView(uri);
-                        } else {
-
-                            IPFS ipfs = IPFS.getInstance(getApplicationContext());
-
-                            String search = "https://duckduckgo.com/?q=" + query + "&kp=-1";
-                            if (ipfs.isValidCID(query)) {
-                                search = Content.IPFS + "://" + query;
-                            }
-                            openBrowserView(Uri.parse(search));
-                        }
-                    }
-                } catch (Throwable throwable) {
-                    LogUtils.error(TAG, throwable);
-                }
             }
-
         } catch (Throwable e) {
             LogUtils.error(TAG, "" + e.getLocalizedMessage());
         }
