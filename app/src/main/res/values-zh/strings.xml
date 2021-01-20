@@ -37,7 +37,6 @@
     <string name="gateway">网关</string>
     <string name="swarm">一群</string>
     <string name="file_not_found">无法下载文件</string>
-    <string name="action_connect">连接</string>
     <string name="name">名称</string>
     <string name="name_not_valid">名称无效</string>
     <string name="action_peer_add">添加对等</string>

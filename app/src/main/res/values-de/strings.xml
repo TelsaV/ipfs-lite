@@ -21,7 +21,6 @@
     <string name="documentation">Dokumentation</string>
     <string name="swarm">Schwarm</string>
     <string name="file_not_found">Datei konnte nicht runtergeladen werden</string>
-    <string name="action_connect">Verbinden</string>
     <string name="name">Name</string>
     <string name="files">Dateien</string>
     <string name="gateway">Gateway</string>

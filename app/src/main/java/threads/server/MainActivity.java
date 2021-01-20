@@ -11,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.Menu;
@@ -893,24 +894,67 @@ public class MainActivity extends AppCompatActivity implements
         return new ActionMode.Callback() {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                mode.getMenuInflater().inflate(R.menu.menu_searchable, menu);
+                mode.getMenuInflater().inflate(R.menu.menu_search_action_mode, menu);
 
-                mode.setCustomView(null);
-                mode.setTitle("");
-                mode.setTitleOptionalHint(true);
 
-                MenuItem searchMenuItem = menu.findItem(R.id.action_search);
+                MenuItem searchMenuItem = menu.findItem(R.id.search_view);
+
                 SearchView mSearchView = (SearchView) searchMenuItem.getActionView();
-                mSearchView.setMaxWidth(Integer.MAX_VALUE);
-                SearchManager searchManager = (SearchManager) getSystemService(SEARCH_SERVICE);
-                mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
-
-                mSearchView.requestFocus();
-                mSearchView.setIconifiedByDefault(false);
-                mSearchView.setIconified(false);
-                mSearchView.setSubmitButtonEnabled(false);
                 mSearchView.setQueryHint(hint);
+                mSearchView.setIconifiedByDefault(false);
+                mSearchView.setFocusable(true);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    mSearchView.setFocusedByDefault(true);
+                }
+
+                mSearchView.setQuery("", true);
+                mSearchView.setIconified(false);
+                mSearchView.requestFocus();
+
+
+                mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+
+                        try {
+                            if (mActionMode != null) {
+                                mActionMode.finish();
+                            }
+                            if (query != null && !query.isEmpty()) {
+                                Uri uri = Uri.parse(query);
+                                String scheme = uri.getScheme();
+                                if (Objects.equals(scheme, Content.IPNS) ||
+                                        Objects.equals(scheme, Content.IPFS) ||
+                                        Objects.equals(scheme, Content.HTTP) ||
+                                        Objects.equals(scheme, Content.HTTPS)) {
+                                    openBrowserView(uri);
+                                } else {
+
+                                    IPFS ipfs = IPFS.getInstance(getApplicationContext());
+                                    if (ipfs.isValidCID(query)) {
+                                        openBrowserView(Uri.parse(Content.IPFS + "://" + query));
+                                    } else {
+                                        EVENTS.getInstance(getApplicationContext()).error(
+                                                getString(R.string.cid_not_valid)
+                                        );
+                                    }
+                                }
+                            }
+                        } catch (Throwable throwable) {
+                            LogUtils.error(TAG, throwable);
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+
+
+                        return false;
+                    }
+                });
+
                 return true;
             }
 

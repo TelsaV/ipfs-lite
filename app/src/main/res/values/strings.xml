@@ -36,7 +36,6 @@
     <string name="gateway">Gateway</string>
     <string name="swarm">Swarm</string>
     <string name="file_not_found">File could not be downloaded</string>
-    <string name="action_connect">Connect</string>
     <string name="name">Name</string>
     <string name="name_not_valid">Name not valid</string>
     <string name="action_peer_add">Add Peer…</string>

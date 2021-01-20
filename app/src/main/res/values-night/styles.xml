@@ -47,17 +47,11 @@
 
 
         <item name="autoCompleteTextViewStyle">@style/AutoCompleteTextViewStyle</item>
-        <item name="textAppearanceSearchResultTitle">@style/SearchResult</item>
     </style>
 
 
     <style name="AutoCompleteTextViewStyle" parent="Widget.AppCompat.Light.AutoCompleteTextView">
         <item name="android:popupBackground">@android:color/black</item>
-    </style>
-
-    <style name="SearchResult" parent="TextAppearance.AppCompat.SearchResult.Title">
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:textSize">14sp</item>
     </style>
 
     <style name="ThreadsTheme.Toolbar" parent="Widget.MaterialComponents.Toolbar">

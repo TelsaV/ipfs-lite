@@ -11,67 +11,72 @@
         app:iconTint="?android:textColorSecondary"
         app:showAsAction="ifRoom" />
 
-    <item
-        android:id="@+id/action_share"
-        android:orderInCategory="35"
-        android:title="@string/share"
-        app:showAsAction="never" />
+    <group>
+        <item
+            android:id="@+id/action_share"
+            android:orderInCategory="35"
+            android:title="@string/share"
+            app:showAsAction="never" />
 
 
-    <item
-        android:id="@+id/action_view"
-        android:icon="@drawable/view"
-        android:orderInCategory="36"
-        android:title="@string/view"
-        app:iconTint="?android:textColorSecondary"
-        app:showAsAction="never" />
+        <item
+            android:id="@+id/action_view"
+            android:icon="@drawable/view"
+            android:orderInCategory="36"
+            android:title="@string/gateway"
+            app:iconTint="?android:textColorSecondary"
+            app:showAsAction="never" />
+    </group>
 
-    <item
-        android:id="@+id/action_sort"
-        android:icon="@drawable/sort_variant"
-        android:orderInCategory="40"
-        android:title="@string/sort"
-        android:visible="true"
-        app:iconTint="?android:textColorSecondary"
-        app:showAsAction="never">
 
-        <menu>
-            <group android:checkableBehavior="all">
-                <item
-                    android:id="@+id/sort_name"
-                    android:checked="true"
-                    android:title="@string/sort_name" />
-                <item
-                    android:id="@+id/sort_name_inverse"
-                    android:title="@string/sort_name_inverse" />
-                <item
-                    android:id="@+id/sort_date"
-                    android:title="@string/sort_date" />
-                <item
-                    android:id="@+id/sort_date_inverse"
-                    android:title="@string/sort_date_inverse" />
-                <item
-                    android:id="@+id/sort_size"
-                    android:title="@string/sort_size" />
-                <item
-                    android:id="@+id/sort_size_inverse"
-                    android:title="@string/sort_size_inverse" />
-            </group>
-        </menu>
-    </item>
+    <group>
+        <item
+            android:id="@+id/action_sort"
+            android:icon="@drawable/sort_variant"
+            android:orderInCategory="40"
+            android:title="@string/sort"
+            android:visible="true"
+            app:iconTint="?android:textColorSecondary"
+            app:showAsAction="never">
 
-    <item
-        android:id="@+id/action_threads_search"
-        android:orderInCategory="44"
-        android:title="@string/find_page"
-        app:showAsAction="never" />
+            <menu>
+                <group android:checkableBehavior="all">
+                    <item
+                        android:id="@+id/sort_name"
+                        android:checked="true"
+                        android:title="@string/sort_name" />
+                    <item
+                        android:id="@+id/sort_name_inverse"
+                        android:title="@string/sort_name_inverse" />
+                    <item
+                        android:id="@+id/sort_date"
+                        android:title="@string/sort_date" />
+                    <item
+                        android:id="@+id/sort_date_inverse"
+                        android:title="@string/sort_date_inverse" />
+                    <item
+                        android:id="@+id/sort_size"
+                        android:title="@string/sort_size" />
+                    <item
+                        android:id="@+id/sort_size_inverse"
+                        android:title="@string/sort_size_inverse" />
+                </group>
+            </menu>
+        </item>
 
-    <item
-        android:id="@+id/action_select_all"
-        android:orderInCategory="45"
-        android:title="@string/action_select_all"
-        app:showAsAction="never" />
+        <item
+            android:id="@+id/action_threads_search"
+            android:orderInCategory="44"
+            android:title="@string/find_page"
+            app:showAsAction="never" />
 
+        <item
+            android:id="@+id/action_select_all"
+            android:orderInCategory="45"
+            android:title="@string/action_select_all"
+            app:showAsAction="never" />
+
+    </group>
 
     <group>
 
@@ -93,11 +98,12 @@
             android:title="@string/new_text_file"
             app:showAsAction="never" />
 
-        <item
-            android:id="@+id/action_backup"
-            android:orderInCategory="51"
-            android:title="@string/action_backup"
-            app:showAsAction="never" />
 
     </group>
+
+    <item
+        android:id="@+id/action_backup"
+        android:orderInCategory="51"
+        android:title="@string/action_backup"
+        app:showAsAction="never" />
 </menu>
