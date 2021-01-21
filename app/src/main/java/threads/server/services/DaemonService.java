@@ -29,7 +29,7 @@ import java.util.Objects;
 import threads.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.ipfs.IPFS;
 import threads.server.work.SwarmConnectWorker;

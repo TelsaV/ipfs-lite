@@ -11,7 +11,7 @@ import java.net.URI;
 import java.util.Objects;
 
 import threads.LogUtils;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
 
 

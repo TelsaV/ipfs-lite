@@ -6,8 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Room;
 
-import java.util.List;
-
 import threads.server.ipfs.CID;
 
 
@@ -58,7 +56,7 @@ public class PAGES {
 
     @NonNull
     public Bookmark createBookmark(@NonNull String uri, @NonNull String title) {
-        return new Bookmark(uri, title);
+        return new Bookmark(uri, title, System.currentTimeMillis());
     }
 
     public void storeBookmark(@NonNull Bookmark bookmark) {
@@ -75,10 +73,6 @@ public class PAGES {
         pageDatabase.pageDao().insertPage(page);
     }
 
-
-    public void resetPageOutdated(@NonNull String hash) {
-        pageDatabase.pageDao().setOutdated(hash, false);
-    }
 
     public void setPageOutdated(@NonNull String hash) {
         pageDatabase.pageDao().setOutdated(hash, true);
@@ -111,17 +105,6 @@ public class PAGES {
         pageDatabase.bookmarkDao().removeBookmark(bookmark);
     }
 
-    public List<Bookmark> getBookmarksByQuery(@NonNull String query) {
-
-        String searchQuery = query.trim();
-        if (!searchQuery.startsWith("%")) {
-            searchQuery = "%" + searchQuery;
-        }
-        if (!searchQuery.endsWith("%")) {
-            searchQuery = searchQuery + "%";
-        }
-        return pageDatabase.bookmarkDao().getBookmarksByQuery(searchQuery);
-    }
 
     public void storeResolver(@NonNull String name, @NonNull String content) {
         storeResolver(createResolver(name, content));

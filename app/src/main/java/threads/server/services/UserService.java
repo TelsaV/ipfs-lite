@@ -65,19 +65,6 @@ public class UserService {
 
                 String content = gson.toJson(deleteOperation, DeleteOperation.class);
                 events.delete(content);
-
-
-                for (String pid : pids) {
-                    User user = peers.getUserByPid(pid);
-                    if (user != null) {
-                        UUID uuid = user.getWorkUUID();
-                        if (uuid != null) {
-                            WorkManager.getInstance(context).cancelWorkById(uuid);
-                        }
-                    }
-                }
-
-
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             } finally {

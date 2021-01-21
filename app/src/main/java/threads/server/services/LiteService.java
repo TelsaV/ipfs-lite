@@ -27,7 +27,7 @@ import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.R;
 import threads.server.core.events.EVENTS;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;

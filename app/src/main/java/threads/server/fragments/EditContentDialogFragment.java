@@ -43,7 +43,7 @@ import threads.LogUtils;
 import threads.server.R;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.utils.CodecDecider;
 import threads.server.utils.MimeType;

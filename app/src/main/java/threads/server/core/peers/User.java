@@ -6,7 +6,6 @@ import androidx.room.ColumnInfo;
 import androidx.room.PrimaryKey;
 
 import java.util.Objects;
-import java.util.UUID;
 
 
 @androidx.room.Entity
@@ -18,18 +17,8 @@ public class User {
     @NonNull
     @ColumnInfo(name = "alias")
     private final String alias;
-    @Deprecated
-    @Nullable
-    @ColumnInfo(name = "publicKey")
-    private String publicKey;
     @ColumnInfo(name = "connected")
     private boolean connected;
-    @Deprecated
-    @ColumnInfo(name = "blocked")
-    private boolean blocked;
-    @Deprecated
-    @ColumnInfo(name = "dialing")
-    private boolean dialing;
     @ColumnInfo(name = "lite")
     private boolean lite;
     @ColumnInfo(name = "visible")
@@ -42,10 +31,6 @@ public class User {
     @Nullable
     @ColumnInfo(name = "agent")
     private String agent;
-    @Deprecated
-    @Nullable
-    @ColumnInfo(name = "work")
-    private String work;
     @ColumnInfo(name = "sequence")
     private long sequence;
     @Nullable
@@ -55,8 +40,6 @@ public class User {
     User(@NonNull String alias, @NonNull String pid) {
         this.alias = alias;
         this.pid = pid;
-        this.blocked = false;
-        this.dialing = false;
         this.connected = false;
         this.visible = true;
         this.lite = false;
@@ -107,23 +90,6 @@ public class User {
         this.timestamp = timestamp;
     }
 
-    @Nullable
-    String getWork() {
-        return work;
-    }
-
-    void setWork(@Nullable String work) {
-        this.work = work;
-    }
-
-    @Nullable
-    public UUID getWorkUUID() {
-        if (work != null) {
-            return UUID.fromString(work);
-        }
-        return null;
-    }
-
     public boolean isLite() {
         return lite;
     }
@@ -141,22 +107,6 @@ public class User {
         this.connected = connected;
     }
 
-    boolean isDialing() {
-        return dialing;
-    }
-
-    void setDialing(boolean dialing) {
-        this.dialing = dialing;
-    }
-
-
-    boolean isBlocked() {
-        return blocked;
-    }
-
-    void setBlocked(boolean blocked) {
-        this.blocked = blocked;
-    }
 
     @NonNull
     public String getPid() {
@@ -166,17 +116,6 @@ public class User {
     @NonNull
     public String getAlias() {
         return alias;
-    }
-
-
-    @Nullable
-    String getPublicKey() {
-        return publicKey;
-    }
-
-
-    void setPublicKey(@Nullable String publicKey) {
-        this.publicKey = publicKey;
     }
 
     @Override

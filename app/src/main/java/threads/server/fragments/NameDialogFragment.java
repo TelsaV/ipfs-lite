@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import threads.LogUtils;
 import threads.server.R;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 
 public class NameDialogFragment extends DialogFragment {

@@ -24,7 +24,6 @@ import threads.LogUtils;
 import threads.server.core.page.PAGES;
 import threads.server.core.page.Page;
 import threads.server.core.page.Resolver;
-import threads.server.core.peers.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.threads.THREADS;

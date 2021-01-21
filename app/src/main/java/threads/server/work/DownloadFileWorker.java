@@ -31,7 +31,7 @@ import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.ReaderProgress;
 

@@ -20,19 +20,16 @@ public class Bookmark {
     @NonNull
     @ColumnInfo(name = "title")
     private final String title;
-    @Deprecated
-    @Nullable
-    @ColumnInfo(name = "content")
-    private String content;
+
     @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
     private byte[] icon;
     @ColumnInfo(name = "timestamp")
-    private long timestamp; // checked
+    private final long timestamp; // checked
 
-    public Bookmark(@NonNull String uri, @NonNull String title) {
+    public Bookmark(@NonNull String uri, @NonNull String title, long timestamp) {
         this.uri = uri;
         this.title = title;
-        this.timestamp = System.currentTimeMillis();
+        this.timestamp = timestamp;
     }
 
     private static byte[] getBytes(@NonNull Bitmap bitmap) {
@@ -44,21 +41,8 @@ public class Bookmark {
         return byteArray;
     }
 
-    @Nullable
-    String getContent() {
-        return content;
-    }
-
-    void setContent(@Nullable String content) {
-        this.content = content;
-    }
-
     public long getTimestamp() {
         return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
     }
 
 

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Objects;
 
 import threads.LogUtils;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 

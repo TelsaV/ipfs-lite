@@ -1,7 +1,6 @@
 package threads.server;
 
 
-import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -58,7 +57,7 @@ import threads.server.core.DeleteOperation;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.core.page.PageViewModel;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.threads.THREADS;
 import threads.server.fragments.ActionListener;

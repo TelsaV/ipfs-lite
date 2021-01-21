@@ -22,9 +22,6 @@ public interface BookmarkDao {
     @Query("SELECT * FROM Bookmark")
     LiveData<List<Bookmark>> getLiveDataBookmarks();
 
-    @Query("SELECT * FROM Bookmark WHERE uri LIKE :query OR title LIKE :query")
-    List<Bookmark> getBookmarksByQuery(String query);
-
     @Delete
     void removeBookmark(Bookmark bookmark);
 }

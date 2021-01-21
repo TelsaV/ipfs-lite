@@ -22,9 +22,6 @@ public interface UserDao {
     @Query("UPDATE User SET alias = :alias WHERE pid = :pid")
     void setAlias(String pid, String alias);
 
-    @Query("SELECT publicKey FROM User WHERE pid = :pid ")
-    String getPublicKey(String pid);
-
     @Query("SELECT lite FROM User WHERE pid = :pid ")
     boolean isLite(String pid);
 
@@ -38,13 +35,6 @@ public interface UserDao {
     @Query("SELECT * FROM User WHERE visible = 1 ORDER BY timestamp DESC")
     LiveData<List<User>> getLiveDataUsers();
 
-
-    @Query("UPDATE User SET work = :work WHERE pid = :pid")
-    void setWork(String pid, String work);
-
-    @Query("UPDATE User SET work = null WHERE pid = :pid")
-    void resetWork(String pid);
-
     @Query("SELECT COUNT(*) FROM User WHERE pid = :pid")
     long hasUser(String pid);
 
@@ -56,9 +46,6 @@ public interface UserDao {
 
     @Query("SELECT connected FROM User WHERE pid = :pid ")
     boolean isConnected(String pid);
-
-    @Query("UPDATE User SET publicKey = :pkey WHERE pid = :pid")
-    void setPublicKey(String pid, String pkey);
 
     @Query("UPDATE User SET agent = :agent WHERE pid = :pid")
     void setAgent(String pid, String agent);
@@ -77,8 +64,7 @@ public interface UserDao {
 
     @Query("UPDATE User SET visible = 0 WHERE pid IN(:pids)")
     void setInvisible(String... pids);
-
-
-    @Query("SELECT pid FROM User WHERE visible = 1 AND blocked = 0")
+    
+    @Query("SELECT pid FROM User WHERE visible = 1")
     List<String> getSwarm();
 }

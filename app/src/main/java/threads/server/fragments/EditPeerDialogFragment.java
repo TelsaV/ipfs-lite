@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import threads.LogUtils;
 import threads.server.R;
 import threads.server.core.events.EVENTS;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
 import threads.server.services.LiteService;
 

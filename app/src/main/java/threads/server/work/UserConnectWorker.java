@@ -16,7 +16,7 @@ import lite.Peer;
 import lite.PeerInfo;
 import threads.LogUtils;
 import threads.server.InitApplication;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
@@ -71,14 +71,6 @@ public class UserConnectWorker extends Worker {
                 PeerInfo pInfo = ipfs.pidInfo(pid);
                 if (pInfo != null) {
 
-                    if (peers.getUserPublicKey(pid) == null) {
-                        String pKey = pInfo.getPublicKey();
-                        if (pKey != null) {
-                            if (!pKey.isEmpty()) {
-                                peers.setUserPublicKey(pid, pKey);
-                            }
-                        }
-                    }
                     if (!peers.getUserIsLite(pid)) {
 
                         String agent = pInfo.getAgentVersion();

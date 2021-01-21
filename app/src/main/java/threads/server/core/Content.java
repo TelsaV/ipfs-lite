@@ -1,4 +1,4 @@
-package threads.server.core.peers;
+package threads.server.core;
 
 import java.util.Hashtable;
 

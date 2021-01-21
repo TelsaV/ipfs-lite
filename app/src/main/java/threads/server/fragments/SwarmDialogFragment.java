@@ -23,7 +23,7 @@ import lite.Peer;
 import threads.LogUtils;
 import threads.server.R;
 import threads.server.core.events.EVENTS;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
 import threads.server.services.QRCodeService;
 import threads.server.utils.PeersViewAdapter;

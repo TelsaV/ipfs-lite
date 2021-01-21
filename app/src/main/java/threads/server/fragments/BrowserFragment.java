@@ -54,7 +54,7 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.core.page.Bookmark;
 import threads.server.core.page.PAGES;
-import threads.server.core.peers.Content;
+import threads.server.core.Content;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;
