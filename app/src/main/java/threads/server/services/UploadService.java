@@ -19,7 +19,6 @@ import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.utils.MimeType;
@@ -42,7 +41,7 @@ public class UploadService {
         executor.submit(() -> {
             try {
 
-                CID cid = ipfs.storeText(text);
+                String cid = ipfs.storeText(text);
                 Objects.requireNonNull(cid);
                 if (!createTxtFile) {
                     List<Thread> sameEntries = threads.getThreadsByContentAndParent(
@@ -52,13 +51,13 @@ public class UploadService {
                     if (sameEntries.isEmpty()) {
 
                         long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid,
-                                null, cid.getCid(), text.length(), true, false);
+                                null, cid, text.length(), true, false);
 
                         docs.finishDocument(idx, true);
 
                     } else {
                         EVENTS.getInstance(context).warning(
-                                context.getString(R.string.content_already_exists, cid.getCid()));
+                                context.getString(R.string.content_already_exists, cid));
                     }
                 } else {
 

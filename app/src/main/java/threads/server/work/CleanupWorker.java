@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import threads.LogUtils;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 
 public class CleanupWorker extends Worker {
@@ -101,11 +100,11 @@ public class CleanupWorker extends Worker {
         }
     }
 
-    private void unpin(@NonNull IPFS ipfs, @NonNull THREADS threads, @Nullable CID cid, boolean recursively) {
+    private void unpin(@NonNull IPFS ipfs, @NonNull THREADS threads, @Nullable String cid, boolean recursively) {
         try {
             if (cid != null) {
                 if (!threads.isReferenced(ipfs.getLocation(), cid)) {
-                    ipfs.rm(cid.getCid(), recursively);
+                    ipfs.rm(cid, recursively);
                 }
             }
         } catch (Throwable e) {

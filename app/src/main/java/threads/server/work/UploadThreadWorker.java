@@ -43,11 +43,10 @@ import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
-import threads.server.core.DOCS;
 import threads.server.core.Content;
+import threads.server.core.DOCS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.LinkInfo;
 import threads.server.ipfs.Progress;
@@ -202,7 +201,7 @@ public class UploadThreadWorker extends Worker {
 
                     InputStream is = huc.getInputStream();
 
-                    CID cid = ipfs.storeInputStream(is, new Progress() {
+                    String cid = ipfs.storeInputStream(is, new Progress() {
 
 
                         @Override
@@ -300,7 +299,7 @@ public class UploadThreadWorker extends Worker {
                     Objects.requireNonNull(inputStream);
 
 
-                    CID cid = ipfs.storeInputStream(inputStream, new Progress() {
+                    String cid = ipfs.storeInputStream(inputStream, new Progress() {
                         @Override
                         public boolean isClosed() {
                             return isStopped();
@@ -449,7 +448,7 @@ public class UploadThreadWorker extends Worker {
             String filename = thread.getName();
             Objects.requireNonNull(filename);
 
-            CID cid = thread.getContent();
+            String cid = thread.getContent();
             Objects.requireNonNull(cid);
 
             AtomicLong started = new AtomicLong(System.currentTimeMillis());
@@ -664,12 +663,12 @@ public class UploadThreadWorker extends Worker {
     }
 
     @Nullable
-    private List<LinkInfo> getLinks(@NonNull CID cid) {
+    private List<LinkInfo> getLinks(@NonNull String cid) {
         return ipfs.getLinks(cid, this::isStopped);
     }
 
 
-    private Thread getFolderThread(long parent, @NonNull CID cid) {
+    private Thread getFolderThread(long parent, @NonNull String cid) {
 
         List<Thread> entries =
                 threads.getThreadsByContentAndParent(ipfs.getLocation(), cid, parent);
@@ -685,7 +684,7 @@ public class UploadThreadWorker extends Worker {
 
         for (LinkInfo link : links) {
 
-            CID cid = link.getContent();
+            String cid = link.getContent();
             Thread entry = getFolderThread(parent, cid);
             if (entry != null) {
                 if (!entry.isSeeding()) {
@@ -704,7 +703,7 @@ public class UploadThreadWorker extends Worker {
         return threadList;
     }
 
-    private long createThread(@NonNull CID cid, @NonNull LinkInfo link, long parent) {
+    private long createThread(@NonNull String cid, @NonNull LinkInfo link, long parent) {
 
         String name = link.getName();
         String mimeType = null;
@@ -723,7 +722,7 @@ public class UploadThreadWorker extends Worker {
         Thread thread = threads.getThreadByIdx(idx);
         Objects.requireNonNull(thread);
 
-        CID cid = thread.getContent();
+        String cid = thread.getContent();
         Objects.requireNonNull(cid);
 
         List<LinkInfo> links = getLinks(cid);

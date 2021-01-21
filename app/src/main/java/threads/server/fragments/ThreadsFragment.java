@@ -64,14 +64,13 @@ import threads.server.ExoPlayerActivity;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import threads.server.core.Content;
 import threads.server.core.threads.SortOrder;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.core.threads.ThreadViewModel;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
@@ -1116,9 +1115,9 @@ public class ThreadsFragment extends Fragment implements
                 ComponentName[] names = {new ComponentName(
                         mContext.getApplicationContext(), MainActivity.class)};
 
-                CID content = thread.getContent();
+                String content = thread.getContent();
                 Objects.requireNonNull(content);
-                String url = Content.IPFS + "://" + content.getCid();
+                String url = Content.IPFS + "://" + content;
 
 
                 Intent intent = new Intent(Intent.ACTION_SEND);
@@ -1269,13 +1268,12 @@ public class ThreadsFragment extends Fragment implements
 
     private void clickThreadInfo(@NonNull Thread thread) {
         try {
-            CID cid = thread.getContent();
+            String cid = thread.getContent();
             Objects.requireNonNull(cid);
-            String uri = Content.IPFS + "://" + cid.getCid();
+            String uri = Content.IPFS + "://" + cid;
 
-            String multihash = cid.getCid();
-            Uri uriImage = QRCodeService.getImage(mContext, multihash);
-            ContentDialogFragment.newInstance(uriImage, multihash,
+            Uri uriImage = QRCodeService.getImage(mContext, cid);
+            ContentDialogFragment.newInstance(uriImage, cid,
                     getString(R.string.multi_hash_access, thread.getName()), uri)
                     .show(getChildFragmentManager(), ContentDialogFragment.TAG);
 
@@ -1293,7 +1291,7 @@ public class ThreadsFragment extends Fragment implements
 
             if (thread.isSeeding()) {
 
-                CID cid = thread.getContent();
+                String cid = thread.getContent();
                 Objects.requireNonNull(cid);
 
 
@@ -1347,7 +1345,7 @@ public class ThreadsFragment extends Fragment implements
 
             if (thread.isSeeding()) {
 
-                CID cid = thread.getContent();
+                String cid = thread.getContent();
                 Objects.requireNonNull(cid);
 
 
@@ -1488,11 +1486,11 @@ public class ThreadsFragment extends Fragment implements
     private void viewGateway(@NonNull Thread thread) {
 
         try {
-            CID cid = thread.getContent();
+            String cid = thread.getContent();
             Objects.requireNonNull(cid);
 
             String gateway = LiteService.getGateway(mContext);
-            String uri = gateway + "/" + Content.IPFS + "/" + cid.getCid();
+            String uri = gateway + "/" + Content.IPFS + "/" + cid;
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

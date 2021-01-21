@@ -23,7 +23,6 @@ import threads.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileProvider;
 import threads.server.provider.MediaDataSource;
@@ -74,7 +73,7 @@ public class VideoImageWorker extends Worker {
 
             Thread thread = threads.getThreadByIdx(idx);
             Objects.requireNonNull(thread);
-            CID cid = thread.getContent();
+            String cid = thread.getContent();
             Objects.requireNonNull(cid);
 
             Bitmap bitmap = MediaDataSource.getVideoFrame(getApplicationContext(),

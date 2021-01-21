@@ -78,13 +78,13 @@ public class IpfsTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         String test = "Moin";
-        CID cid = ipfs.storeText(test);
+        String cid = ipfs.storeText(test);
         assertNotNull(cid);
         byte[] bytes = ipfs.getData(cid);
         assertNotNull(bytes);
         assertEquals(test, new String(bytes));
 
-        CID fault = CID.create(Objects.requireNonNull(IPFS.getPeerID(context)));
+        String fault = Objects.requireNonNull(IPFS.getPeerID(context));
 
         bytes = ipfs.loadData(fault, new TimeoutProgress(10));
         assertNull(bytes);
@@ -98,7 +98,7 @@ public class IpfsTest {
         String notValid = "QmaFuc7VmzwT5MAx3EANZiVXRtuWtTwALjgaPcSsZ2Jdip";
         IPFS ipfs = TestEnv.getTestInstance(context);
 
-        byte[] bytes = ipfs.loadData(CID.create(notValid), new TimeoutProgress(10));
+        byte[] bytes = ipfs.loadData(notValid, new TimeoutProgress(10));
 
         assertNull(bytes);
 
@@ -115,16 +115,16 @@ public class IpfsTest {
 
         byte[] content = getRandomBytes();
 
-        CID hash58Base = ipfs.storeData(content);
+        String hash58Base = ipfs.storeData(content);
         assertNotNull(hash58Base);
-        LogUtils.error(TAG, hash58Base.getCid());
+        LogUtils.error(TAG, hash58Base);
 
         byte[] fileContents = ipfs.getData(hash58Base);
         assertNotNull(fileContents);
         assertEquals(content.length, fileContents.length);
         assertEquals(new String(content), new String(fileContents));
 
-        ipfs.rm(hash58Base.getCid(), true);
+        ipfs.rm(hash58Base, true);
 
         ipfs.gc();
 
@@ -138,7 +138,7 @@ public class IpfsTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         List<LinkInfo> links = ipfs.ls(
-                CID.create("QmXm3f7uKuFKK3QUL1V1oJZnpJSYX8c3vdhd94evSQUPCH"),
+                "QmXm3f7uKuFKK3QUL1V1oJZnpJSYX8c3vdhd94evSQUPCH",
                 new TimeoutProgress(20));
         assertNull(links);
 
@@ -150,7 +150,7 @@ public class IpfsTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
 
-        CID cid = ipfs.storeText("hallo");
+        String cid = ipfs.storeText("hallo");
         assertNotNull(cid);
         List<LinkInfo> links = ipfs.ls(cid, () -> false);
         assertNotNull(links);

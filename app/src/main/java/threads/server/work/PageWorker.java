@@ -17,12 +17,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
+import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.page.Page;
-import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.LinkInfo;
 import threads.server.services.ConnectService;
@@ -111,7 +110,7 @@ public class PageWorker extends Worker {
         return Result.success();
     }
 
-    private void publishSequence(@NonNull CID content, long sequence) {
+    private void publishSequence(@NonNull String content, long sequence) {
         String host = IPFS.getPeerID(getApplicationContext());
         Objects.requireNonNull(host);
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -126,7 +125,7 @@ public class PageWorker extends Worker {
                             if (connected) {
 
                                 HashMap<String, String> hashMap = new HashMap<>();
-                                hashMap.put(Content.IPNS, content.getCid());
+                                hashMap.put(Content.IPNS, content);
                                 hashMap.put(Content.PID, host); // TODO remove in the future
                                 hashMap.put(Content.SEQ, "" + sequence);
 
@@ -149,7 +148,7 @@ public class PageWorker extends Worker {
             Page page = docs.getPinsPage();
             if (page != null) {
 
-                CID content = page.getContent();
+                String content = page.getContent();
                 Objects.requireNonNull(content);
 
                 if (!IPFS.isPrivateSharingEnabled(getApplicationContext())) {
@@ -170,7 +169,7 @@ public class PageWorker extends Worker {
         }
     }
 
-    private void publishContent(@NonNull CID content) {
+    private void publishContent(@NonNull String content) {
 
         try {
 

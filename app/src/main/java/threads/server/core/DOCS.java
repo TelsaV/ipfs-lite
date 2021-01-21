@@ -28,7 +28,6 @@ import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.Closeable;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.LinkInfo;
@@ -74,13 +73,13 @@ public class DOCS {
 
 
     @NonNull
-    public CID resolveName(@NonNull Uri uri,
-                           @NonNull String name,
-                           @NonNull Closeable closeable) throws ResolveNameException {
+    public String resolveName(@NonNull Uri uri,
+                              @NonNull String name,
+                              @NonNull Closeable closeable) throws ResolveNameException {
 
 
         if (Objects.equals(getHost(), name)) {
-            CID local = getLocalName();
+            String local = getLocalName();
             if (local != null) {
                 return local;
             }
@@ -88,7 +87,7 @@ public class DOCS {
 
         Resolver resolver = pages.getResolver(name);
         if (resolver != null) {
-            return CID.create(resolver.getContent());
+            return resolver.getContent();
         }
 
 
@@ -105,16 +104,15 @@ public class DOCS {
         if (resolvedName == null) {
 
             if (ipns != null) {
-                CID local = CID.create(ipns);
                 pages.storeResolver(name, ipns);
-                return local;
+                return ipns;
             }
 
             throw new ResolveNameException(uri.toString());
         } else {
             pages.storeResolver(name, resolvedName.getHash());
             peers.setUserIpns(pid, resolvedName.getHash(), resolvedName.getSequence());
-            return CID.create(resolvedName.getHash());
+            return resolvedName.getHash();
         }
     }
 
@@ -128,7 +126,7 @@ public class DOCS {
     }
 
     @Nullable
-    public CID getLocalName() {
+    public String getLocalName() {
         return pages.getPageContent(getHost());
     }
 
@@ -203,10 +201,10 @@ public class DOCS {
                     threads.removeThreads(entries);
 
                     for (Thread entry : entries) {
-                        CID cid = entry.getContent();
+                        String cid = entry.getContent();
                         if (cid != null) {
                             if (!threads.isReferenced(ipfs.getLocation(), cid)) {
-                                ipfs.rm(cid.getCid(), !entry.isDir());
+                                ipfs.rm(cid, !entry.isDir());
                             }
                         }
                     }
@@ -323,10 +321,10 @@ public class DOCS {
         long parent = threads.getThreadParent(idx);
 
         if (parent > 0) {
-            CID cid = threads.getThreadContent(idx);
+            String cid = threads.getThreadContent(idx);
             Objects.requireNonNull(cid);
             String name = threads.getThreadName(idx);
-            CID dirCid = threads.getThreadContent(parent);
+            String dirCid = threads.getThreadContent(parent);
             Objects.requireNonNull(dirCid);
             if (!oldName.isEmpty()) {
                 dirCid = ipfs.rmLinkFromDir(dirCid, oldName);
@@ -334,7 +332,7 @@ public class DOCS {
                 dirCid = ipfs.rmLinkFromDir(dirCid, name);
             }
             Objects.requireNonNull(dirCid);
-            CID newDir = ipfs.addLinkToDir(dirCid, name, cid);
+            String newDir = ipfs.addLinkToDir(dirCid, name, cid);
             Objects.requireNonNull(newDir);
             threads.setThreadContent(parent, newDir);
             threads.setThreadLastModified(parent, System.currentTimeMillis());
@@ -351,9 +349,9 @@ public class DOCS {
         long parent = child.getParent();
         if (parent > 0) {
             String name = child.getName();
-            CID dirCid = threads.getThreadContent(parent);
+            String dirCid = threads.getThreadContent(parent);
             Objects.requireNonNull(dirCid);
-            CID newDir = ipfs.rmLinkFromDir(dirCid, name);
+            String newDir = ipfs.rmLinkFromDir(dirCid, name);
             Objects.requireNonNull(newDir);
             threads.setThreadContent(parent, newDir);
             threads.setThreadLastModified(parent, System.currentTimeMillis());
@@ -374,12 +372,12 @@ public class DOCS {
     private void updateParentDocument(long idx, long parent) {
         try {
             if (parent > 0) {
-                CID cid = threads.getThreadContent(idx);
+                String cid = threads.getThreadContent(idx);
                 Objects.requireNonNull(cid);
                 String name = threads.getThreadName(idx);
-                CID dirCid = threads.getThreadContent(parent);
+                String dirCid = threads.getThreadContent(parent);
                 Objects.requireNonNull(dirCid);
-                CID newDir = ipfs.addLinkToDir(dirCid, name, cid);
+                String newDir = ipfs.addLinkToDir(dirCid, name, cid);
                 Objects.requireNonNull(newDir);
                 threads.setThreadContent(parent, newDir);
                 threads.setThreadLastModified(parent, System.currentTimeMillis());
@@ -442,7 +440,7 @@ public class DOCS {
         return mimeType;
     }
 
-    public long createDocument(long parent, @Nullable String type, @Nullable CID content,
+    public long createDocument(long parent, @Nullable String type, @Nullable String content,
                                @Nullable Uri uri, String displayName, long size,
                                boolean seeding, boolean init) {
         String mimeType = checkMimeType(type, displayName);
@@ -483,7 +481,7 @@ public class DOCS {
             Page page = getPinsPage();
             if (page == null) {
                 page = pages.createPage(getHost());
-                CID dir = ipfs.createEmptyDir();
+                String dir = ipfs.createEmptyDir();
                 Objects.requireNonNull(dir);
                 page.setTimestamp(System.currentTimeMillis());
                 page.setOutdated(false);
@@ -512,7 +510,7 @@ public class DOCS {
             Page page = getPinsPage();
             Objects.requireNonNull(page);
 
-            CID dir = ipfs.createEmptyDir();
+            String dir = ipfs.createEmptyDir();
             Objects.requireNonNull(dir);
 
             List<Thread> pins = threads.getPins(ipfs.getLocation());
@@ -520,7 +518,7 @@ public class DOCS {
             boolean isEmpty = pins.isEmpty();
             if (!isEmpty) {
                 for (Thread pin : pins) {
-                    CID link = pin.getContent();
+                    String link = pin.getContent();
                     Objects.requireNonNull(link);
                     String name = pin.getName();
                     dir = ipfs.addLinkToDir(dir, name, link);
@@ -540,7 +538,7 @@ public class DOCS {
 
 
     @NonNull
-    private String getMimeType(@NonNull CID doc, @NonNull Closeable closeable) {
+    private String getMimeType(@NonNull String doc, @NonNull Closeable closeable) {
 
         if (ipfs.isEmptyDir(doc) || ipfs.isDir(doc, closeable)) {
             return MimeType.DIR_MIME_TYPE;
@@ -570,9 +568,9 @@ public class DOCS {
         boolean first = true;
         for (Thread ancestor : ancestors) {
             if (first) {
-                CID cid = ancestor.getContent();
+                String cid = ancestor.getContent();
                 Objects.requireNonNull(cid);
-                builder.append(cid.getCid());
+                builder.append(cid);
                 first = false;
             } else {
                 builder.append("/").append(ancestor.getName());
@@ -595,8 +593,8 @@ public class DOCS {
     }
 
 
-    public String generateDirectoryHtml(@NonNull Uri uri, @NonNull CID root, List<String> paths, @Nullable List<LinkInfo> links) {
-        String title = root.getCid();
+    public String generateDirectoryHtml(@NonNull Uri uri, @NonNull String root, List<String> paths, @Nullable List<LinkInfo> links) {
+        String title = root;
 
         if (!paths.isEmpty()) {
             title = paths.get(paths.size() - 1);
@@ -679,7 +677,7 @@ public class DOCS {
 
 
     @Nullable
-    public LinkInfo getLinkInfo(@NonNull Uri uri, @NonNull CID root, @NonNull Closeable progress) {
+    public LinkInfo getLinkInfo(@NonNull Uri uri, @NonNull String root, @NonNull Closeable progress) {
         List<String> paths = uri.getPathSegments();
         String host = uri.getHost();
         Objects.requireNonNull(host);
@@ -688,11 +686,11 @@ public class DOCS {
 
 
     @Nullable
-    public CID getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
+    public String getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
         String host = uri.getHost();
         Objects.requireNonNull(host);
 
-        CID root;
+        String root;
         if (Objects.equals(uri.getScheme(), Content.IPNS)) {
 
             if (!ipfs.isValidCID(host)) {
@@ -704,7 +702,7 @@ public class DOCS {
             if (!ipfs.isValidCID(host)) {
                 throw new InvalidNameException(uri.toString());
             }
-            root = CID.create(host);
+            root = host;
         }
 
         return root;
@@ -712,7 +710,7 @@ public class DOCS {
     }
 
     @NonNull
-    private FileInfo getDataInfo(@NonNull Uri uri, @NonNull CID root, @NonNull Closeable closeable) throws TimeoutException {
+    private FileInfo getDataInfo(@NonNull Uri uri, @NonNull String root, @NonNull Closeable closeable) throws TimeoutException {
         String host = uri.getHost();
         Objects.requireNonNull(host);
 
@@ -729,7 +727,7 @@ public class DOCS {
                 throw new TimeoutException(uri.toString());
             }
 
-            return new FileInfo(root.getCid(), mimeType, root, size);
+            return new FileInfo(root, mimeType, root, size);
         } catch (Throwable throwable) {
             if (closeable.isClosed()) {
                 throw new TimeoutException(uri.toString());
@@ -740,7 +738,7 @@ public class DOCS {
 
 
     @NonNull
-    public WebResourceResponse getResponse(@NonNull Uri uri, @NonNull CID root,
+    public WebResourceResponse getResponse(@NonNull Uri uri, @NonNull String root,
                                            @NonNull List<String> paths,
                                            @NonNull Closeable closeable) throws Exception {
 
@@ -819,7 +817,7 @@ public class DOCS {
 
     @NonNull
     private WebResourceResponse getContentResponse(@NonNull Uri uri,
-                                                   @NonNull CID content,
+                                                   @NonNull String content,
                                                    @NonNull String mimeType, long size,
                                                    @NonNull Closeable closeable) throws TimeoutException {
 
@@ -871,7 +869,7 @@ public class DOCS {
 
     @NonNull
     private String getMimeType(@NonNull Uri uri,
-                               @NonNull CID element,
+                               @NonNull String element,
                                @NonNull Closeable closeable) {
 
         List<String> paths = uri.getPathSegments();
@@ -934,7 +932,7 @@ public class DOCS {
         String host = uri.getHost();
         Objects.requireNonNull(host);
 
-        CID root = getRoot(uri, closeable);
+        String root = getRoot(uri, closeable);
         Objects.requireNonNull(root);
 
 
@@ -970,11 +968,11 @@ public class DOCS {
             throw new InvalidNameException(uri.toString());
         }
 
-        CID root;
+        String root;
         if (Objects.equals(uri.getScheme(), Content.IPNS)) {
             root = resolveName(uri, host, closeable);
         } else {
-            root = CID.create(host);
+            root = host;
         }
         Objects.requireNonNull(root);
 
@@ -998,10 +996,10 @@ public class DOCS {
         @NonNull
         private final String mimeType;
         @NonNull
-        private final CID content;
+        private final String content;
         private final long size;
 
-        public FileInfo(@NonNull String filename, @NonNull String mimeType, @NonNull CID content, long size) {
+        public FileInfo(@NonNull String filename, @NonNull String mimeType, @NonNull String content, long size) {
             this.filename = filename;
             this.mimeType = mimeType;
             this.content = content;
@@ -1019,7 +1017,7 @@ public class DOCS {
         }
 
         @NonNull
-        public CID getContent() {
+        public String getContent() {
             return content;
         }
 

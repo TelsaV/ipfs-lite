@@ -36,7 +36,6 @@ import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.Progress;
 
@@ -292,7 +291,7 @@ public class BackupWorker extends Worker {
         }
 
 
-        CID cid = thread.getContent();
+        String cid = thread.getContent();
         Objects.requireNonNull(cid);
 
         long size = thread.getSize();

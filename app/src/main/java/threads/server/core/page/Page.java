@@ -5,10 +5,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
-
-import threads.server.core.Converter;
-import threads.server.ipfs.CID;
 
 @androidx.room.Entity
 public class Page {
@@ -19,9 +15,8 @@ public class Page {
     private final String hash;
 
     @Nullable
-    @TypeConverters(Converter.class)
     @ColumnInfo(name = "content")
-    private CID content;
+    private String content;
     @ColumnInfo(name = "timestamp")
     private long timestamp;
     @ColumnInfo(name = "outdated")
@@ -66,11 +61,11 @@ public class Page {
     }
 
     @Nullable
-    public CID getContent() {
+    public String getContent() {
         return content;
     }
 
-    public void setContent(@NonNull CID content) {
+    public void setContent(@NonNull String content) {
         this.content = content;
     }
 

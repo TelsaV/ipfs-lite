@@ -12,7 +12,6 @@ import java.io.InputStream;
 
 import threads.LogUtils;
 import threads.server.BuildConfig;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 
 public class FileProvider {
@@ -28,7 +27,7 @@ public class FileProvider {
         mDataDir = new File(context.getCacheDir(), DATA);
     }
 
-    public static Uri getDataUri(@NonNull Context context, @NonNull CID cid) {
+    public static Uri getDataUri(@NonNull Context context, @NonNull String cid) {
 
         FileProvider fileProvider = FileProvider.getInstance(context);
         File newFile = fileProvider.getDataFile(cid);
@@ -40,11 +39,11 @@ public class FileProvider {
     }
 
     @NonNull
-    public static File getFile(@NonNull Context context, @NonNull CID cid) throws Exception {
+    public static File getFile(@NonNull Context context, @NonNull String cid) throws Exception {
         FileProvider fileProvider = FileProvider.getInstance(context);
         IPFS ipfs = IPFS.getInstance(context);
 
-        synchronized (cid.getCid().intern()) {
+        synchronized (cid.intern()) {
 
             File file = fileProvider.getDataFile(cid);
             if (!file.exists()) {
@@ -72,12 +71,12 @@ public class FileProvider {
         return INSTANCE;
     }
 
-    public File getDataFile(@NonNull CID cid) {
-        return new File(getDataDir(), cid.getCid());
+    public File getDataFile(@NonNull String cid) {
+        return new File(getDataDir(), cid);
     }
 
     @NonNull
-    public File createDataFile(@NonNull CID cid) throws IOException {
+    public File createDataFile(@NonNull String cid) throws IOException {
 
         File file = getDataFile(cid);
         if (file.exists()) {

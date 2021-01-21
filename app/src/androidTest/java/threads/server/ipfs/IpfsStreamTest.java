@@ -30,7 +30,7 @@ public class IpfsStreamTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         String text = "Hello Moin und Zehn Elf";
-        CID hash = ipfs.storeText(text);
+        String hash = ipfs.storeText(text);
         assertNotNull(hash);
         List<LinkInfo> links = ipfs.ls(hash, () -> false);
         assertNotNull(links);
@@ -42,7 +42,7 @@ public class IpfsStreamTest {
         assertEquals(text, new String(result));
 
 
-        CID hash2 = ipfs.storeText("TEST test");
+        String hash2 = ipfs.storeText("TEST test");
         assertNotNull(hash2);
         links = ipfs.ls(hash2, () -> false);
         assertNotNull(links);

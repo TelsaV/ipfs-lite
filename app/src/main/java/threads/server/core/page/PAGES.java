@@ -6,8 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.room.Room;
 
-import threads.server.ipfs.CID;
-
 
 public class PAGES {
 
@@ -130,7 +128,7 @@ public class PAGES {
     }
 
     @Nullable
-    public CID getPageContent(@NonNull String hash) {
+    public String getPageContent(@NonNull String hash) {
         return pageDatabase.pageDao().getPageContent(hash);
     }
 

@@ -31,11 +31,10 @@ import threads.LogUtils;
 import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.R;
-import threads.server.core.DOCS;
 import threads.server.core.Content;
+import threads.server.core.DOCS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.utils.MimeType;
 
@@ -623,7 +622,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
             long parent = Long.parseLong(parentDocumentId);
             boolean seeding = false;
             boolean init = true;
-            CID content = null;
+            String content = null;
             if (Objects.equals(type, MimeType.DIR_MIME_TYPE)) {
                 seeding = true;
                 init = false;
@@ -652,7 +651,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
 
             Thread file = threads.getThreadByIdx(idx);
             Objects.requireNonNull(file);
-            CID cid = file.getContent();
+            String cid = file.getContent();
             Objects.requireNonNull(cid);
 
             return ParcelFileDescriptor.open(

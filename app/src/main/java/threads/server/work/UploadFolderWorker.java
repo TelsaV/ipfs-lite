@@ -32,10 +32,9 @@ import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
-import threads.server.core.DOCS;
 import threads.server.core.Content;
+import threads.server.core.DOCS;
 import threads.server.core.threads.THREADS;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.Progress;
 import threads.server.utils.MimeType;
@@ -317,7 +316,7 @@ public class UploadFolderWorker extends Worker {
         try (InputStream is = getApplicationContext().getContentResolver().openInputStream(uri)) {
             Objects.requireNonNull(is);
 
-            CID cid = ipfs.storeInputStream(is, new Progress() {
+            String cid = ipfs.storeInputStream(is, new Progress() {
 
 
                 @Override

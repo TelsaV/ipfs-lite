@@ -37,9 +37,8 @@ import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
-import threads.server.core.DOCS;
 import threads.server.core.Content;
-import threads.server.ipfs.CID;
+import threads.server.core.DOCS;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.LinkInfo;
 import threads.server.ipfs.Progress;
@@ -137,7 +136,7 @@ public class DownloadContentWorker extends Worker {
                     DOCS.FileInfo fileInfo = docs.getFileInfo(uri, this::isStopped);
 
 
-                    CID root = fileInfo.getContent();
+                    String root = fileInfo.getContent();
 
                     String mimeType = fileInfo.getMimeType();
                     String fileName = fileInfo.getFilename();
@@ -175,7 +174,7 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void downloadContent(int idx, @NonNull DocumentFile doc, @NonNull CID root,
+    private void downloadContent(int idx, @NonNull DocumentFile doc, @NonNull String root,
                                  @NonNull String mimeType, @NonNull String name) {
         ExecutorService executor = Executors.newFixedThreadPool(1);
 
@@ -218,7 +217,7 @@ public class DownloadContentWorker extends Worker {
         LogUtils.info(TAG, " start [" + (System.currentTimeMillis() - start) + "]...");
 
 
-        CID cid = docContent.content;
+        String cid = docContent.content;
         DocumentFile doc = docContent.file;
 
         String name = doc.getName();
@@ -409,7 +408,7 @@ public class DownloadContentWorker extends Worker {
 
     private void downloadLinks(@NonNull DocumentFile doc,
                                @NonNull List<DocumentFileContent> works,
-                               @NonNull CID cid,
+                               @NonNull String cid,
                                @NonNull String mimeType,
                                @NonNull String name) {
 
@@ -433,9 +432,9 @@ public class DownloadContentWorker extends Worker {
 
     public static class DocumentFileContent {
         private final DocumentFile file;
-        private final CID content;
+        private final String content;
 
-        public DocumentFileContent(DocumentFile file, CID cid) {
+        public DocumentFileContent(DocumentFile file, String cid) {
             this.file = file;
             this.content = cid;
         }

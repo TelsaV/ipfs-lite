@@ -11,7 +11,6 @@ import java.io.IOException;
 
 import lite.Reader;
 import threads.LogUtils;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 
 public class MediaDataSource extends android.media.MediaDataSource {
@@ -19,11 +18,11 @@ public class MediaDataSource extends android.media.MediaDataSource {
     private Reader fileReader;
 
 
-    public MediaDataSource(@NonNull IPFS ipfs, @NonNull CID cid) throws Exception {
+    public MediaDataSource(@NonNull IPFS ipfs, @NonNull String cid) throws Exception {
         this.fileReader = ipfs.getReader(cid);
     }
 
-    public static Bitmap getVideoFrame(@NonNull Context context, @NonNull CID cid, long time) {
+    public static Bitmap getVideoFrame(@NonNull Context context, @NonNull String cid, long time) {
 
         Bitmap bitmap = null;
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();

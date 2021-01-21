@@ -11,9 +11,6 @@ import androidx.room.TypeConverters;
 import java.util.Objects;
 import java.util.UUID;
 
-import threads.server.core.Converter;
-import threads.server.ipfs.CID;
-
 
 @androidx.room.Entity
 public class Thread {
@@ -28,22 +25,12 @@ public class Thread {
     @ColumnInfo(name = "lastModified")
     private long lastModified; // checked
 
-    @Deprecated
-    @Nullable
-    @ColumnInfo(name = "thumbnail")
-    @TypeConverters(Converter.class)
-    private CID thumbnail;  // checked
-
     @ColumnInfo(name = "progress")
     private int progress;  // checked
     @Nullable
-    @TypeConverters(Converter.class)
     @ColumnInfo(name = "content")
-    private CID content;  // checked
-    @Deprecated
-    @Nullable
-    @ColumnInfo(name = "ipns")
-    private String ipns;  // checked
+    private String content;  // checked
+
     @ColumnInfo(name = "size")
     private long size;  // checked
     @NonNull
@@ -58,12 +45,6 @@ public class Thread {
     @Nullable
     @ColumnInfo(name = "work")
     private String work;
-    @Deprecated
-    @ColumnInfo(name = "pinned")
-    private boolean pinned; // checked
-    @Deprecated
-    @ColumnInfo(name = "publishing")
-    private boolean publishing; // checked
     @ColumnInfo(name = "leaching")
     private boolean leaching; // checked
     @ColumnInfo(name = "seeding")
@@ -76,14 +57,6 @@ public class Thread {
     private boolean init;
     @ColumnInfo(name = "position")
     private long position;
-    @Deprecated
-    @ColumnInfo(name = "hidden")
-    private boolean hidden;
-    @Deprecated
-    @NonNull
-    @TypeConverters(Status.class)
-    @ColumnInfo(name = "status")
-    private Status status;  // checked
     @NonNull
     @TypeConverters(SortOrder.class)
     @ColumnInfo(name = "sortOrder")
@@ -94,17 +67,14 @@ public class Thread {
         this.parent = parent;
         this.lastModified = System.currentTimeMillis();
         this.mimeType = "";
-        this.pinned = false;
-        this.publishing = false;
+
         this.leaching = false;
         this.seeding = false;
         this.deleting = false;
         this.progress = 0;
         this.position = 0;
-        this.status = Status.UNKNOWN;
         this.init = false;
         this.error = false;
-        this.hidden = false;
         this.sortOrder = SortOrder.NAME;
     }
 
@@ -119,15 +89,6 @@ public class Thread {
 
     public void setSortOrder(@NonNull SortOrder sortOrder) {
         this.sortOrder = sortOrder;
-    }
-
-    @Nullable
-    String getIpns() {
-        return ipns;
-    }
-
-    void setIpns(@Nullable String ipns) {
-        this.ipns = ipns;
     }
 
     public long getPosition() {
@@ -172,21 +133,7 @@ public class Thread {
         this.lastModified = lastModified;
     }
 
-    boolean isPublishing() {
-        return publishing;
-    }
 
-    void setPublishing(boolean publishing) {
-        this.publishing = publishing;
-    }
-
-    boolean isPinned() {
-        return pinned;
-    }
-
-    void setPinned(boolean pinned) {
-        this.pinned = pinned;
-    }
 
     public long getIdx() {
         return idx;
@@ -203,15 +150,6 @@ public class Thread {
 
     public void setMimeType(@NonNull String mimeType) {
         this.mimeType = mimeType;
-    }
-
-    @Nullable
-    CID getThumbnail() {
-        return thumbnail;
-    }
-
-    void setThumbnail(@Nullable CID thumbnail) {
-        this.thumbnail = thumbnail;
     }
 
     public boolean areItemsTheSame(@NonNull Thread thread) {
@@ -232,11 +170,11 @@ public class Thread {
     }
 
     @Nullable
-    public CID getContent() {
+    public String getContent() {
         return content;
     }
 
-    public void setContent(@Nullable CID content) {
+    public void setContent(@Nullable String content) {
         this.content = content;
     }
 
@@ -289,15 +227,6 @@ public class Thread {
         this.deleting = deleting;
     }
 
-    @NonNull
-    Status getStatus() {
-        return status;
-    }
-
-    void setStatus(@NonNull Status status) {
-        this.status = status;
-    }
-
     @Nullable
     public String getWork() {
         return work;
@@ -325,14 +254,6 @@ public class Thread {
 
     public int getLocation() {
         return location;
-    }
-
-    boolean isHidden() {
-        return hidden;
-    }
-
-    void setHidden(boolean hidden) {
-        this.hidden = hidden;
     }
 
     public boolean hasContent() {

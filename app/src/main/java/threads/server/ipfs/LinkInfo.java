@@ -32,8 +32,8 @@ public class LinkInfo {
     }
 
     @NonNull
-    public CID getContent() {
-        return CID.create(hash);
+    public String getContent() {
+        return hash;
     }
 
     @Override

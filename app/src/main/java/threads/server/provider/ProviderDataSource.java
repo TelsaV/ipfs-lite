@@ -13,13 +13,12 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import lite.Reader;
-import threads.server.ipfs.CID;
 import threads.server.ipfs.IPFS;
 
 public class ProviderDataSource extends BaseDataSource {
 
     private final IPFS ipfs;
-    private final CID cid;
+    private final String cid;
     private Reader fileReader;
     @Nullable
     private Uri uri;
@@ -27,7 +26,7 @@ public class ProviderDataSource extends BaseDataSource {
     private boolean opened;
 
 
-    public ProviderDataSource(@NonNull IPFS ipfs, @NonNull CID cid) {
+    public ProviderDataSource(@NonNull IPFS ipfs, @NonNull String cid) {
         super(false);
         this.cid = cid;
         this.ipfs = ipfs;

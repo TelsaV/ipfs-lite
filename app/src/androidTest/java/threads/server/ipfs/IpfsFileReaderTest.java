@@ -32,7 +32,7 @@ public class IpfsFileReaderTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         String text = "Hello Moin";
-        CID hash = ipfs.storeText(text);
+        String hash = ipfs.storeText(text);
         assertNotNull(hash);
         int txtSize = text.length();
 

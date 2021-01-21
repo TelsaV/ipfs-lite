@@ -50,7 +50,7 @@ public class IpfsSwarmReaderTest {
         long now = System.currentTimeMillis();
 
 
-        byte[] data = ipfs.loadData(CID.create(cid), new TimeoutProgress(10));
+        byte[] data = ipfs.loadData(cid, new TimeoutProgress(10));
         assertNotNull(data);
         LogUtils.error(TAG, "Bytes : " + data.length / 1000 + "[kb]" +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");

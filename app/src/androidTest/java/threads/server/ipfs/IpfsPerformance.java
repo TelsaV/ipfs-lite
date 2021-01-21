@@ -64,9 +64,9 @@ public class IpfsPerformance {
 
         LogUtils.error(TAG, "Bytes : " + inputFile.length() / 1000 + "[kb]");
         long now = System.currentTimeMillis();
-        CID cid = ipfs.storeFile(inputFile);
+        String cid = ipfs.storeFile(inputFile);
         assertNotNull(cid);
-        LogUtils.error(TAG, "Add : " + cid.getCid() +
+        LogUtils.error(TAG, "Add : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 
         File file = createCacheFile();
@@ -93,7 +93,7 @@ public class IpfsPerformance {
         assertTrue(inputFile.delete());
 
 
-        ipfs.rm(cid.getCid(), true);
+        ipfs.rm(cid, true);
         ipfs.gc();
 
 
@@ -122,7 +122,7 @@ public class IpfsPerformance {
 
         LogUtils.error(TAG, "Bytes : " + inputFile.length() / 1000 + "[kb]");
 
-        CID cid = ipfs.storeFile(inputFile);
+        String cid = ipfs.storeFile(inputFile);
         assertNotNull(cid);
         File file = createCacheFile();
         ipfs.storeToFile(file, cid, 4096);
@@ -135,7 +135,7 @@ public class IpfsPerformance {
         assertTrue(inputFile.delete());
 
 
-        ipfs.rm(cid.getCid(), true);
+        ipfs.rm(cid, true);
         ipfs.gc();
 
     }
@@ -163,9 +163,9 @@ public class IpfsPerformance {
 
 
         long now = System.currentTimeMillis();
-        CID cid = ipfs.storeFile(inputFile);
+        String cid = ipfs.storeFile(inputFile);
         assertNotNull(cid);
-        LogUtils.error(TAG, "Add : " + cid.getCid() +
+        LogUtils.error(TAG, "Add : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 
 
@@ -216,23 +216,23 @@ public class IpfsPerformance {
 
 
         now = System.currentTimeMillis();
-        CID hash58Base_2 = ipfs.storeFile(inputFile);
+        String hash58Base_2 = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base_2);
-        LogUtils.error(TAG, "Add : " + hash58Base_2.getCid() +
+        LogUtils.error(TAG, "Add : " + hash58Base_2 +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 
 
         now = System.currentTimeMillis();
         File outputFile1 = createCacheFile();
         ipfs.storeToFile(outputFile1, cid, 4096);
-        LogUtils.error(TAG, "Cat : " + cid.getCid() +
+        LogUtils.error(TAG, "Cat : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 
 
         now = System.currentTimeMillis();
         File outputFile2 = createCacheFile();
         ipfs.storeToFile(outputFile2, cid, 4096);
-        LogUtils.error(TAG, "Cat : " + cid.getCid() +
+        LogUtils.error(TAG, "Cat : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 
 
@@ -242,7 +242,7 @@ public class IpfsPerformance {
         assertTrue(outputFile1.delete());
         assertTrue(inputFile.delete());
 
-        ipfs.rm(cid.getCid(), true);
+        ipfs.rm(cid, true);
         ipfs.gc();
 
     }

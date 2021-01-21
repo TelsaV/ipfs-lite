@@ -687,7 +687,7 @@ public class IPFS implements Listener {
         }
     }
 
-    public List<String> dhtFindProviders(@NonNull CID cid, int numProvs, int timeout) {
+    public List<String> dhtFindProviders(@NonNull String cid, int numProvs, int timeout) {
 
         if (!isDaemonRunning()) {
             return Collections.emptyList();
@@ -697,7 +697,7 @@ public class IPFS implements Listener {
 
         try {
 
-            node.dhtFindProvsTimeout(cid.getCid(), providers::add
+            node.dhtFindProvsTimeout(cid, providers::add
                     , numProvs, timeout);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -705,14 +705,14 @@ public class IPFS implements Listener {
         return providers;
     }
 
-    public void dhtPublish(@NonNull CID cid, @NonNull DhtClose closable) {
+    public void dhtPublish(@NonNull String cid, @NonNull DhtClose closable) {
 
         if (!isDaemonRunning()) {
             return;
         }
 
         try {
-            node.dhtProvide(cid.getCid(), closable);
+            node.dhtProvide(cid, closable);
         } catch (Throwable ignore) {
         }
     }
@@ -816,12 +816,12 @@ public class IPFS implements Listener {
         return peers;
     }
 
-    public void publishName(@NonNull CID cid, @NonNull Closeable closeable, @NonNull Sequence sequence) {
+    public void publishName(@NonNull String cid, @NonNull Closeable closeable, @NonNull Sequence sequence) {
         if (!isDaemonRunning()) {
             return;
         }
         try {
-            node.publishName(cid.getCid(), closeable::isClosed, sequence);
+            node.publishName(cid, closeable::isClosed, sequence);
         } catch (Throwable ignore) {
         }
     }
@@ -911,7 +911,7 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public CID storeData(@NonNull byte[] data) {
+    public String storeData(@NonNull byte[] data) {
 
         try (InputStream inputStream = new ByteArrayInputStream(data)) {
             return storeInputStream(inputStream);
@@ -922,7 +922,7 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public CID storeText(@NonNull String content) {
+    public String storeText(@NonNull String content) {
 
         try (InputStream inputStream = new ByteArrayInputStream(content.getBytes())) {
             return storeInputStream(inputStream);
@@ -933,9 +933,9 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public CID rmLinkFromDir(CID dir, String name) {
+    public String rmLinkFromDir(String dir, String name) {
         try {
-            return CID.create(node.removeLinkFromDir(dir.getCid(), name));
+            return node.removeLinkFromDir(dir, name);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -943,9 +943,9 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public CID addLinkToDir(@NonNull CID dir, @NonNull String name, @NonNull CID link) {
+    public String addLinkToDir(@NonNull String dir, @NonNull String name, @NonNull String link) {
         try {
-            return CID.create(node.addLinkToDir(dir.getCid(), name, link.getCid()));
+            return node.addLinkToDir(dir, name, link);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -953,9 +953,9 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public CID createEmptyDir() {
+    public String createEmptyDir() {
         try {
-            return CID.create(node.createEmptyDir());
+            return node.createEmptyDir();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -963,10 +963,10 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public LinkInfo getLinkInfo(@NonNull CID dir, @NonNull List<String> path, @NonNull Closeable closeable) {
+    public LinkInfo getLinkInfo(@NonNull String dir, @NonNull List<String> path, @NonNull Closeable closeable) {
 
         LinkInfo linkInfo = null;
-        CID root = dir;
+        String root = dir;
 
         for (String name : path) {
             linkInfo = getLinkInfo(root, name, closeable);
@@ -981,7 +981,7 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public LinkInfo getLinkInfo(@NonNull CID dir, @NonNull String name, @NonNull Closeable closeable) {
+    public LinkInfo getLinkInfo(@NonNull String dir, @NonNull String name, @NonNull Closeable closeable) {
         List<LinkInfo> links = ls(dir, closeable);
         if (links != null) {
             for (LinkInfo info : links) {
@@ -994,9 +994,9 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public List<LinkInfo> getLinks(@NonNull CID cid, @NonNull Closeable closeable) {
+    public List<LinkInfo> getLinks(@NonNull String cid, @NonNull Closeable closeable) {
 
-        LogUtils.info(TAG, "Lookup CID : " + cid.getCid());
+        LogUtils.info(TAG, "Lookup CID : " + cid);
 
         List<LinkInfo> links = ls(cid, closeable);
         if (links == null) {
@@ -1015,14 +1015,14 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public List<LinkInfo> ls(@NonNull CID cid, @NonNull Closeable closeable) {
+    public List<LinkInfo> ls(@NonNull String cid, @NonNull Closeable closeable) {
         if (!isDaemonRunning()) {
             return Collections.emptyList();
         }
         List<LinkInfo> infoList = new ArrayList<>();
         try {
 
-            node.ls(cid.getCid(), new LsInfoClose() {
+            node.ls(cid, new LsInfoClose() {
                 @Override
                 public boolean close() {
                     return closeable.isClosed();
@@ -1046,10 +1046,10 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public CID storeFile(@NonNull File target) {
+    public String storeFile(@NonNull File target) {
 
         try {
-            return CID.create(node.addFile(target.getAbsolutePath()));
+            return node.addFile(target.getAbsolutePath());
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -1057,11 +1057,11 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    public Reader getReader(@NonNull CID cid) throws Exception {
-        return node.getReader(cid.getCid());
+    public Reader getReader(@NonNull String cid) throws Exception {
+        return node.getReader(cid);
     }
 
-    private boolean loadToOutputStream(@NonNull OutputStream outputStream, @NonNull CID cid,
+    private boolean loadToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid,
                                        @NonNull Progress progress) {
 
         try (InputStream inputStream = getLoaderStream(cid, progress)) {
@@ -1074,13 +1074,13 @@ public class IPFS implements Listener {
 
     }
 
-    private void getToOutputStream(@NonNull OutputStream outputStream, @NonNull CID cid) throws Exception {
+    private void getToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid) throws Exception {
         try (InputStream inputStream = getInputStream(cid)) {
             IPFS.copy(inputStream, outputStream);
         }
     }
 
-    public boolean loadToFile(@NonNull File file, @NonNull CID cid, @NonNull Progress progress) {
+    public boolean loadToFile(@NonNull File file, @NonNull String cid, @NonNull Progress progress) {
         if (!isDaemonRunning()) {
             return false;
         }
@@ -1094,7 +1094,7 @@ public class IPFS implements Listener {
     }
 
     public void storeToOutputStream(@NonNull OutputStream os, @NonNull Progress progress,
-                                    @NonNull CID cid, long size) throws Exception {
+                                    @NonNull String cid, long size) throws Exception {
 
         long totalRead = 0L;
         int remember = 0;
@@ -1133,7 +1133,7 @@ public class IPFS implements Listener {
 
     }
 
-    public void storeToOutputStream(@NonNull OutputStream os, @NonNull CID cid, int blockSize) throws Exception {
+    public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, int blockSize) throws Exception {
 
         Reader reader = getReader(cid);
         try {
@@ -1154,13 +1154,13 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    private Loader getLoader(@NonNull CID cid, @NonNull Closeable closeable) throws Exception {
-        return node.getLoader(cid.getCid(), closeable::isClosed);
+    private Loader getLoader(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
+        return node.getLoader(cid, closeable::isClosed);
 
     }
 
     @NonNull
-    public InputStream getLoaderStream(@NonNull CID cid, @NonNull Closeable closeable, long readTimeoutMillis) throws Exception {
+    public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable, long readTimeoutMillis) throws Exception {
 
         Loader loader = getLoader(cid, closeable);
 
@@ -1169,7 +1169,7 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    public InputStream getLoaderStream(@NonNull CID cid, @NonNull Progress progress) throws Exception {
+    public InputStream getLoaderStream(@NonNull String cid, @NonNull Progress progress) throws Exception {
 
         Loader loader = getLoader(cid, progress);
 
@@ -1177,7 +1177,7 @@ public class IPFS implements Listener {
 
     }
 
-    public void storeToFile(@NonNull File file, @NonNull CID cid, int blockSize) throws Exception {
+    public void storeToFile(@NonNull File file, @NonNull String cid, int blockSize) throws Exception {
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             storeToOutputStream(fileOutputStream, cid, blockSize);
@@ -1186,8 +1186,8 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public CID storeInputStream(@NonNull InputStream inputStream,
-                                @NonNull Progress progress, long size) {
+    public String storeInputStream(@NonNull InputStream inputStream,
+                                   @NonNull Progress progress, long size) {
 
 
         String res = "";
@@ -1200,13 +1200,13 @@ public class IPFS implements Listener {
         }
 
         if (!res.isEmpty()) {
-            return CID.create(res);
+            return res;
         }
         return null;
     }
 
     @Nullable
-    public CID storeInputStream(@NonNull InputStream inputStream) {
+    public String storeInputStream(@NonNull InputStream inputStream) {
 
         return storeInputStream(inputStream, new Progress() {
             @Override
@@ -1228,7 +1228,7 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public String getText(@NonNull CID cid) {
+    public String getText(@NonNull String cid) {
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             getToOutputStream(outputStream, cid);
@@ -1240,7 +1240,7 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public byte[] getData(@NonNull CID cid) {
+    public byte[] getData(@NonNull String cid) {
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             getToOutputStream(outputStream, cid);
@@ -1252,7 +1252,7 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public byte[] loadData(@NonNull CID cid, @NonNull Progress progress) {
+    public byte[] loadData(@NonNull String cid, @NonNull Progress progress) {
         if (!isDaemonRunning()) {
             return null;
         }
@@ -1314,7 +1314,7 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    public InputStream getInputStream(@NonNull CID cid) throws Exception {
+    public InputStream getInputStream(@NonNull String cid) throws Exception {
         Reader reader = getReader(cid);
         return new ReaderInputStream(reader);
 
@@ -1368,16 +1368,16 @@ public class IPFS implements Listener {
         });
     }
 
-    public boolean isEmptyDir(@NonNull CID cid) {
-        return Objects.equals(cid.getCid(), EMPTY_DIR_32) || Objects.equals(cid.getCid(), EMPTY_DIR_58);
+    public boolean isEmptyDir(@NonNull String cid) {
+        return Objects.equals(cid, EMPTY_DIR_32) || Objects.equals(cid, EMPTY_DIR_58);
     }
 
-    public boolean isDir(@NonNull CID doc, @NonNull Closeable closeable) {
+    public boolean isDir(@NonNull String doc, @NonNull Closeable closeable) {
         List<LinkInfo> links = getLinks(doc, closeable);
         return links != null && !links.isEmpty();
     }
 
-    public long getSize(@NonNull CID cid, @NonNull Closeable closeable) {
+    public long getSize(@NonNull String cid, @NonNull Closeable closeable) {
         List<LinkInfo> links = ls(cid, closeable);
         int size = -1;
         if (links != null) {

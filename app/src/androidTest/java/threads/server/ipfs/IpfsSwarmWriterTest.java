@@ -60,8 +60,8 @@ public class IpfsSwarmWriterTest {
 
         File file = createRandomFile();
 
-        CID hash58Base = ipfs.storeFile(file);
-        LogUtils.error(TAG, "CID : " + Objects.requireNonNull(hash58Base).getCid());
+        String hash58Base = ipfs.storeFile(file);
+        LogUtils.error(TAG, "CID : " + Objects.requireNonNull(hash58Base));
 
 
         try {

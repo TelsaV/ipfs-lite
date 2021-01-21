@@ -38,8 +38,8 @@ public class IpfsDaemonTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         String content = getRandomString();
-        CID hash58Base = ipfs.storeText(content);
-        LogUtils.error(TAG, Objects.requireNonNull(hash58Base).getCid());
+        String hash58Base = ipfs.storeText(content);
+        LogUtils.error(TAG, Objects.requireNonNull(hash58Base));
 
         byte[] contentLocal = ipfs.getData(hash58Base);
         assertEquals(content, new String(Objects.requireNonNull(contentLocal)));

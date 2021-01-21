@@ -34,7 +34,7 @@ public class IpfsCatTest {
     public void cat_test() {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
-        CID cid = CID.create("Qmaisz6NMhDB51cCvNWa1GMS7LU1pAxdF4Ld6Ft9kZEP2a");
+        String cid = "Qmaisz6NMhDB51cCvNWa1GMS7LU1pAxdF4Ld6Ft9kZEP2a";
         long time = System.currentTimeMillis();
         List<String> provs = ipfs.dhtFindProviders(cid, 10, 45);
         for (String prov : provs) {
@@ -57,7 +57,7 @@ public class IpfsCatTest {
 
 
         time = System.currentTimeMillis();
-        ipfs.rm(cid.getCid(), true);
+        ipfs.rm(cid, true);
         LogUtils.error(TAG, "Time : " + (System.currentTimeMillis() - time) + " [ms]");
 
     }
@@ -68,7 +68,7 @@ public class IpfsCatTest {
 
 
         IPFS ipfs = TestEnv.getTestInstance(context);
-        CID cid = CID.create("QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nt");
+        String cid = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nt";
 
 
         byte[] content = ipfs.loadData(cid, new TimeoutProgress(10));
@@ -84,9 +84,9 @@ public class IpfsCatTest {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         //noinspection SpellCheckingInspection
-        CID cid = CID.create("Qme6rRsAb8YCfmQpvDsobZAiWNRefcJw8eFw3WV4pME82V");
+        String cid = "Qme6rRsAb8YCfmQpvDsobZAiWNRefcJw8eFw3WV4pME82V";
 
-        CID local = ipfs.storeText("Moin Moin Moin");
+        String local = ipfs.storeText("Moin Moin Moin");
         assertNotNull(local);
 
 
@@ -101,7 +101,7 @@ public class IpfsCatTest {
     public void cat_empty() {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
-        CID cid = CID.create("QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn");
+        String cid = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
         List<LinkInfo> res = ipfs.ls(cid, new TimeoutProgress(10));
         assertNotNull(res);
 
@@ -110,7 +110,7 @@ public class IpfsCatTest {
 
         assertNull(content);
 
-        ipfs.rm(cid.getCid(), true);
+        ipfs.rm(cid, true);
 
     }
 }

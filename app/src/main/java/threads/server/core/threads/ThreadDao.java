@@ -10,9 +10,6 @@ import androidx.room.TypeConverters;
 
 import java.util.List;
 
-import threads.server.core.Converter;
-import threads.server.ipfs.CID;
-
 @Dao
 public interface ThreadDao {
 
@@ -23,8 +20,7 @@ public interface ThreadDao {
     void setError(long idx);
 
     @Query("SELECT content FROM Thread WHERE idx = :idx")
-    @TypeConverters({Converter.class})
-    CID getContent(long idx);
+    String getContent(long idx);
 
     @Query("UPDATE Thread SET leaching = 1  WHERE idx = :idx")
     void setLeaching(long idx);
@@ -42,8 +38,7 @@ public interface ThreadDao {
     void resetDeleting(long idx);
 
     @Query("SELECT * FROM Thread WHERE content = :cid AND parent = :parent AND location =:location")
-    @TypeConverters({Converter.class})
-    List<Thread> getThreadsByContentAndParent(int location, CID cid, long parent);
+    List<Thread> getThreadsByContentAndParent(int location, String cid, long parent);
 
     @Query("SELECT * FROM Thread WHERE name = :name AND parent = :parent AND location =:location")
     List<Thread> getThreadsByNameAndParent(int location, String name, long parent);
@@ -51,9 +46,8 @@ public interface ThreadDao {
     @Delete
     void removeThreads(List<Thread> threads);
 
-    @Query("SELECT COUNT(idx) FROM Thread WHERE content =:cid OR thumbnail =:cid AND location =:location")
-    @TypeConverters({Converter.class})
-    int references(int location, CID cid);
+    @Query("SELECT COUNT(idx) FROM Thread WHERE content =:cid OR location =:location")
+    int references(int location, String cid);
 
     @Query("SELECT * FROM Thread WHERE parent =:thread AND location =:location")
     List<Thread> getChildren(int location, long thread);
@@ -69,8 +63,7 @@ public interface ThreadDao {
     LiveData<List<Thread>> getLiveDataVisibleChildrenByQuery(int location, long parent, String query);
 
     @Query("UPDATE Thread SET content =:cid  WHERE idx = :idx")
-    @TypeConverters({Converter.class})
-    void setContent(long idx, CID cid);
+    void setContent(long idx, String cid);
 
     @Query("UPDATE Thread SET mimeType =:mimeType WHERE idx = :idx")
     void setMimeType(long idx, String mimeType);
@@ -101,8 +94,7 @@ public interface ThreadDao {
     void setDone(long idx);
 
     @Query("UPDATE Thread SET content =:cid, seeding = 1, init = 0, progress = 0, leaching = 0 WHERE idx = :idx")
-    @TypeConverters({Converter.class})
-    void setDone(long idx, CID cid);
+    void setDone(long idx, String cid);
 
     @Query("UPDATE Thread SET size = :size WHERE idx = :idx")
     void setSize(long idx, long size);
