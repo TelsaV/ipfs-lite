@@ -155,12 +155,12 @@ public class PageWorker extends Worker {
                     Executors.newSingleThreadExecutor().execute(() -> publishContent(content));
                 }
 
-                LogUtils.error(TAG, "Start publish name " + content.toString());
+                LogUtils.error(TAG, "Start publish name " + content);
 
                 ipfs.publishName(content, this::isStopped,
                         sequence -> publishSequence(content, sequence));
 
-                LogUtils.error(TAG, "End publish name " + content.toString());
+                LogUtils.error(TAG, "End publish name " + content);
 
 
             }

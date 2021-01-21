@@ -3,11 +3,9 @@ package threads.server.services;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.work.WorkManager;
 
 import com.google.gson.Gson;
 
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,7 +13,6 @@ import threads.LogUtils;
 import threads.server.core.DeleteOperation;
 import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
-import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
 
 public class UserService {
