@@ -17,23 +17,12 @@ public class Page {
     @Nullable
     @ColumnInfo(name = "content")
     private String content;
-    @ColumnInfo(name = "timestamp")
-    private long timestamp;
     @ColumnInfo(name = "outdated")
     private boolean outdated;
 
     public Page(@NonNull String hash) {
         this.hash = hash;
         this.outdated = false;
-        this.timestamp = System.currentTimeMillis();
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
     }
 
     public boolean isOutdated() {
@@ -50,7 +39,6 @@ public class Page {
         return "Page{" +
                 "hash='" + hash + '\'' +
                 ", content=" + content +
-                ", timestamp=" + timestamp +
                 ", outdated=" + outdated + '\'' +
                 '}';
     }

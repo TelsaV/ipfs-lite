@@ -483,7 +483,6 @@ public class DOCS {
                 page = pages.createPage(getHost());
                 String dir = ipfs.createEmptyDir();
                 Objects.requireNonNull(dir);
-                page.setTimestamp(System.currentTimeMillis());
                 page.setOutdated(false);
                 page.setContent(dir);
                 pages.storePage(page);
@@ -525,8 +524,6 @@ public class DOCS {
                     Objects.requireNonNull(dir);
                 }
             }
-
-            page.setTimestamp(System.currentTimeMillis());
             page.setOutdated(false);
             page.setContent(dir);
             pages.storePage(page);
