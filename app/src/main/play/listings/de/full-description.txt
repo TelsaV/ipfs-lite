@@ -6,7 +6,6 @@ The InterPlanetary File System <i>is a peer-to-peer (p2p) filesharing system tha
 Official website of IPFS: https://ipfs.io/
 
 <h2><b>Features</b></h2>
-Support the standard uses cases of IPFS (like adding, getting and publishing files).</br>
-Provide a user interface to realize this common use cases.</br>
-Limited configuration of the IPFS node is possible.</br>
-Run the IPFS node in client or server mode.</br>
+Unterstützung der Standardanwendungsfälle von IPFS.</br>
+Unterstützt eine begrenzte Konfiguration des IPFS-Knotens.</br>
+Betreiben Sie den IPFS-Knoten im Client- oder Server-Modus.</br>

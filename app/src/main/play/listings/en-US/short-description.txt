@@ -1,1 +1,1 @@
-IPFS Lite node to support the standard use cases of IPFS
+Unterstützt die Standard-Anwendungsfälle von IPFS
