@@ -44,11 +44,11 @@ public class CodecDecider {
                     }
                 } else if (Objects.equals(uri.getScheme(), Content.IPNS)) {
                     String multihash = uri.getHost();
-                    if (ipfs.isValidPID(multihash)) {
-                        codecDecider.setMultihash(multihash);
+
+                    codecDecider.setMultihash(multihash);
                         codecDecider.setCodex(Codec.IPNS_URI);
                         return codecDecider;
-                    }
+
                 } else if (Objects.equals(uri.getScheme(), "p2p")) { // todo remove in the future
                     String multihash = uri.getHost();
                     if (ipfs.isValidPID(multihash)) {
