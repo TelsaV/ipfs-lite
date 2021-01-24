@@ -599,10 +599,7 @@ public class BrowserFragment extends Fragment implements
                         }
 
                         {
-                            Uri newUri = docs.invalidUri(uri);
-                            if (!Objects.equals(uri, newUri)) {
-                                return createEmptyResource();
-                            }
+                            uri = docs.redirectUri(uri);
                         }
 
 

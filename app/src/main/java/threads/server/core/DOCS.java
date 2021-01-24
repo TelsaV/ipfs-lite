@@ -29,6 +29,7 @@ import threads.server.core.peers.User;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.Closeable;
+import threads.server.ipfs.DnsAddrResolver;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.LinkInfo;
 import threads.server.magic.ContentInfo;
@@ -841,7 +842,7 @@ public class DOCS {
 
 
     @NonNull
-    public Uri invalidUri(@NonNull Uri uri) {
+    public Uri redirectUri(@NonNull Uri uri) {
 
 
         if (Objects.equals(uri.getScheme(), Content.IPNS) ||
@@ -850,19 +851,30 @@ public class DOCS {
             String host = uri.getHost();
             Objects.requireNonNull(host);
             if (!ipfs.isValidCID(host)) {
-                Uri.Builder builder = new Uri.Builder();
-                builder.scheme(Content.HTTPS)
-                        .appendPath(host);
-                for (String path : paths) {
-                    builder.appendPath(path);
+                String cid = DnsAddrResolver.getDNSLink(host);
+                if(cid == null) {
+                    Uri.Builder builder = new Uri.Builder();
+                    builder.scheme(Content.HTTPS)
+                            .authority(host);
+                    for (String path : paths) {
+                        builder.appendPath(path);
+                    }
+
+                    return builder.build();
+                } else {
+                    Uri.Builder builder = new Uri.Builder();
+                    builder.scheme(Content.IPFS)
+                            .authority(cid);
+                    for (String path : paths) {
+                        builder.appendPath(path);
+                    }
+                    return builder.build();
                 }
 
-                return builder.build();
             }
         }
         return uri;
     }
-
 
     @NonNull
     private String getMimeType(@NonNull Uri uri,
