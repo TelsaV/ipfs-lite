@@ -19,7 +19,7 @@ public class ThreadViewModel extends AndroidViewModel {
     }
 
 
-    public LiveData<List<Thread>> getVisibleChildrenByQuery(int ident, long thread, String query) {
+    public LiveData<List<Thread>> getVisibleChildrenByQuery(long thread, String query) {
 
         String searchQuery = query.trim();
         if (!searchQuery.startsWith("%")) {
@@ -29,7 +29,7 @@ public class ThreadViewModel extends AndroidViewModel {
             searchQuery = searchQuery + "%";
         }
         return threadsDatabase.threadDao().getLiveDataVisibleChildrenByQuery(
-                ident, thread, searchQuery);
+                thread, searchQuery);
     }
 
 }

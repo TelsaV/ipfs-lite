@@ -81,17 +81,17 @@ public class THREADS {
     }
 
     @NonNull
-    public Thread createThread(int location, long parent) {
-        return Thread.createThread(location, parent);
+    public Thread createThread(long parent) {
+        return Thread.createThread(parent);
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public boolean isReferenced(int location, @NonNull String cid) {
-        return getThreadsDatabase().threadDao().references(location, cid) > 0;
+    public boolean isReferenced(@NonNull String cid) {
+        return getThreadsDatabase().threadDao().references(cid) > 0;
     }
 
-    public List<Thread> getNewestThreads(int location, int limit) {
-        return getThreadsDatabase().threadDao().getNewestThreads(location, limit);
+    public List<Thread> getNewestThreads(int limit) {
+        return getThreadsDatabase().threadDao().getNewestThreads(limit);
     }
 
     public void removeThread(long idx) {
@@ -123,22 +123,22 @@ public class THREADS {
     }
 
     @NonNull
-    public List<Thread> getPins(int location) {
-        return getThreadsDatabase().threadDao().getPins(location);
+    public List<Thread> getPins() {
+        return getThreadsDatabase().threadDao().getPins();
     }
 
     @NonNull
-    public List<Thread> getChildren(int location, long parent) {
-        return getThreadsDatabase().threadDao().getChildren(location, parent);
+    public List<Thread> getChildren(long parent) {
+        return getThreadsDatabase().threadDao().getChildren(parent);
     }
 
-    public long getChildrenSummarySize(int location, long parent) {
-        return getThreadsDatabase().threadDao().getChildrenSummarySize(location, parent);
+    public long getChildrenSummarySize(long parent) {
+        return getThreadsDatabase().threadDao().getChildrenSummarySize(parent);
     }
 
     @NonNull
-    public List<Thread> getVisibleChildren(int location, long thread) {
-        return getThreadsDatabase().threadDao().getVisibleChildren(location, thread);
+    public List<Thread> getVisibleChildren(long thread) {
+        return getThreadsDatabase().threadDao().getVisibleChildren(thread);
     }
 
     @Nullable
@@ -156,18 +156,18 @@ public class THREADS {
     }
 
     @NonNull
-    public List<Thread> getThreadsByContentAndParent(int location, @NonNull String cid, long thread) {
+    public List<Thread> getThreadsByContentAndParent(@NonNull String cid, long thread) {
 
-        return getThreadsDatabase().threadDao().getThreadsByContentAndParent(location, cid, thread);
+        return getThreadsDatabase().threadDao().getThreadsByContentAndParent(cid, thread);
     }
 
     @NonNull
-    public List<Thread> getThreadsByNameAndParent(int location, @NonNull String name, long thread) {
+    public List<Thread> getThreadsByNameAndParent(@NonNull String name, long thread) {
 
-        return getThreadsDatabase().threadDao().getThreadsByNameAndParent(location, name, thread);
+        return getThreadsDatabase().threadDao().getThreadsByNameAndParent(name, thread);
     }
 
-    public List<Thread> getThreadsByQuery(int location, String query) {
+    public List<Thread> getThreadsByQuery(String query) {
 
         String searchQuery = query.trim();
         if (!searchQuery.startsWith("%")) {
@@ -176,7 +176,7 @@ public class THREADS {
         if (!searchQuery.endsWith("%")) {
             searchQuery = searchQuery + "%";
         }
-        return getThreadsDatabase().threadDao().getThreadsByQuery(location, searchQuery);
+        return getThreadsDatabase().threadDao().getThreadsByQuery(searchQuery);
     }
 
     public void setThreadProgress(long idx, int progress) {
@@ -212,21 +212,21 @@ public class THREADS {
         getThreadsDatabase().threadDao().resetInit(idx);
     }
 
-    public List<Thread> getDeletedThreads(int location) {
-        return getThreadsDatabase().threadDao().getDeletedThreads(location, System.currentTimeMillis());
+    public List<Thread> getDeletedThreads() {
+        return getThreadsDatabase().threadDao().getDeletedThreads(System.currentTimeMillis());
     }
 
     public void setThreadLastModified(long idx, long time) {
         getThreadsDatabase().threadDao().setLastModified(idx, time);
     }
 
-    public List<Thread> getSelfAndAllChildren(int location, @NonNull Thread thread) {
+    public List<Thread> getSelfAndAllChildren(@NonNull Thread thread) {
 
         List<Thread> children = new ArrayList<>();
         children.add(thread);
-        List<Thread> entries = getChildren(location, thread.getIdx());
+        List<Thread> entries = getChildren(thread.getIdx());
         for (Thread entry : entries) {
-            children.addAll(getSelfAndAllChildren(location, entry));
+            children.addAll(getSelfAndAllChildren(entry));
         }
         return children;
     }

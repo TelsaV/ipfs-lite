@@ -254,8 +254,7 @@ public class UploadThreadWorker extends Worker {
 
 
                         String name = fileInfo.getFilename();
-                        List<Thread> names = threads.getThreadsByNameAndParent(
-                                ipfs.getLocation(), name, 0L);
+                        List<Thread> names = threads.getThreadsByNameAndParent(name, 0L);
                         names.remove(thread);
                         if (!names.isEmpty()) {
                             name = docs.getUniqueName(name, 0L);
@@ -398,7 +397,7 @@ public class UploadThreadWorker extends Worker {
     }
 
     private void updateParentSize(long idx) {
-        long size = threads.getChildrenSummarySize(ipfs.getLocation(), idx);
+        long size = threads.getChildrenSummarySize(idx);
         threads.setThreadSize(idx, size);
     }
 
@@ -414,7 +413,7 @@ public class UploadThreadWorker extends Worker {
 
             updateParentSize(parent);
 
-            List<Thread> list = threads.getChildren(ipfs.getLocation(), parent);
+            List<Thread> list = threads.getChildren(parent);
             for (Thread entry : list) {
                 if (entry.isSeeding()) {
                     allSeeding++;
@@ -462,7 +461,7 @@ public class UploadThreadWorker extends Worker {
                 success = true;
             } else {
                 File file = FileProvider.getInstance(
-                        getApplicationContext()).createDataFile(cid);
+                        getApplicationContext()).createDataFile(threadIdx);
 
                 AtomicLong refresh = new AtomicLong(System.currentTimeMillis());
                 success = ipfs.loadToFile(file, cid,
@@ -519,7 +518,7 @@ public class UploadThreadWorker extends Worker {
                         threads.setThreadMimeType(threadIdx, mimeType);
                     }
 
-                    Uri uri = FileProvider.getDataUri(getApplicationContext(), cid);
+                    Uri uri = FileProvider.getDataUri(getApplicationContext(), idx);
                     if (uri != null) {
                         threads.setThreadUri(idx, uri.toString());
                     }
@@ -670,8 +669,7 @@ public class UploadThreadWorker extends Worker {
 
     private Thread getFolderThread(long parent, @NonNull String cid) {
 
-        List<Thread> entries =
-                threads.getThreadsByContentAndParent(ipfs.getLocation(), cid, parent);
+        List<Thread> entries = threads.getThreadsByContentAndParent(cid, parent);
         if (!entries.isEmpty()) {
             return entries.get(0);
         }

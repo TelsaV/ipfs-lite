@@ -40,8 +40,8 @@ import lite.Peer;
 import threads.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
-import threads.server.core.events.EVENTS;
 import threads.server.core.Content;
+import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.peers.UsersViewModel;
@@ -460,10 +460,7 @@ public class PeersFragment extends Fragment implements
                     mActionMode.finish();
                 }
 
-                if (user.isLite()) {
-                    clickUserView(user.getPid());
-                }
-
+                clickUserView(user.getPid());
             }
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

@@ -37,30 +37,30 @@ public interface ThreadDao {
     @Query("UPDATE Thread SET deleting = 0 WHERE idx = :idx")
     void resetDeleting(long idx);
 
-    @Query("SELECT * FROM Thread WHERE content = :cid AND parent = :parent AND location =:location")
-    List<Thread> getThreadsByContentAndParent(int location, String cid, long parent);
+    @Query("SELECT * FROM Thread WHERE content = :cid AND parent = :parent")
+    List<Thread> getThreadsByContentAndParent(String cid, long parent);
 
-    @Query("SELECT * FROM Thread WHERE name = :name AND parent = :parent AND location =:location")
-    List<Thread> getThreadsByNameAndParent(int location, String name, long parent);
+    @Query("SELECT * FROM Thread WHERE name = :name AND parent = :parent")
+    List<Thread> getThreadsByNameAndParent(String name, long parent);
 
     @Delete
     void removeThreads(List<Thread> threads);
 
-    @Query("SELECT COUNT(idx) FROM Thread WHERE content =:cid OR location =:location")
-    int references(int location, String cid);
+    @Query("SELECT COUNT(idx) FROM Thread WHERE content =:cid")
+    int references(String cid);
 
-    @Query("SELECT * FROM Thread WHERE parent =:thread AND location =:location")
-    List<Thread> getChildren(int location, long thread);
+    @Query("SELECT * FROM Thread WHERE parent =:thread")
+    List<Thread> getChildren(long thread);
 
-    @Query("SELECT SUM(size) FROM Thread WHERE parent =:parent AND location =:location AND deleting = 0")
-    long getChildrenSummarySize(int location, long parent);
+    @Query("SELECT SUM(size) FROM Thread WHERE parent =:parent AND deleting = 0")
+    long getChildrenSummarySize(long parent);
 
     @Query("SELECT * FROM Thread WHERE idx =:idx")
     Thread getThreadByIdx(long idx);
 
 
-    @Query("SELECT * FROM Thread WHERE parent =:parent AND location =:location AND deleting = 0  AND name LIKE :query")
-    LiveData<List<Thread>> getLiveDataVisibleChildrenByQuery(int location, long parent, String query);
+    @Query("SELECT * FROM Thread WHERE parent =:parent AND deleting = 0  AND name LIKE :query")
+    LiveData<List<Thread>> getLiveDataVisibleChildrenByQuery(long parent, String query);
 
     @Query("UPDATE Thread SET content =:cid  WHERE idx = :idx")
     void setContent(long idx, String cid);
@@ -72,17 +72,17 @@ public interface ThreadDao {
     void setName(long idx, String name);
 
 
-    @Query("SELECT * FROM Thread WHERE parent = 0 AND deleting = 0 AND seeding = 1 AND location =:location")
-    List<Thread> getPins(int location);
+    @Query("SELECT * FROM Thread WHERE parent = 0 AND deleting = 0 AND seeding = 1")
+    List<Thread> getPins();
 
-    @Query("SELECT * FROM Thread WHERE parent =:parent AND deleting = 0 AND location =:location")
-    List<Thread> getVisibleChildren(int location, long parent);
+    @Query("SELECT * FROM Thread WHERE parent =:parent AND deleting = 0")
+    List<Thread> getVisibleChildren(long parent);
 
-    @Query("SELECT * FROM Thread WHERE location =:location AND seeding = 1 AND deleting = 0 ORDER BY lastModified DESC LIMIT :limit")
-    List<Thread> getNewestThreads(int location, int limit);
+    @Query("SELECT * FROM Thread WHERE seeding = 1 AND deleting = 0 ORDER BY lastModified DESC LIMIT :limit")
+    List<Thread> getNewestThreads(int limit);
 
-    @Query("SELECT * FROM Thread WHERE location =:location AND deleting = 0 AND name LIKE :query")
-    List<Thread> getThreadsByQuery(int location, String query);
+    @Query("SELECT * FROM Thread WHERE deleting = 0 AND name LIKE :query")
+    List<Thread> getThreadsByQuery(String query);
 
     @Query("UPDATE Thread SET progress = :progress WHERE idx = :idx")
     void setProgress(long idx, int progress);
@@ -112,8 +112,8 @@ public interface ThreadDao {
     @Query("UPDATE Thread SET init = 0 WHERE idx = :idx")
     void resetInit(long idx);
 
-    @Query("SELECT * FROM Thread WHERE deleting = 1 AND location =:location AND lastModified < :time")
-    List<Thread> getDeletedThreads(int location, long time);
+    @Query("SELECT * FROM Thread WHERE deleting = 1 AND lastModified < :time")
+    List<Thread> getDeletedThreads(long time);
 
     @Query("UPDATE Thread SET lastModified =:lastModified WHERE idx = :idx")
     void setLastModified(long idx, long lastModified);

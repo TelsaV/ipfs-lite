@@ -18,26 +18,17 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import threads.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
-import threads.server.core.peers.PEERS;
 import threads.server.ipfs.IPFS;
 import threads.server.work.SwarmConnectWorker;
 
 public class DaemonService extends Service {
 
     private static final String TAG = DaemonService.class.getSimpleName();
-    private final Gson gson = new Gson();
+
 
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 
@@ -102,15 +93,6 @@ public class DaemonService extends Service {
 
                 IPFS ipfs = IPFS.getInstance(getApplicationContext());
 
-
-                ipfs.setPusher((text, pid) -> {
-                    try {
-                        onMessageReceived(text, pid);
-                    } catch (Throwable throwable) {
-                        LogUtils.error(TAG, throwable);
-                    }
-                });
-
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(
                         getApplicationContext(), TAG);
 
@@ -164,38 +146,6 @@ public class DaemonService extends Service {
     }
 
 
-    public void onMessageReceived(@NonNull String remoteMessage, @NonNull String pid) {
-
-        try {
-            Type hashMap = new TypeToken<HashMap<String, String>>() {
-            }.getType();
-
-            Objects.requireNonNull(pid);
-            Map<String, String> data = gson.fromJson(remoteMessage, hashMap);
-
-            LogUtils.error(TAG, "Push Message : " + data.toString());
-
-
-            String ipns = data.get(Content.IPNS);
-            Objects.requireNonNull(ipns);
-            String seq = data.get(Content.SEQ);
-            Objects.requireNonNull(seq);
-
-            long sequence = Long.parseLong(seq);
-            if (sequence >= 0) {
-                IPFS ipfs = IPFS.getInstance(getApplicationContext());
-                if (ipfs.isValidCID(ipns)) {
-
-                    PEERS peers = PEERS.getInstance(getApplicationContext());
-                    peers.setUserIpns(pid, ipns, sequence);
-                }
-            }
-
-
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
 
     @Override
     public void onCreate() {

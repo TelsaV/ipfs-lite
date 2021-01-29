@@ -1,17 +1,11 @@
 package threads.server.ipfs;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.storage.StorageManager;
-import android.os.storage.StorageVolume;
-import android.util.Base64;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.google.gson.Gson;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,7 +17,6 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +41,8 @@ import lite.Reader;
 import lite.ResolveInfo;
 import lite.Sequence;
 import threads.LogUtils;
+import threads.server.core.blocks.BLOCKS;
+import threads.server.core.blocks.Block;
 import threads.server.core.events.EVENTS;
 
 public class IPFS implements Listener {
@@ -60,7 +55,6 @@ public class IPFS implements Listener {
     private static final String HIGH_WATER_KEY = "highWaterKey";
     private static final String LOW_WATER_KEY = "lowWaterKey";
     private static final String GRACE_PERIOD_KEY = "gracePeriodKey";
-    private static final String STORAGE_DIRECTORY = "storageDirectoryKey";
     private static final String SWARM_KEY = "swarmKey";
     private static final String SWARM_PORT_KEY = "swarmPortKey";
     private static final String PUBLIC_KEY = "publicKey";
@@ -68,13 +62,12 @@ public class IPFS implements Listener {
     private static final String PRIVATE_KEY = "privateKey";
     private static final String TAG = IPFS.class.getSimpleName();
     private static IPFS INSTANCE = null;
-    private final File baseDir;
     private final EVENTS events;
     private final Node node;
     private final Object locker = new Object();
-    private final int location;
     private final HashSet<String> swarm = new HashSet<>();
-    private final Gson gson = new Gson();
+    private final BLOCKS blocks;
+
     private long seeding = 0L;
     private long leeching = 0L;
     private Pusher pusher;
@@ -84,27 +77,15 @@ public class IPFS implements Listener {
 
     private IPFS(@NonNull Context context) throws Exception {
 
-        File dir = getExternalStorageDirectory(context);
         events = EVENTS.getInstance(context);
-        if (dir == null) {
-            this.baseDir = context.getFilesDir();
-            this.location = 0;
-        } else {
-            StorageManager manager = (StorageManager)
-                    context.getSystemService(Activity.STORAGE_SERVICE);
-            Objects.requireNonNull(manager);
-            StorageVolume volume = manager.getStorageVolume(dir);
-            Objects.requireNonNull(volume);
-            this.location = volume.hashCode();
-            this.baseDir = dir;
-        }
+        blocks = BLOCKS.getInstance(context);
 
 
         String host = getPeerID(context);
 
         boolean init = host == null;
 
-        node = new Node(this, this.baseDir.getAbsolutePath());
+        node = new Node(this);
 
         if (init) {
             node.identity();
@@ -117,25 +98,6 @@ public class IPFS implements Listener {
             node.setPrivateKey(IPFS.getPrivateKey(context));
             node.setPublicKey(IPFS.getPublicKey(context));
         }
-
-        /* addNoAnnounce
-         "/ip4/10.0.0.0/ipcidr/8",
-                "/ip4/100.64.0.0/ipcidr/10",
-                "/ip4/169.254.0.0/ipcidr/16",
-                "/ip4/172.16.0.0/ipcidr/12",
-                "/ip4/192.0.0.0/ipcidr/24",
-                "/ip4/192.0.0.0/ipcidr/29",
-                "/ip4/192.0.0.8/ipcidr/32",
-                "/ip4/192.0.0.170/ipcidr/32",
-                "/ip4/192.0.0.171/ipcidr/32",
-                "/ip4/192.0.2.0/ipcidr/24",
-                "/ip4/192.168.0.0/ipcidr/16",
-                "/ip4/198.18.0.0/ipcidr/15",
-                "/ip4/198.51.100.0/ipcidr/24",
-                "/ip4/203.0.113.0/ipcidr/24",
-                "/ip4/240.0.0.0/ipcidr/4"
-         */
-
 
         String swarmKey = getSwarmKey(context);
         if (!swarmKey.isEmpty()) {
@@ -151,7 +113,6 @@ public class IPFS implements Listener {
         node.setHighWater(getHighWater(context));
         node.setLowWater(getLowWater(context));
 
-        node.openDatabase();
     }
 
     public static int getSwarmPort(@NonNull Context context) {
@@ -193,32 +154,6 @@ public class IPFS implements Listener {
         }
     }
 
-    @Nullable
-    public static File getExternalStorageDirectory(@NonNull Context context) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        String dir = sharedPref.getString(STORAGE_DIRECTORY, "");
-        Objects.requireNonNull(dir);
-        if (dir.isEmpty()) {
-            return null;
-        }
-        return new File(dir);
-    }
-
-    public static void setExternalStorageDirectory(@NonNull Context context, @Nullable File file) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        if (file == null) {
-            editor.putString(STORAGE_DIRECTORY, "");
-        } else {
-            editor.putString(STORAGE_DIRECTORY, file.getAbsolutePath());
-        }
-        editor.apply();
-
-    }
 
     private static void setPublicKey(@NonNull Context context, @NonNull String key) {
         SharedPreferences sharedPref = context.getSharedPreferences(
@@ -523,15 +458,45 @@ public class IPFS implements Listener {
         this.pusher = pusher;
     }
 
-    @Override
-    public void push(byte[] data, @NonNull String pid) {
-        String text = new String(Base64.decode(data, Base64.DEFAULT));
 
-        if (pusher != null) {
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> pusher.push(text, pid));
+    public boolean notify(@NonNull String pid, @NonNull String cid) {
+        if (!isDaemonRunning()) {
+            return false;
         }
+        try {
+            synchronized (pid.intern()) {
+                return node.push(pid, cid.getBytes()) == cid.length();
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+        return false;
     }
+
+
+    @Override
+    public void push(String cid, String pid) {
+        try {
+            // CID and PID are both valid objects (code done in go)
+            Objects.requireNonNull(cid);
+            Objects.requireNonNull(pid);
+            if (pusher != null) {
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                executor.submit(() -> pusher.push(pid, cid));
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+
+    }
+
+    @Override
+    public void blockPut(String key, byte[] bytes) {
+        LogUtils.error(TAG, "put " + key);
+
+        blocks.insertBlock(key, bytes);
+    }
+
 
     public void swarmReduce(@NonNull String pid) {
         swarm.remove(pid);
@@ -547,22 +512,15 @@ public class IPFS implements Listener {
         return !swarm.contains(pid);
     }
 
-    public boolean push(@NonNull String pid, @NonNull HashMap<String, String> map) {
-        return push(pid, gson.toJson(map));
+    @Override
+    public long blockSize(String key) {
+
+        long size = blocks.getBlockSize(key);
+
+        LogUtils.error(TAG, "size " + size + " " + key);
+        return size;
     }
 
-    private boolean push(@NonNull String pid, @NonNull String push) {
-        if (!isDaemonRunning()) {
-            return false;
-        }
-        try {
-            byte[] bytes = Base64.encode(push.getBytes(), Base64.DEFAULT);
-            return node.push(pid, bytes) == bytes.length;
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-        return false;
-    }
 
     public void swarmEnhance(@NonNull String pid) {
         swarm.add(pid);
@@ -636,18 +594,6 @@ public class IPFS implements Listener {
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> events.reachable(this.reachable.name()));
-    }
-
-    public int getLocation() {
-        return location;
-    }
-
-    public long getTotalSpace() {
-        return this.baseDir.getTotalSpace();
-    }
-
-    public long getFreeSpace() {
-        return this.baseDir.getFreeSpace();
     }
 
     public void bootstrap(int minPeers, int timeout) {
@@ -1270,20 +1216,39 @@ public class IPFS implements Listener {
 
     }
 
-    public void gc() {
-        try {
-            node.repoGC();
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
+    @Override
+    public void blockDelete(String key) {
+        LogUtils.error(TAG, "del " + key);
+
+        blocks.deleteBlock(key);
 
     }
 
     @Override
     public void error(String message) {
         if (message != null && !message.isEmpty()) {
-            LogUtils.error(TAG, message);
+            LogUtils.error(TAG, "error " + message);
         }
+    }
+
+    @Override
+    public byte[] blockGet(String key) {
+        LogUtils.error(TAG, "get " + key);
+
+        Block block = blocks.getBlock(key);
+        if (block != null) {
+            return block.getData();
+        }
+        return null;
+    }
+
+    @Override
+    public boolean blockHas(String key) {
+
+        boolean has = blocks.hasBlock(key);
+
+        LogUtils.error(TAG, "has " + has + " " + key);
+        return has;
     }
 
     @Override
@@ -1353,7 +1318,7 @@ public class IPFS implements Listener {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             events.seeding(seeding);
-            LogUtils.info(TAG, "Seeding Amount : " + amount);
+            //LogUtils.info(TAG, "Seeding Amount : " + amount);
         });
     }
 
@@ -1364,7 +1329,7 @@ public class IPFS implements Listener {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             events.leeching(leeching);
-            LogUtils.info(TAG, "Leeching Amount : " + amount);
+            //LogUtils.info(TAG, "Leeching Amount : " + amount);
         });
     }
 
@@ -1400,7 +1365,7 @@ public class IPFS implements Listener {
     }
 
     public interface Pusher {
-        void push(@NonNull String text, @NonNull String pid);
+        void push(@NonNull String pid, @NonNull String cid);
     }
 
     public static class ResolvedName {

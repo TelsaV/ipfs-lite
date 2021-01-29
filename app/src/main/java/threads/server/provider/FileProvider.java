@@ -27,10 +27,10 @@ public class FileProvider {
         mDataDir = new File(context.getCacheDir(), DATA);
     }
 
-    public static Uri getDataUri(@NonNull Context context, @NonNull String cid) {
+    public static Uri getDataUri(@NonNull Context context, long idx) {
 
         FileProvider fileProvider = FileProvider.getInstance(context);
-        File newFile = fileProvider.getDataFile(cid);
+        File newFile = fileProvider.getDataFile(idx);
         if (newFile.exists()) {
             return androidx.core.content.FileProvider.getUriForFile(
                     context, BuildConfig.APPLICATION_ID, newFile);
@@ -38,16 +38,23 @@ public class FileProvider {
         return null;
     }
 
+
     @NonNull
-    public static File getFile(@NonNull Context context, @NonNull String cid) throws Exception {
+    public static File getFile(@NonNull Context context, long idx) throws Exception {
+        FileProvider fileProvider = FileProvider.getInstance(context);
+        return fileProvider.createDataFile(idx);
+    }
+
+    @NonNull
+    public static File getFile(@NonNull Context context, @NonNull String cid, long idx) throws Exception {
         FileProvider fileProvider = FileProvider.getInstance(context);
         IPFS ipfs = IPFS.getInstance(context);
 
         synchronized (cid.intern()) {
 
-            File file = fileProvider.getDataFile(cid);
+            File file = fileProvider.getDataFile(idx);
             if (!file.exists()) {
-                file = fileProvider.createDataFile(cid);
+                file = fileProvider.createDataFile(idx);
                 try (FileOutputStream outputStream = new FileOutputStream(file)) {
                     try (InputStream inputStream = ipfs.getInputStream(cid)) {
                         long copied = IPFS.copy(inputStream, outputStream);
@@ -71,14 +78,14 @@ public class FileProvider {
         return INSTANCE;
     }
 
-    public File getDataFile(@NonNull String cid) {
-        return new File(getDataDir(), cid);
+    public File getDataFile(long idx) {
+        return new File(getDataDir(), "" + idx);
     }
 
     @NonNull
-    public File createDataFile(@NonNull String cid) throws IOException {
+    public File createDataFile(long idx) throws IOException {
 
-        File file = getDataFile(cid);
+        File file = getDataFile(idx);
         if (file.exists()) {
             boolean result = file.delete();
             if (!result) {

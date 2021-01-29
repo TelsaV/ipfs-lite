@@ -463,43 +463,43 @@ public class ThreadsFragment extends Fragment implements
         } else if (itemId == R.id.sort_date) {
 
             setSortOrder(SortOrder.DATE);
-            IPFS ipfs = IPFS.getInstance(mContext);
-            updateDirectory(ipfs.getLocation(), mSelectionViewModel.getParentThread().getValue(),
+
+            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
                     mSelectionViewModel.getQuery().getValue(), true);
             return true;
         } else if (itemId == R.id.sort_date_inverse) {
 
             setSortOrder(SortOrder.DATE_INVERSE);
-            IPFS ipfs = IPFS.getInstance(mContext);
-            updateDirectory(ipfs.getLocation(), mSelectionViewModel.getParentThread().getValue(),
+
+            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
                     mSelectionViewModel.getQuery().getValue(), true);
             return true;
         } else if (itemId == R.id.sort_name) {
 
             setSortOrder(SortOrder.NAME);
-            IPFS ipfs = IPFS.getInstance(mContext);
-            updateDirectory(ipfs.getLocation(), mSelectionViewModel.getParentThread().getValue(),
+
+            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
                     mSelectionViewModel.getQuery().getValue(), true);
             return true;
         } else if (itemId == R.id.sort_name_inverse) {
 
             setSortOrder(SortOrder.NAME_INVERSE);
-            IPFS ipfs = IPFS.getInstance(mContext);
-            updateDirectory(ipfs.getLocation(), mSelectionViewModel.getParentThread().getValue(),
+
+            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
                     mSelectionViewModel.getQuery().getValue(), true);
             return true;
         } else if (itemId == R.id.sort_size) {
 
             setSortOrder(SortOrder.SIZE);
-            IPFS ipfs = IPFS.getInstance(mContext);
-            updateDirectory(ipfs.getLocation(), mSelectionViewModel.getParentThread().getValue(),
+
+            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
                     mSelectionViewModel.getQuery().getValue(), true);
             return true;
         } else if (itemId == R.id.sort_size_inverse) {
 
             setSortOrder(SortOrder.SIZE_INVERSE);
-            IPFS ipfs = IPFS.getInstance(mContext);
-            updateDirectory(ipfs.getLocation(), mSelectionViewModel.getParentThread().getValue(),
+
+            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
                     mSelectionViewModel.getQuery().getValue(), true);
             return true;
         } else if (itemId == R.id.action_share) {
@@ -792,7 +792,7 @@ public class ThreadsFragment extends Fragment implements
                 }
                 setSortOrder(threadIdx);
 
-                updateDirectory(ipfs.getLocation(), threadIdx,
+                updateDirectory(threadIdx,
                         mSelectionViewModel.getQuery().getValue(), false);
 
 
@@ -805,7 +805,7 @@ public class ThreadsFragment extends Fragment implements
 
             if (query != null) {
                 Long parent = mSelectionViewModel.getParentThread().getValue();
-                updateDirectory(ipfs.getLocation(), parent, query, false);
+                updateDirectory(parent, query, false);
             }
 
         });
@@ -921,7 +921,7 @@ public class ThreadsFragment extends Fragment implements
         }
     }
 
-    private void updateDirectory(int ident, @Nullable Long parent, String query, boolean forceScrollToTop) {
+    private void updateDirectory(@Nullable Long parent, String query, boolean forceScrollToTop) {
         try {
 
             LiveData<List<Thread>> obs = observer.get();
@@ -934,7 +934,7 @@ public class ThreadsFragment extends Fragment implements
             }
 
             LiveData<List<Thread>> liveData =
-                    mThreadViewModel.getVisibleChildrenByQuery(ident, parent, query);
+                    mThreadViewModel.getVisibleChildrenByQuery(parent, query);
             observer.set(liveData);
 
 

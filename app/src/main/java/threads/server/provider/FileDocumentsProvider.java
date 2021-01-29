@@ -11,6 +11,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.os.Handler;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
@@ -21,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -286,6 +288,8 @@ public class FileDocumentsProvider extends DocumentsProvider {
         row.add(DocumentsContract.Root.COLUMN_TITLE, appName);
         row.add(DocumentsContract.Root.COLUMN_FLAGS,
                 DocumentsContract.Root.FLAG_LOCAL_ONLY |
+                        DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD |
+                        DocumentsContract.Root.FLAG_SUPPORTS_CREATE |
                         DocumentsContract.Root.FLAG_SUPPORTS_RECENTS |
                         DocumentsContract.Root.FLAG_SUPPORTS_SEARCH);
         row.add(DocumentsContract.Root.COLUMN_DOCUMENT_ID, getRoot());
@@ -294,8 +298,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
                     "android:query-arg-mime-types\nandroid:query-arg-display-name");
         }
         row.add(DocumentsContract.Root.COLUMN_MIME_TYPES, "*/*");
-        row.add(DocumentsContract.Root.COLUMN_AVAILABLE_BYTES, ipfs.getFreeSpace());
-        row.add(DocumentsContract.Root.COLUMN_CAPACITY_BYTES, ipfs.getTotalSpace());
         return result;
     }
 
@@ -413,7 +415,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
         final MatrixCursor result = new MatrixCursor(resolveDocumentProjection(projection));
 
 
-        List<Thread> entries = threads.getNewestThreads(ipfs.getLocation(), 25);
+        List<Thread> entries = threads.getNewestThreads(25);
         for (Thread thread : entries) {
             includeFile(result, thread);
         }
@@ -480,7 +482,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
         final MatrixCursor result = new MatrixCursor(resolveDocumentProjection(projection));
 
         if (Objects.equals(BuildConfig.DOCUMENTS_AUTHORITY, rootId)) {
-            List<Thread> entries = threads.getThreadsByQuery(ipfs.getLocation(), query);
+            List<Thread> entries = threads.getThreadsByQuery(query);
             for (Thread thread : entries) {
                 if (isMimeType(thread, mimeTypes)) {
                     includeFile(result, thread);
@@ -507,6 +509,11 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 flags |= Document.FLAG_DIR_PREFERS_LAST_MODIFIED;
                 flags |= Document.FLAG_DIR_PREFERS_GRID;
                 flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
+                flags |= Document.FLAG_SUPPORTS_WRITE;
+                //flags |= Document.FLAG_SUPPORTS_DELETE;
+                //flags |= Document.FLAG_SUPPORTS_RENAME;
+                //flags |= Document.FLAG_SUPPORTS_REMOVE;
+                //flags |= Document.FLAG_SUPPORTS_MOVE;
 
                 MatrixCursor.RowBuilder row = result.newRow();
                 row.add(Document.COLUMN_DOCUMENT_ID, docId);
@@ -601,7 +608,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
         try {
             long idx = Long.parseLong(parentDocumentId);
 
-            List<Thread> entries = threads.getVisibleChildren(ipfs.getLocation(), idx);
+            List<Thread> entries = threads.getVisibleChildren(idx);
 
             final MatrixCursor result = new MatrixCursor(resolveDocumentProjection(projection));
 
@@ -649,22 +656,43 @@ public class FileDocumentsProvider extends DocumentsProvider {
         try {
             long idx = Long.parseLong(documentId);
 
-            Thread file = threads.getThreadByIdx(idx);
-            Objects.requireNonNull(file);
-            String cid = file.getContent();
-            Objects.requireNonNull(cid);
 
-            return ParcelFileDescriptor.open(
-                    FileProvider.getFile(Objects.requireNonNull(getContext()), cid),
-                    ParcelFileDescriptor.MODE_READ_ONLY);
+            final boolean isWrite = (mode.indexOf('w') != -1);
+            if (isWrite) {
 
+                final int accessMode = ParcelFileDescriptor.parseMode(mode);
+                Handler handler = new Handler(getContext().getMainLooper());
+                File temp = FileProvider.getFile(getContext(), idx);
+                return ParcelFileDescriptor.open(temp, accessMode, handler,
+                        e -> {
+                            String cid = ipfs.storeFile(temp);
+                            Objects.requireNonNull(cid);
 
+                            long size = temp.length();
+                            threads.setThreadSize(idx, size);
+                            threads.setThreadDone(idx, cid);
+
+                            docs.finishDocument(idx, true);
+
+                        });
+            } else {
+
+                Thread file = threads.getThreadByIdx(idx);
+                Objects.requireNonNull(file);
+
+                String cid = file.getContent();
+                Objects.requireNonNull(cid);
+
+                return ParcelFileDescriptor.open(
+                        FileProvider.getFile(Objects.requireNonNull(getContext()), cid, idx),
+                        ParcelFileDescriptor.MODE_READ_ONLY);
+
+            }
         } catch (Throwable throwable) {
             throw new FileNotFoundException("" + throwable.getLocalizedMessage());
         }
 
     }
-
 
     @Override
     public boolean onCreate() {
@@ -673,7 +701,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         appName = context.getString(R.string.app_name);
         rootDir = context.getString(R.string.ipfs);
         InitApplication.runUpdatesIfNecessary(context);
-        InitApplication.checkExternalStorageDirectory(context);
         threads = THREADS.getInstance(context);
         ipfs = IPFS.getInstance(context);
         docs = DOCS.getInstance(context);

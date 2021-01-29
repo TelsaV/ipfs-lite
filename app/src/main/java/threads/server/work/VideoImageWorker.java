@@ -80,9 +80,9 @@ public class VideoImageWorker extends Worker {
                     cid, pos);
             FileProvider fileProvider =
                     FileProvider.getInstance(getApplicationContext());
-            File file = fileProvider.getDataFile(cid);
+            File file = fileProvider.getDataFile(idx);
             IPFS.copy(new ByteArrayInputStream(getBytes(bitmap)), new FileOutputStream(file));
-            Uri uri = FileProvider.getDataUri(getApplicationContext(), cid);
+            Uri uri = FileProvider.getDataUri(getApplicationContext(), idx);
             Objects.requireNonNull(uri);
             threads.setThreadUri(idx, uri.toString());
 

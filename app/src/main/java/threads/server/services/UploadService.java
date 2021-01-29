@@ -45,7 +45,7 @@ public class UploadService {
                 Objects.requireNonNull(cid);
                 if (!createTxtFile) {
                     List<Thread> sameEntries = threads.getThreadsByContentAndParent(
-                            ipfs.getLocation(), cid, parent);
+                            cid, parent);
 
 
                     if (sameEntries.isEmpty()) {

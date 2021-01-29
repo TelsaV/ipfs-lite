@@ -192,7 +192,7 @@ public class BackupWorker extends Worker {
                     Uri.parse(uri));
             Objects.requireNonNull(rootDocFile);
 
-            List<Thread> children = threads.getVisibleChildren(ipfs.getLocation(), 0);
+            List<Thread> children = threads.getVisibleChildren(0);
 
 
             if (!children.isEmpty()) {
@@ -260,7 +260,7 @@ public class BackupWorker extends Worker {
     private void copyThreads(@NonNull Thread thread, @NonNull DocumentFile file) {
 
 
-        List<Thread> children = threads.getChildren(ipfs.getLocation(), thread.getIdx());
+        List<Thread> children = threads.getChildren(thread.getIdx());
         for (Thread child : children) {
             if (!isStopped()) {
                 if (!child.isDeleting() && child.isSeeding()) {

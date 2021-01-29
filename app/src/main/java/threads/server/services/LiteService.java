@@ -366,24 +366,6 @@ public class LiteService {
 
     }
 
-    @NonNull
-    public static StorageLocation getStorageLocation(@NonNull Context context) {
-        File dir = IPFS.getExternalStorageDirectory(context);
-        if (dir != null) {
-            StorageManager manager = (StorageManager)
-                    context.getSystemService(Activity.STORAGE_SERVICE);
-            if (manager != null) {
-                StorageVolume storageVolume = manager.getStorageVolume(dir);
-                if (storageVolume != null) {
-                    return new StorageLocation(storageVolume.getDescription(context),
-                            dir, storageVolume.hashCode(), false);
-                }
-            }
-        }
-        return new StorageLocation(context.getString(R.string.harddisk),
-                context.getFilesDir(), 0, true);
-    }
-
     public static class FileInfo {
         @NonNull
         private final Uri uri;

@@ -436,46 +436,6 @@ public class SettingsFragment extends Fragment {
         });
 
 
-        Spinner storage_location = view.findViewById(R.id.storage_location);
-
-        List<StorageLocation> locations = LiteService.getStorageLocations(mContext);
-        ArrayAdapter<StorageLocation> locationAdapter = new ArrayAdapter<>(mContext,
-                android.R.layout.simple_spinner_item, locations);
-        locationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        storage_location.setAdapter(locationAdapter);
-
-        int locPos = locations.indexOf(LiteService.getStorageLocation(mContext));
-        storage_location.setSelection(locPos);
-        storage_location.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long l) {
-
-                StorageLocation location = (StorageLocation)
-                        parent.getItemAtPosition(pos);
-
-                File prevValue = IPFS.getExternalStorageDirectory(mContext);
-                boolean issueMessage = !Objects.equals(location.getFile(), prevValue);
-                if (location.isPrimary()) {
-                    IPFS.setExternalStorageDirectory(mContext, null);
-                    issueMessage = prevValue != null;
-                } else {
-                    IPFS.setExternalStorageDirectory(mContext, location.getFile());
-                }
-
-
-                if (issueMessage) {
-                    EVENTS.getInstance(mContext).exit(
-                            getString(R.string.daemon_restart_config_changed));
-
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
 
         mSwarmKey = view.findViewById(R.id.swarm_key);
         mSwarmKey.setText(IPFS.getSwarmKey(mContext));

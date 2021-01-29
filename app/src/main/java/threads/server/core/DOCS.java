@@ -197,14 +197,13 @@ public class DOCS {
             if (thread != null) {
                 if (thread.isDeleting()) {
 
-                    List<Thread> entries = threads.getSelfAndAllChildren(
-                            ipfs.getLocation(), thread);
+                    List<Thread> entries = threads.getSelfAndAllChildren(thread);
                     threads.removeThreads(entries);
 
                     for (Thread entry : entries) {
                         String cid = entry.getContent();
                         if (cid != null) {
-                            if (!threads.isReferenced(ipfs.getLocation(), cid)) {
+                            if (!threads.isReferenced(cid)) {
                                 ipfs.rm(cid, !entry.isDir());
                             }
                         }
@@ -289,7 +288,7 @@ public class DOCS {
             }
         }
         List<Thread> names = threads.getThreadsByNameAndParent(
-                ipfs.getLocation(), searchName, parent);
+                searchName, parent);
         if (!names.isEmpty()) {
             return getName(name, parent, ++index);
         }
@@ -312,7 +311,7 @@ public class DOCS {
 
     private void updateDirectorySize(long parent) {
         if (parent > 0) {
-            long parentSize = threads.getChildrenSummarySize(ipfs.getLocation(), parent);
+            long parentSize = threads.getChildrenSummarySize(parent);
             threads.setThreadSize(parent, parentSize);
             updateParentSize(parent);
         }
@@ -400,7 +399,7 @@ public class DOCS {
 
         String name = getUniqueName(source.getName(), parent);
 
-        Thread thread = threads.createThread(ipfs.getLocation(), parent);
+        Thread thread = threads.createThread(parent);
         thread.setInit(source.isInit());
         thread.setName(name);
         thread.setContent(source.getContent());
@@ -445,7 +444,7 @@ public class DOCS {
                                @Nullable Uri uri, String displayName, long size,
                                boolean seeding, boolean init) {
         String mimeType = checkMimeType(type, displayName);
-        Thread thread = threads.createThread(ipfs.getLocation(), parent);
+        Thread thread = threads.createThread(parent);
         if (Objects.equals(mimeType, MimeType.DIR_MIME_TYPE)) {
             thread.setMimeType(MimeType.DIR_MIME_TYPE);
         } else {
@@ -513,7 +512,7 @@ public class DOCS {
             String dir = ipfs.createEmptyDir();
             Objects.requireNonNull(dir);
 
-            List<Thread> pins = threads.getPins(ipfs.getLocation());
+            List<Thread> pins = threads.getPins();
 
             boolean isEmpty = pins.isEmpty();
             if (!isEmpty) {

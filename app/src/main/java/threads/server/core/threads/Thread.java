@@ -15,9 +15,6 @@ import java.util.UUID;
 @androidx.room.Entity
 public class Thread {
 
-    @ColumnInfo(name = "location")
-    private final int location; // checked
-
     @ColumnInfo(name = "parent")
     private final long parent; // checked
     @PrimaryKey(autoGenerate = true)
@@ -62,8 +59,8 @@ public class Thread {
     @ColumnInfo(name = "sortOrder")
     private SortOrder sortOrder;  // checked
 
-    Thread(int location, long parent) {
-        this.location = location;
+    Thread(long parent) {
+
         this.parent = parent;
         this.lastModified = System.currentTimeMillis();
         this.mimeType = "";
@@ -78,8 +75,8 @@ public class Thread {
         this.sortOrder = SortOrder.NAME;
     }
 
-    static Thread createThread(int location, long parent) {
-        return new Thread(location, parent);
+    static Thread createThread(long parent) {
+        return new Thread(parent);
     }
 
     @NonNull
@@ -250,10 +247,6 @@ public class Thread {
 
     public void setInit(boolean init) {
         this.init = init;
-    }
-
-    public int getLocation() {
-        return location;
     }
 
     public boolean hasContent() {

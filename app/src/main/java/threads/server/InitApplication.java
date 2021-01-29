@@ -13,13 +13,21 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import threads.LogUtils;
+import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.threads.SortOrder;
 import threads.server.ipfs.IPFS;
+import threads.server.ipfs.TimeoutProgress;
 import threads.server.services.LiteService;
 import threads.server.work.CleanupWorker;
 import threads.server.work.PageWorker;
@@ -164,28 +172,14 @@ public class InitApplication extends Application {
         settings.setGeolocationEnabled(false);
     }
 
-    public static void checkExternalStorageDirectory(@NonNull Context context) {
-
-        try {
-            File dir = IPFS.getExternalStorageDirectory(context);
-            if (dir != null) {
-                String state = Environment.getExternalStorageState(dir);
-                if (!Objects.equals("mounted", state)) {
-                    IPFS.setExternalStorageDirectory(context, null);
-                }
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-            IPFS.setExternalStorageDirectory(context, null);
-        }
-
-    }
 
     public static void syncData(@NonNull Context context) {
         IPFS ipfs = IPFS.getInstance(context);
         PEERS peers = PEERS.getInstance(context);
         ipfs.swarmEnhance(peers.getSwarm());
     }
+
+    private final Gson gson = new Gson();
 
     @Override
     public void onCreate() {
@@ -194,7 +188,7 @@ public class InitApplication extends Application {
 
         runUpdatesIfNecessary(getApplicationContext());
         syncData(getApplicationContext());
-        checkExternalStorageDirectory(getApplicationContext());
+
 
         // periodic jobs
         PageWorker.publish(getApplicationContext(), false);
@@ -210,7 +204,51 @@ public class InitApplication extends Application {
         createChannel(getApplicationContext());
 
 
+        IPFS ipfs = IPFS.getInstance(getApplicationContext());
+
+
+        ipfs.setPusher((pid, cid) -> {
+            try {
+                onMessageReceived(pid, cid);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+        });
     }
 
+    public void onMessageReceived(@NonNull String pid, @NonNull String cid) {
+
+        try {
+            Type hashMap = new TypeToken<HashMap<String, String>>() {
+            }.getType();
+
+            Objects.requireNonNull(pid);
+            IPFS ipfs = IPFS.getInstance(getApplicationContext());
+            byte[] content = ipfs.loadData(cid, new TimeoutProgress(5));
+            Objects.requireNonNull(content);
+            Map<String, String> data = gson.fromJson(new String(content), hashMap);
+
+            LogUtils.error(TAG, "Push Message : " + data.toString());
+
+
+            String ipns = data.get(Content.IPNS);
+            Objects.requireNonNull(ipns);
+            String seq = data.get(Content.SEQ);
+            Objects.requireNonNull(seq);
+
+            long sequence = Long.parseLong(seq);
+            if (sequence >= 0) {
+                if (ipfs.isValidCID(ipns)) {
+
+                    PEERS peers = PEERS.getInstance(getApplicationContext());
+                    peers.setUserIpns(pid, ipns, sequence);
+                }
+            }
+
+
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
 
 }

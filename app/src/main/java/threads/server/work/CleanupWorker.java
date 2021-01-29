@@ -62,16 +62,12 @@ public class CleanupWorker extends Worker {
             THREADS threads = THREADS.getInstance(getApplicationContext());
 
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
-            try {
-                // just in case (normally should not occur)
-                List<Thread> list = threads.getDeletedThreads(ipfs.getLocation());
-                threads.removeThreads(list);
-                for (Thread thread : list) {
-                    removeThread(ipfs, threads, thread);
-                }
 
-            } finally {
-                ipfs.gc();
+            // just in case (normally should not occur)
+            List<Thread> list = threads.getDeletedThreads();
+            threads.removeThreads(list);
+            for (Thread thread : list) {
+                removeThread(ipfs, threads, thread);
             }
 
 
@@ -93,7 +89,7 @@ public class CleanupWorker extends Worker {
         unpin(ipfs, threads, thread.getContent(), !thread.isDir());
 
         // delete all children
-        List<Thread> entries = threads.getChildren(ipfs.getLocation(), thread.getIdx());
+        List<Thread> entries = threads.getChildren(thread.getIdx());
         threads.removeThreads(entries);
         for (Thread entry : entries) {
             removeThread(ipfs, threads, entry);
@@ -103,7 +99,7 @@ public class CleanupWorker extends Worker {
     private void unpin(@NonNull IPFS ipfs, @NonNull THREADS threads, @Nullable String cid, boolean recursively) {
         try {
             if (cid != null) {
-                if (!threads.isReferenced(ipfs.getLocation(), cid)) {
+                if (!threads.isReferenced(cid)) {
                     ipfs.rm(cid, recursively);
                 }
             }

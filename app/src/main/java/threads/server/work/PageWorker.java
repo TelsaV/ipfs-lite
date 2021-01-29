@@ -126,10 +126,11 @@ public class PageWorker extends Worker {
 
                                 HashMap<String, String> hashMap = new HashMap<>();
                                 hashMap.put(Content.IPNS, content);
-                                hashMap.put(Content.PID, host); // TODO remove in the future
                                 hashMap.put(Content.SEQ, "" + sequence);
 
-                                boolean success = ipfs.push(user.getPid(), hashMap);
+                                String cid = ipfs.storeText(hashMap.toString());
+                                Objects.requireNonNull(cid);
+                                boolean success = ipfs.notify(user.getPid(), cid);
 
                                 LogUtils.info(TAG, "success pushing [" + success + "]");
                             }
