@@ -26,11 +26,10 @@ import java.util.Objects;
 import threads.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
-import threads.server.services.LiteService;
 import threads.server.utils.MimeType;
 
 public class AccountDialogFragment extends DialogFragment {
@@ -116,8 +115,6 @@ public class AccountDialogFragment extends DialogFragment {
     private void shareQRCode(@NonNull Uri uri, @NonNull Uri url) {
 
         try {
-            DOCS docs = DOCS.getInstance(mContext);
-            String name = docs.getHost();
             String host = IPFS.getPeerID(mContext);
             Objects.requireNonNull(host);
             String text = getString(R.string.account_access);
@@ -126,12 +123,6 @@ public class AccountDialogFragment extends DialogFragment {
             text = text.concat("\n\n").concat(peerId);
             String homepage = getString(R.string.homepage).concat("\n").concat(url.toString());
             text = text.concat("\n\n").concat(homepage);
-
-
-            String gatewayUrl = LiteService.getGateway(mContext).concat("/").concat(
-                    Content.IPNS).concat("/").concat(name);
-            String gateway = getString(R.string.gateway).concat("\n").concat(gatewayUrl);
-            text = text.concat("\n\n").concat(gateway);
 
 
             ComponentName[] names = {new ComponentName(mContext, MainActivity.class)};

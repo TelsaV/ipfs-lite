@@ -164,29 +164,17 @@ public class PeersFragment extends Fragment implements
 
 
             return true;
-        } else if (itemId == R.id.action_select_all) {
+        } else  if (itemId == R.id.action_documentation) {
+            try {
+                String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
 
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            } catch (Throwable e) {
+                LogUtils.error(TAG, e);
             }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            mUsersViewAdapter.selectAllUsers();
-
-            return true;
-
-        } else if (itemId == R.id.action_swarm) {
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            SwarmDialogFragment dialogFragment = SwarmDialogFragment.newInstance();
-            dialogFragment.show(getChildFragmentManager(), SwarmDialogFragment.TAG);
-
             return true;
         }
 
@@ -395,7 +383,6 @@ public class PeersFragment extends Fragment implements
             PopupMenu menu = new PopupMenu(mContext, view);
             menu.inflate(R.menu.popup_peers_menu);
             menu.getMenu().findItem(R.id.popup_share).setVisible(true);
-            menu.getMenu().findItem(R.id.popup_view).setVisible(user.isLite());
             menu.setOnMenuItemClickListener((item) -> {
 
 
@@ -417,9 +404,6 @@ public class PeersFragment extends Fragment implements
                     return true;
                 } else if (item.getItemId() == R.id.popup_rename) {
                     clickUserRename(user.getPid());
-                    return true;
-                } else if (item.getItemId() == R.id.popup_view) {
-                    clickUserView(user.getPid());
                     return true;
                 }
                 return false;
@@ -540,7 +524,7 @@ public class PeersFragment extends Fragment implements
     private void clickUserRename(@NonNull String pid) {
 
         try {
-            NameDialogFragment.newInstance(pid, getString(R.string.peer_rename_title))
+            NameDialogFragment.newInstance(pid, getString(R.string.action_rename))
                     .show(getChildFragmentManager(), NameDialogFragment.TAG);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

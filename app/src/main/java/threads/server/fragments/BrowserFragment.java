@@ -49,12 +49,12 @@ import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.core.page.Bookmark;
 import threads.server.core.page.PAGES;
-import threads.server.core.Content;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;
@@ -338,22 +338,6 @@ public class BrowserFragment extends Fragment implements
                 LogUtils.error(TAG, throwable);
             }
             return true;
-        } else if (itemId == R.id.action_history) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            try {
-                HistoryDialogFragment dialogFragment = new HistoryDialogFragment();
-                dialogFragment.show(getChildFragmentManager(), HistoryDialogFragment.TAG);
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-            return true;
-
         }
         return super.onOptionsItemSelected(item);
     }

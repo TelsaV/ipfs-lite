@@ -17,6 +17,10 @@
         android:title="@string/browser"
         app:iconTint="@color/colorAccent" />
     <item
+        android:id="@+id/navigation_swarm"
+        android:icon="@drawable/selector_swarm"
+        android:title="@string/swarm" />
+    <item
         android:id="@+id/navigation_settings"
         android:icon="@drawable/tune"
         android:title="@string/settings"

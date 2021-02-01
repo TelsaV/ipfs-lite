@@ -23,7 +23,6 @@
     <string name="files">档案</string>
     <string name="peer_exists_with_pid">联系人中已存在具有ID的对等方</string>
     <string name="same_pid_like_host">对等ID是您的主机对等ID</string>
-    <string name="peer_rename_title">编辑同伴</string>
     <string name="action_select_all">全选</string>
     <string name="general_settings">通用设置</string>
     <string name="no_activity_found_to_handle_uri">找不到支持这种文件的应用程序。</string>
@@ -34,7 +33,6 @@
     <string name="permission_camera_denied">许可摄像机被拒绝</string>
     <string name="documentation">文献资料</string>
     <string name="no_marked_file_delete">沒有標記為刪除的文件</string>
-    <string name="gateway">网关</string>
     <string name="swarm">一群</string>
     <string name="file_not_found">无法下载文件</string>
     <string name="name">名称</string>
@@ -43,7 +41,6 @@
     <string name="download_failed">的下载失败 \"%1$s\"</string>
     <string name="added_pid_to_peers">\"%1$s\"被添加到您的同行</string>
     <string name="search">搜索</string>
-    <string name="view">视图</string>
     <string name="copy_to">复制到</string>
     <string name="content_already_exists">内容已经存在CID \"%1$s\"</string>
     <string name="identification">对等ID</string>
@@ -53,9 +50,6 @@
     <string name="revert_operation">还原</string>
     <string name="delete_files">%1$s 删除档案</string>
     <string name="delete_file">删除档案</string>
-    <string name="storage_location">存储位置</string>
-    <string name="storage_location_text">警告：更改存儲位置意味著以前的數據不再可見。僅當您切換回時，數據才再次可見。</string>
-    <string name="harddisk">设备内存</string>
     <string name="add_account_text">您可以通过提供其对等ID来添加新联系人。</string>
     <string name="scan">扫描</string>
     <string name="new_peer">新对等</string>
@@ -76,8 +70,6 @@
     <string name="delete_user">删除对等</string>
     <string name="multi_address">多地址</string>
     <string name="peer_address_text">您可以选择为对等方定义一个多地址</string>
-    <string name="gateway_not_valid">网关无效</string>
-    <string name="gateway_not_reachable">网关无法访问</string>
     <string name="private_network">专用网</string>
     <string name="enable_private_network">启用专用网络</string>
     <string name="swarm_key">群键</string>
@@ -113,7 +105,6 @@
     <string name="bookmark_removed">书签已删除 \"%1$s\"</string>
     <string name="share_link">分享链接</string>
     <string name="find_page">在页面中查找</string>
-    <string name="history">历史</string>
     <string name="clear_cache">清除缓存</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
@@ -125,6 +116,7 @@
     <string name="leeching">浸出</string>
     <string name="reachable">可达的</string>
     <string name="service_is_running">服务正在运行</string>
-    <string name="edit_text">Edit text …</string>
+    <string name="edit_text">Edit text…</string>
     <string name="connecting">Connecting…</string>
+    <string name="refreshing">Refreshing...</string>
 </resources>

@@ -205,26 +205,6 @@
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
             android:textColor="@color/colorAccent" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/gateway_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            app:errorEnabled="true">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/gateway"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:hint="@string/gateway"
-                android:inputType="textVisiblePassword"
-                android:singleLine="true" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
         <TextView
             android:id="@+id/publisher_service_time_text"
             android:layout_width="match_parent"

@@ -16,7 +16,6 @@ import android.os.SystemClock;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.URLUtil;
-import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,20 +51,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import threads.LogUtils;
+import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.core.page.PageViewModel;
-import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.threads.THREADS;
-import threads.server.fragments.ActionListener;
 import threads.server.fragments.BrowserFragment;
 import threads.server.fragments.EditContentDialogFragment;
 import threads.server.fragments.EditPeerDialogFragment;
 import threads.server.fragments.PeersFragment;
 import threads.server.fragments.SettingsFragment;
+import threads.server.fragments.SwarmFragment;
 import threads.server.fragments.ThreadsFragment;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
@@ -89,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements
         ThreadsFragment.ActionListener,
         BrowserFragment.ActionListener,
         PeersFragment.ActionListener,
-        ActionListener {
+        SwarmFragment.ActionListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String FRAG = "FRAG";
@@ -300,6 +299,12 @@ public class MainActivity extends AppCompatActivity implements
             } else if (itemId == R.id.navigation_browser) {
 
                 loadFragment(new BrowserFragment(), R.id.navigation_browser);
+                showFab(false);
+                mSelectionViewModel.setParentThread(0L);
+                return true;
+            } else if (itemId == R.id.navigation_swarm) {
+
+                loadFragment(new SwarmFragment(), R.id.navigation_swarm);
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
                 return true;
@@ -940,21 +945,4 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    @Override
-    public void openUri(@NonNull Uri uri) {
-        openBrowserView(uri);
-    }
-
-    @Override
-    public WebView getWebView() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                R.id.fragment_container);
-        if (fragment instanceof BrowserFragment) {
-            BrowserFragment threadsFragment = (BrowserFragment) fragment;
-            if (threadsFragment.isResumed()) {
-                return threadsFragment.getWebView();
-            }
-        }
-        return null;
-    }
 }

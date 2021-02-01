@@ -11,22 +11,7 @@
         app:iconTint="?android:textColorSecondary"
         app:showAsAction="ifRoom" />
 
-    <group>
-        <item
-            android:id="@+id/action_share"
-            android:orderInCategory="35"
-            android:title="@string/share"
-            app:showAsAction="never" />
 
-
-        <item
-            android:id="@+id/action_view"
-            android:icon="@drawable/view"
-            android:orderInCategory="36"
-            android:title="@string/gateway"
-            app:iconTint="?android:textColorSecondary"
-            app:showAsAction="never" />
-    </group>
 
 
     <group>
@@ -70,15 +55,18 @@
             android:title="@string/find_page"
             app:showAsAction="never" />
 
+
         <item
-            android:id="@+id/action_select_all"
+            android:id="@+id/action_share"
+            android:icon="@drawable/share"
             android:orderInCategory="45"
-            android:title="@string/action_select_all"
+            android:title="@string/share"
+            app:iconTint="?android:textColorSecondary"
             app:showAsAction="never" />
 
     </group>
 
-    <group>
+    <group android:id="@+id/new_content">
 
         <item
             android:id="@+id/action_new_folder"

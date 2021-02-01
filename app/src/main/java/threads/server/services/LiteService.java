@@ -1,13 +1,9 @@
 package threads.server.services;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.storage.StorageManager;
-import android.os.storage.StorageVolume;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,7 +12,6 @@ import androidx.work.WorkManager;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -32,7 +27,6 @@ import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileProvider;
-import threads.server.utils.StorageLocation;
 import threads.server.work.DeleteThreadsWorker;
 import threads.server.work.UploadThreadsWorker;
 import threads.server.work.UserConnectWorker;
@@ -43,7 +37,6 @@ public class LiteService {
     private static final String TAG = LiteService.class.getSimpleName();
 
     private static final String APP_KEY = "AppKey";
-    private static final String GATEWAY_KEY = "gatewayKey";
     private static final String PIN_SERVICE_TIME_KEY = "pinServiceTimeKey";
     private static final String CONTENT_KEY = "contentKey";
 
@@ -150,26 +143,6 @@ public class LiteService {
                 APP_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(CONTENT_KEY, contentUri.toString());
-        editor.apply();
-
-    }
-
-    @NonNull
-    public static String getGateway(@NonNull Context context) {
-        Objects.requireNonNull(context);
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                APP_KEY, Context.MODE_PRIVATE);
-        return Objects.requireNonNull(sharedPref.getString(GATEWAY_KEY,
-                "https://gateway.ipfs.io"));
-    }
-
-    public static void setGateway(@NonNull Context context, @NonNull String gateway) {
-        Objects.requireNonNull(context);
-        Objects.requireNonNull(gateway);
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                APP_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(GATEWAY_KEY, gateway);
         editor.apply();
 
     }
@@ -328,42 +301,6 @@ public class LiteService {
                 LogUtils.error(TAG, throwable);
             }
         });
-    }
-
-    private static List<Pair<File, StorageVolume>> getExternalDirectories(@NonNull Context context) {
-        List<Pair<File, StorageVolume>> externals = new ArrayList<>();
-        StorageManager manager = (StorageManager)
-                context.getSystemService(Activity.STORAGE_SERVICE);
-        if (manager != null) {
-            File[] dirs = context.getExternalFilesDirs(null);
-            for (File dir : dirs) {
-
-                StorageVolume volume = manager.getStorageVolume(dir);
-                if (volume != null) {
-                    if (!volume.isEmulated() && !volume.isPrimary()) {
-                        externals.add(Pair.create(dir, volume));
-                    }
-                }
-            }
-        }
-        return externals;
-    }
-
-    public static List<StorageLocation> getStorageLocations(@NonNull Context context) {
-
-        List<StorageLocation> locations = new ArrayList<>();
-        locations.add(new StorageLocation(context.getString(R.string.harddisk),
-                context.getFilesDir(), 0, true));
-
-        List<Pair<File, StorageVolume>> externals = getExternalDirectories(context);
-        for (Pair<File, StorageVolume> entry : externals) {
-            File file = entry.first;
-            StorageVolume storageVolume = entry.second;
-            locations.add(new StorageLocation(storageVolume.getDescription(context),
-                    file, storageVolume.hashCode(), false));
-        }
-        return locations;
-
     }
 
     public static class FileInfo {

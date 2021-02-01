@@ -239,7 +239,7 @@ public class UploadDirectoryWorker extends Worker {
 
     private void copyThreads(@NonNull Thread thread, @NonNull DocumentFile file) {
         THREADS threads = THREADS.getInstance(getApplicationContext());
-        IPFS ipfs = IPFS.getInstance(getApplicationContext());
+
         List<Thread> children = threads.getChildren(thread.getIdx());
         for (Thread child : children) {
             if (!isStopped()) {

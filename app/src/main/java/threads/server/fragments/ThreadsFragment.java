@@ -538,19 +538,6 @@ public class ThreadsFragment extends Fragment implements
 
             return true;
 
-        } else if (itemId == R.id.action_select_all) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            mThreadsViewAdapter.selectAllThreads();
-
-            return true;
-
         } else if (itemId == R.id.action_backup) {
 
 
@@ -626,34 +613,6 @@ public class ThreadsFragment extends Fragment implements
             clickNewFolder();
             return true;
 
-
-        } else if (itemId == R.id.action_view) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-
-            try {
-                DOCS docs = DOCS.getInstance(mContext);
-                String content = docs.getHost();
-                String gateway = LiteService.getGateway(mContext);
-                String url = gateway + "/" + Content.IPNS + "/" + content;
-
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-
-            } catch (Throwable e) {
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.no_activity_found_to_handle_uri));
-            }
-
-            return true;
 
         }
         return super.onOptionsItemSelected(item);
@@ -774,7 +733,6 @@ public class ThreadsFragment extends Fragment implements
 
         scrollView.setVisibility(View.GONE);
 
-        IPFS ipfs = IPFS.getInstance(mContext);
 
         mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
 
@@ -1074,9 +1032,6 @@ public class ThreadsFragment extends Fragment implements
                     return true;
                 } else if (item.getItemId() == R.id.popup_open_with) {
                     clickThreadOpen(thread);
-                    return true;
-                } else if (item.getItemId() == R.id.popup_view) {
-                    viewGateway(thread);
                     return true;
                 } else {
                     return false;
@@ -1482,24 +1437,6 @@ public class ThreadsFragment extends Fragment implements
         }
     }
 
-
-    private void viewGateway(@NonNull Thread thread) {
-
-        try {
-            String cid = thread.getContent();
-            Objects.requireNonNull(cid);
-
-            String gateway = LiteService.getGateway(mContext);
-            String uri = gateway + "/" + Content.IPFS + "/" + cid;
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        } catch (Throwable e) {
-            EVENTS.getInstance(mContext).warning(
-                    getString(R.string.no_activity_found_to_handle_uri));
-        }
-    }
 
     public void clickFilesAdd() {
         Long idx = mSelectionViewModel.getParentThread().getValue();

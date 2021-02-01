@@ -3,7 +3,9 @@ package threads.server.work;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
@@ -47,9 +49,14 @@ public class PageWorker extends Worker {
 
         int time = LiteService.getPublishServiceTime(context);
 
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+
         return new PeriodicWorkRequest.Builder(PageWorker.class, time, TimeUnit.HOURS)
                 .addTag(TAG)
-                .setInitialDelay(1, TimeUnit.MILLISECONDS)
+                .setConstraints(constraints)
                 .build();
 
     }

@@ -6,26 +6,16 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.DocumentsContract;
-import android.text.Editable;
 import android.text.Html;
-import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.webkit.URLUtil;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResult;
@@ -38,18 +28,10 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.URI;
-import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import threads.LogUtils;
 import threads.server.InitApplication;
@@ -61,7 +43,6 @@ import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.DaemonService;
 import threads.server.services.LiteService;
 import threads.server.utils.MimeType;
-import threads.server.utils.StorageLocation;
 import threads.server.work.PageWorker;
 
 public class SettingsFragment extends Fragment {
@@ -193,10 +174,6 @@ public class SettingsFragment extends Fragment {
         return inflater.inflate(R.layout.settings_view, container, false);
     }
 
-    private boolean isValid(@NonNull String gateway) {
-        return URLUtil.isValidUrl(gateway);
-    }
-
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -298,74 +275,7 @@ public class SettingsFragment extends Fragment {
         );
 
 
-        TextInputLayout mLayout = view.findViewById(R.id.gateway_layout);
-        TextInputEditText mGateway = view.findViewById(R.id.gateway);
-        mGateway.setText(LiteService.getGateway(mContext));
 
-        mGateway.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                if (s.length() > 0) mLayout.setError(null);
-            }
-        });
-        mGateway.setOnClickListener(v -> mGateway.setCursorVisible(true));
-
-        mGateway.setOnEditorActionListener(
-                (v, actionId, event) -> {
-                    if (actionId == EditorInfo.IME_ACTION_DONE ||
-                            event != null &&
-                                    event.getAction() == KeyEvent.ACTION_DOWN &&
-                                    event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                        if (event == null || !event.isShiftPressed()) {
-
-
-                            Editable text = mGateway.getText();
-                            Objects.requireNonNull(text);
-                            String gateway = text.toString();
-
-                            mGateway.setCursorVisible(false);
-
-
-                            if (!isValid(gateway)) {
-                                mLayout.setError(getString(R.string.gateway_not_valid));
-                            } else {
-                                mLayout.setError(null);
-                                ExecutorService executor = Executors.newSingleThreadExecutor();
-                                executor.submit(() -> {
-                                    try {
-                                        URI uri = new URI(gateway);
-                                        if (InetAddress.getByName(uri.getHost()).isReachable(2000)) {
-                                            LiteService.setGateway(mContext, gateway);
-                                        } else {
-
-                                            new Handler(Looper.getMainLooper())
-                                                    .post(() -> mLayout.setError(
-                                                            getString(R.string.gateway_not_reachable)));
-
-                                        }
-                                    } catch (Exception e) {
-                                        LogUtils.error(TAG, e);
-                                        new Handler(Looper.getMainLooper())
-                                                .post(() -> mLayout.setError(
-                                                        getString(R.string.gateway_not_reachable)));
-                                    }
-                                });
-                            }
-                        }
-                    }
-                    return false; // pass on to other listeners.
-                }
-        );
         TextView publisher_service_time_text = view.findViewById(R.id.publisher_service_time_text);
         SeekBar publisher_service_time = view.findViewById(R.id.publisher_service_time);
 

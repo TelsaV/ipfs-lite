@@ -10,10 +10,6 @@
         android:title="@string/share" />
 
     <item
-        android:id="@+id/popup_view"
-        android:title="@string/view" />
-
-    <item
         android:id="@+id/popup_rename"
         android:title="@string/action_rename" />
 
