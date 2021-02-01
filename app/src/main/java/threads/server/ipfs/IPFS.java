@@ -304,7 +304,7 @@ public class IPFS implements Listener {
 
         SharedPreferences sharedPref = context.getSharedPreferences(
                 PREF_KEY, Context.MODE_PRIVATE);
-        return sharedPref.getInt(HIGH_WATER_KEY, 40);
+        return sharedPref.getInt(HIGH_WATER_KEY, 100);
     }
 
     @NonNull

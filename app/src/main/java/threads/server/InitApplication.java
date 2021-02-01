@@ -118,7 +118,7 @@ public class InitApplication extends Application {
 
 
                 IPFS.setLowWater(context, 50);
-                IPFS.setHighWater(context, 200);
+                IPFS.setHighWater(context, 500);
                 IPFS.setGracePeriod(context, "10s");
 
 
@@ -129,7 +129,6 @@ public class InitApplication extends Application {
                 editor.putInt(UPDATE, versionCode);
                 editor.apply();
             }
-
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
