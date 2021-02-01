@@ -120,4 +120,6 @@
     <string name="edit_text">Edit text…</string>
     <string name="connecting">Connecting…</string>
     <string name="refreshing">Refreshing…</string>
+    <string name="publisher_service_details">When the application runs in server mode, the publisher service interval defines the time period when your content will be republished to IPFS.</string>
+    <string name="connection_timeout_details">The connection timeout defines the maximum time for finding a peer or content on IPFS.</string>
 </resources>

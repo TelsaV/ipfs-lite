@@ -106,8 +106,8 @@
     <string name="share_link">分享链接</string>
     <string name="find_page">在页面中查找</string>
     <string name="clear_cache">清除缓存</string>
-    <string name="previous">Previous</string>
-    <string name="next">Next</string>
+    <string name="previous">以前</string>
+    <string name="next">下一个</string>
     <string name="private_sharing_mode">启用私人共享</string>
     <string name="private_sharing_mode_text"><![CDATA[<html>启用此选项后，您只能与在对等方列表中定义的对等方交换数据.<br><strong>此外，这些对等方还必须已激活私人共享</strong></html>]]></string>
     <string name="private_sharing">Private Sharing</string>
@@ -116,7 +116,9 @@
     <string name="leeching">浸出</string>
     <string name="reachable">可达的</string>
     <string name="service_is_running">服务正在运行</string>
-    <string name="edit_text">Edit text…</string>
-    <string name="connecting">Connecting…</string>
-    <string name="refreshing">Refreshing...</string>
+    <string name="edit_text">编辑文字…</string>
+    <string name="connecting">连接中…</string>
+    <string name="refreshing">提神醒脑…</string>
+    <string name="publisher_service_details">当应用程序在服务器模式下运行时。发布者服务间隔定义了将内容重新发布到IPFS的时间段。</string>
+    <string name="connection_timeout_details">连接超时定义了在IPFS上查找对等方或内容的最长时间。</string>
 </resources>
