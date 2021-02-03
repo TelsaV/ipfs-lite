@@ -597,7 +597,7 @@ public class BrowserFragment extends Fragment implements
 
 
                         final AtomicLong time = new AtomicLong(System.currentTimeMillis());
-                        long timeout = InitApplication.getConnectionTimeout(mContext) * 10000;
+                        long timeout = 100000; // BROWSER TIMEOUT
                         return docs.getResponse(uri, () ->
                                 (System.currentTimeMillis() - time.get() > timeout));
                     }

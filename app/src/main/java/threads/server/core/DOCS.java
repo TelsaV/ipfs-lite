@@ -906,8 +906,8 @@ public class DOCS {
         List<String> paths = uri.getPathSegments();
         if (!paths.isEmpty()) {
             String name = paths.get(paths.size() - 1);
-            String mimeType = getMimeType(uri.toString(), name);
-            if (mimeType != null) {
+            String mimeType = MimeTypeService.getMimeType(name);
+            if (!mimeType.equals(MimeType.OCTET_MIME_TYPE)) {
                 return mimeType;
             } else {
                 return getMimeType(element, closeable);
@@ -939,21 +939,6 @@ public class DOCS {
     }
 
 
-    @Nullable
-    private String getMimeType(@NonNull String url, @NonNull String name) {
-        String mimeType = null;
-        ContentInfo info = ContentInfoUtil.findExtensionMatch(name);
-        if (info != null) {
-            mimeType = info.getMimeType();
-        }
-        if (mimeType == null) {
-            String extension = MimeTypeMap.getFileExtensionFromUrl(url);
-            if (extension != null) {
-                mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-            }
-        }
-        return mimeType;
-    }
 
 
     @NonNull
