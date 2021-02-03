@@ -6,12 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -45,7 +45,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import threads.LogUtils;
-import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
@@ -55,6 +54,7 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.core.page.Bookmark;
 import threads.server.core.page.PAGES;
+import threads.server.ipfs.Closeable;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;
@@ -583,23 +583,35 @@ public class BrowserFragment extends Fragment implements
                         if (host != null) {
                             try {
                                 String pid = docs.decodeName(host);
-                                if(pid != null) {
+                                if (pid != null) {
                                     LiteService.connect(mContext, pid);
                                 }
-                            } catch (Throwable throwable){
+                            } catch (Throwable throwable) {
                                 LogUtils.error(TAG, throwable);
                             }
                         }
 
-                        {
-                            uri = docs.redirectUri(uri);
-                        }
-
-
                         final AtomicLong time = new AtomicLong(System.currentTimeMillis());
                         long timeout = 100000; // BROWSER TIMEOUT
-                        return docs.getResponse(uri, () ->
-                                (System.currentTimeMillis() - time.get() > timeout));
+
+
+                        Closeable closeable = () -> System.currentTimeMillis() - time.get() > timeout;
+                        {
+                            Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
+                            if (result.second) {
+                                mActivity.runOnUiThread(() -> {
+                                    mWebView.stopLoading();
+                                    mWebView.loadUrl(result.first.toString());
+                                });
+                                return null;
+                            }
+                            uri = result.first;
+                        }
+                        if (closeable.isClosed()) {
+                            throw new DOCS.TimeoutException(uri.toString());
+                        }
+
+                        return docs.getResponse(uri, closeable);
                     }
                 } catch (Throwable throwable) {
                     return createErrorMessage(throwable);
