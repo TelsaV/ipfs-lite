@@ -51,7 +51,6 @@ import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import threads.server.core.events.EventViewModel;
 import threads.server.core.page.Bookmark;
 import threads.server.core.page.PAGES;
 import threads.server.ipfs.Closeable;
@@ -199,7 +198,7 @@ public class BrowserFragment extends Fragment implements
                     }
                 }
 
-                EVENTS.getInstance(mContext).progress(5);
+                mProgressBar.setVisibility(View.VISIBLE);
 
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
@@ -366,42 +365,13 @@ public class BrowserFragment extends Fragment implements
 
             public void onProgressChanged(WebView view, int newProgress) {
 
-                EVENTS.getInstance(mContext).progress(newProgress);
+                mProgressBar.setVisibility(View.VISIBLE);
 
             }
         };
         mWebView.setWebChromeClient(mCustomWebChromeClient);
 
         InitApplication.setWebSettings(mWebView);
-
-        EventViewModel eventViewModel =
-                new ViewModelProvider(this).get(EventViewModel.class);
-
-
-        eventViewModel.getProgress().observe(getViewLifecycleOwner(), (event) -> {
-            try {
-                if (event != null) {
-
-                    String content = event.getContent();
-                    if (!content.isEmpty()) {
-                        int value = Integer.parseInt(content);
-                        if (value <= 0 || value >= 100) {
-                            mProgressBar.setVisibility(View.GONE);
-                        } else {
-                            mProgressBar.setVisibility(View.VISIBLE);
-                            mProgressBar.setProgress(value);
-                        }
-                    }
-
-
-                    eventViewModel.removeEvent(event);
-
-                }
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-
-        });
 
         SelectionViewModel mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
 
@@ -441,7 +411,7 @@ public class BrowserFragment extends Fragment implements
                 super.onPageCommitVisible(view, url);
                 LogUtils.error(TAG, "onPageCommitVisible " + url);
 
-                EVENTS.getInstance(mContext).progress(0);
+                mProgressBar.setVisibility(View.GONE);
 
             }
 
@@ -665,14 +635,16 @@ public class BrowserFragment extends Fragment implements
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(DOWNLOADS));
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mFileForResult.launch(intent);
-
+            mProgressBar.setVisibility(View.GONE);
             EVENTS.getInstance(mContext).warning(filename);
 
         });
-        builder.setNeutralButton(getString(android.R.string.cancel),
-                (dialog, which) -> dialog.cancel());
+        builder.setNeutralButton(getString(android.R.string.cancel), (dialog, which) -> {
+            mProgressBar.setVisibility(View.GONE);
+            dialog.cancel();
+        });
         builder.show();
-        EVENTS.getInstance(mContext).progress(0);
+
     }
 
 
@@ -693,13 +665,17 @@ public class BrowserFragment extends Fragment implements
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mContentForResult.launch(intent);
 
+            mProgressBar.setVisibility(View.GONE);
+
             EVENTS.getInstance(mContext).warning(filename);
 
         });
-        builder.setNeutralButton(getString(android.R.string.cancel),
-                (dialog, which) -> dialog.cancel());
+        builder.setNeutralButton(getString(android.R.string.cancel), (dialog, which) -> {
+            mProgressBar.setVisibility(View.GONE);
+            dialog.cancel();
+        });
         builder.show();
-        EVENTS.getInstance(mContext).progress(0);
+
     }
 
 

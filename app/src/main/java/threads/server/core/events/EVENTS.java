@@ -12,7 +12,6 @@ public class EVENTS {
     public static final String WARNING = "WARNING";
     public static final String INFO = "INFO";
     public static final String PERMISSION = "PERMISSION";
-    public static final String PROGRESS = "PROGRESS";
     public static final String EXIT = "EXIT";
     public static final String SEEDING = "SEEDING";
     public static final String LEECHING = "LEECHING";
@@ -52,11 +51,6 @@ public class EVENTS {
     public void exit(@NonNull String content) {
 
         storeEvent(createEvent(EXIT, content));
-    }
-
-    public void progress(int progress) {
-
-        storeEvent(createEvent(PROGRESS, "" + progress));
     }
 
     public void error(@NonNull String content) {
