@@ -261,7 +261,6 @@ public class UploadThreadWorker extends Worker {
                         }
                         threads.setThreadName(idx, name);
                         threads.setThreadMimeType(idx, fileInfo.getMimeType());
-                        threads.setThreadSize(idx, fileInfo.getSize());
                         threads.setThreadContent(idx, fileInfo.getContent());
 
                         downloadThread(idx);
@@ -443,7 +442,6 @@ public class UploadThreadWorker extends Worker {
             long threadIdx = thread.getIdx();
 
             Objects.requireNonNull(thread);
-            long size = thread.getSize();
             String filename = thread.getName();
             Objects.requireNonNull(filename);
 
@@ -496,9 +494,8 @@ public class UploadThreadWorker extends Worker {
                 if (success) {
                     threads.setThreadDone(threadIdx);
 
-                    if (size != file.length()) {
-                        threads.setThreadSize(threadIdx, file.length());
-                    }
+                    threads.setThreadSize(threadIdx, file.length());
+
 
                     String mimeType = thread.getMimeType();
                     if (mimeType.isEmpty()) {

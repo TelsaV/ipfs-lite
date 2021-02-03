@@ -721,13 +721,7 @@ public class DOCS {
                 throw new TimeoutException(uri.toString());
             }
 
-            long size = ipfs.getSize(root, closeable);
-
-            if (closeable.isClosed()) {
-                throw new TimeoutException(uri.toString());
-            }
-
-            return new FileInfo(root, mimeType, root, size);
+            return new FileInfo(root, mimeType, root);
         } catch (Throwable throwable) {
             if (closeable.isClosed()) {
                 throw new TimeoutException(uri.toString());
@@ -853,9 +847,7 @@ public class DOCS {
 
 
             Map<String, String> responseHeaders = new HashMap<>();
-            if(size >= 0) {
-                responseHeaders.put("Content-Length", "" + size);
-            }
+            responseHeaders.put("Content-Length", "" + size);
             responseHeaders.put("Content-Type", mimeType);
 
             return new WebResourceResponse(mimeType, Content.UTF8, 200,
@@ -979,14 +971,12 @@ public class DOCS {
         if (linkInfo != null) {
             String filename = linkInfo.getName();
             if (ipfs.isDir(linkInfo.getContent(), closeable)) {
-                return new FileInfo(filename, MimeType.DIR_MIME_TYPE,
-                        linkInfo.getContent(), ipfs.getSize(linkInfo.getContent(), closeable));
+                return new FileInfo(filename, MimeType.DIR_MIME_TYPE, linkInfo.getContent());
             } else {
 
                 String mimeType = getMimeType(uri, linkInfo.getContent(), closeable);
 
-                return new FileInfo(filename, mimeType,
-                        linkInfo.getContent(),  ipfs.getSize(linkInfo.getContent(), closeable));
+                return new FileInfo(filename, mimeType, linkInfo.getContent());
             }
 
         } else {
@@ -1041,13 +1031,12 @@ public class DOCS {
         private final String mimeType;
         @NonNull
         private final String content;
-        private final long size;
 
-        public FileInfo(@NonNull String filename, @NonNull String mimeType, @NonNull String content, long size) {
+
+        public FileInfo(@NonNull String filename, @NonNull String mimeType, @NonNull String content) {
             this.filename = filename;
             this.mimeType = mimeType;
             this.content = content;
-            this.size = size;
         }
 
         @NonNull
@@ -1065,9 +1054,6 @@ public class DOCS {
             return content;
         }
 
-        public long getSize() {
-            return size;
-        }
     }
 
     public static class TimeoutException extends Exception {
