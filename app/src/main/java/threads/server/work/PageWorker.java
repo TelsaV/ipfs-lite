@@ -165,8 +165,15 @@ public class PageWorker extends Worker {
 
                 LogUtils.error(TAG, "Start publish name " + content);
 
-                ipfs.publishName(content, this::isStopped,
-                        sequence -> publishSequence(content, sequence));
+                int seq = IPFS.getSequence(getApplicationContext());
+                seq++;
+                IPFS.setSequence(getApplicationContext(),seq);
+
+                publishSequence(content, seq);
+
+                ipfs.publishName(content, this::isStopped, seq);
+
+
 
                 LogUtils.error(TAG, "End publish name " + content);
 

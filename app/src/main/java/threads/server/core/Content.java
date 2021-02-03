@@ -21,7 +21,7 @@ public class Content extends Hashtable<String, String> {
     public static final String HTTPS = "https";
     public static final String HTTP = "http";
     public static final String TITLE = "title";
-    public static final Object MAGNET = "magnet";
+    public static final String MAGNET = "magnet";
     public static final String UTF8 = "UTF-8";
     public static final String URL = "url";
     public static final String REFRESH = "refresh";
@@ -31,4 +31,5 @@ public class Content extends Hashtable<String, String> {
     public static final String SIZE = "size";
     public static final String TYPE = "type";
     public static final String FILE = "file";
+    public static final String ABOUT = "about";
 }

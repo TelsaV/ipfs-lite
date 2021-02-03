@@ -55,6 +55,7 @@ public class InitApplication extends Application {
 
     }
 
+
     @NonNull
     public static SortOrder getSortOrder(@NonNull Context context) {
 
@@ -137,19 +138,20 @@ public class InitApplication extends Application {
 
 
     @SuppressLint("SetJavaScriptEnabled")
-    public static void setWebSettings(@NonNull WebView webView, @NonNull String userAgent) {
+    public static void setWebSettings(@NonNull WebView webView) {
+
 
         WebSettings settings = webView.getSettings();
-        settings.setUserAgentString(userAgent);
+        settings.setUserAgentString("Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ")");
+
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            settings.setSafeBrowsingEnabled(false);
-        }
-        settings.setAllowFileAccessFromFileURLs(true);
-        settings.setAllowContentAccess(true);
-        settings.setAllowUniversalAccessFromFileURLs(true);
-        settings.setAllowFileAccess(true);
+
+        settings.setSafeBrowsingEnabled(true);
+        settings.setAllowFileAccessFromFileURLs(false);
+        settings.setAllowContentAccess(false);
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        settings.setAllowFileAccess(false);
         settings.setLoadsImagesAutomatically(true);
         settings.setBlockNetworkLoads(false);
         settings.setBlockNetworkImage(false);
@@ -161,11 +163,11 @@ public class InitApplication extends Application {
         settings.setBuiltInZoomControls(true);
         settings.setDisplayZoomControls(false);
         settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setUseWideViewPort(true);
         settings.setLoadWithOverviewMode(true);
         settings.setMediaPlaybackRequiresUserGesture(true);
-        settings.setSupportMultipleWindows(true);
+        settings.setSupportMultipleWindows(false);
         settings.setGeolocationEnabled(false);
     }
 

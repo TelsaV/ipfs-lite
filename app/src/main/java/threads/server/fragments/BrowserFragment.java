@@ -372,7 +372,7 @@ public class BrowserFragment extends Fragment implements
         };
         mWebView.setWebChromeClient(mCustomWebChromeClient);
 
-        InitApplication.setWebSettings(mWebView, getUserAgent());
+        InitApplication.setWebSettings(mWebView);
 
         EventViewModel eventViewModel =
                 new ViewModelProvider(this).get(EventViewModel.class);
@@ -505,7 +505,9 @@ public class BrowserFragment extends Fragment implements
                     Uri uri = request.getUrl();
                     LogUtils.error(TAG, "shouldOverrideUrlLoading : " + uri);
 
-                    if (Objects.equals(uri.getScheme(), Content.HTTP) ||
+                    if (Objects.equals(uri.getScheme(), Content.ABOUT)) {
+                        return true;
+                    } else if (Objects.equals(uri.getScheme(), Content.HTTP) ||
                             Objects.equals(uri.getScheme(), Content.HTTPS)) {
                         return false;
                     } else if (Objects.equals(uri.getScheme(), Content.IPNS) ||
@@ -579,7 +581,14 @@ public class BrowserFragment extends Fragment implements
 
                         String host = getHost(uri.toString());
                         if (host != null) {
-                            LiteService.connect(mContext, host);
+                            try {
+                                String pid = docs.decodeName(host);
+                                if(pid != null) {
+                                    LiteService.connect(mContext, pid);
+                                }
+                            } catch (Throwable throwable){
+                                LogUtils.error(TAG, throwable);
+                            }
                         }
 
                         {
@@ -588,7 +597,7 @@ public class BrowserFragment extends Fragment implements
 
 
                         final AtomicLong time = new AtomicLong(System.currentTimeMillis());
-                        long timeout = InitApplication.getConnectionTimeout(mContext) * 1000;
+                        long timeout = InitApplication.getConnectionTimeout(mContext) * 10000;
                         return docs.getResponse(uri, () ->
                                 (System.currentTimeMillis() - time.get() > timeout));
                     }
@@ -601,12 +610,6 @@ public class BrowserFragment extends Fragment implements
 
     }
 
-
-    private String getUserAgent() {
-        return getString(R.string.app_name) + "/" +
-                BuildConfig.VERSION_NAME + " (Linux; Android "
-                + Build.VERSION.RELEASE + "; wv)";
-    }
 
 
     private void checkBookmark(@Nullable String uri) {
@@ -811,11 +814,6 @@ public class BrowserFragment extends Fragment implements
 
     }
 
-
-    @NonNull
-    public WebView getWebView() {
-        return mWebView;
-    }
 
 
     @Nullable
