@@ -458,8 +458,8 @@ public class BrowserFragment extends Fragment implements
             @Override
             public void onPageFinished(WebView view, String url) {
 
-                LogUtils.error(TAG, "onPageStarted : " + url);
-
+                LogUtils.error(TAG, "onPageFinished : " + url);
+                mProgressBar.setVisibility(View.GONE);
             }
 
             @Override
