@@ -19,7 +19,6 @@ import java.util.concurrent.Executors;
 
 import threads.LogUtils;
 import threads.server.BuildConfig;
-import threads.server.InitApplication;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.events.EVENTS;

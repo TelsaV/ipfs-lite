@@ -578,7 +578,7 @@ public class BrowserFragment extends Fragment implements
                                     mWebView.stopLoading();
                                     mWebView.loadUrl(result.first.toString());
                                 });
-                                return null;
+                                return createEmptyResource();
                             }
                             uri = result.first;
                         }
