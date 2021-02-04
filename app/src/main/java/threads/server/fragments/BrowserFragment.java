@@ -62,6 +62,7 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearCacheWorker;
 import threads.server.work.DownloadContentWorker;
 import threads.server.work.DownloadFileWorker;
+import threads.server.work.PageConnectWorker;
 
 public class BrowserFragment extends Fragment implements
         SwipeRefreshLayout.OnRefreshListener {
@@ -177,7 +178,7 @@ public class BrowserFragment extends Fragment implements
 
     private void loadUrl(@NonNull String uri) {
 
-        mSwipeRefreshLayout.setDistanceToTriggerSync(999999);
+        mProgressBar.setVisibility(View.VISIBLE);
         preload(Uri.parse(uri));
         checkBookmark(uri);
         mListener.updateTitle(uri);
@@ -197,8 +198,6 @@ public class BrowserFragment extends Fragment implements
                         pages.removeResolver(name);
                     }
                 }
-
-                mProgressBar.setVisibility(View.VISIBLE);
 
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
@@ -353,6 +352,7 @@ public class BrowserFragment extends Fragment implements
                 android.R.color.holo_green_dark,
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark);
+        mSwipeRefreshLayout.setProgressViewOffset(false, 100, 500);
 
         mProgressBar = view.findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
@@ -439,7 +439,8 @@ public class BrowserFragment extends Fragment implements
             public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
                 LogUtils.error(TAG, "doUpdateVisitedHistory : " + url + " " + isReload);
 
-                mSwipeRefreshLayout.setDistanceToTriggerSync(100);
+
+                mProgressBar.setVisibility(View.VISIBLE);
                 checkBookmark(url);
                 mListener.updateTitle(url);
                 super.doUpdateVisitedHistory(view, url, isReload);
@@ -449,15 +450,12 @@ public class BrowserFragment extends Fragment implements
             public void onPageStarted(WebView view, String uri, Bitmap favicon) {
                 LogUtils.error(TAG, "onPageStarted : " + uri);
 
-                mSwipeRefreshLayout.setDistanceToTriggerSync(999999);
                 checkBookmark(uri);
                 mListener.updateTitle(uri);
             }
 
-
             @Override
             public void onPageFinished(WebView view, String url) {
-
                 LogUtils.error(TAG, "onPageFinished : " + url);
                 mProgressBar.setVisibility(View.GONE);
             }
@@ -465,7 +463,9 @@ public class BrowserFragment extends Fragment implements
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 LogUtils.error(TAG, "" + error.getDescription());
+                mProgressBar.setVisibility(View.GONE);
             }
+
 
 
             @Override
@@ -549,12 +549,17 @@ public class BrowserFragment extends Fragment implements
                     if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                             Objects.equals(uri.getScheme(), Content.IPFS)) {
 
+
+                        mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
+
                         String host = getHost(uri.toString());
                         if (host != null) {
                             try {
                                 String pid = docs.decodeName(host);
                                 if (pid != null) {
-                                    LiteService.connect(mContext, pid);
+                                    if (!Objects.equals(docs.getHost(), pid)) {
+                                        PageConnectWorker.connect(mContext, pid);
+                                    }
                                 }
                             } catch (Throwable throwable) {
                                 LogUtils.error(TAG, throwable);

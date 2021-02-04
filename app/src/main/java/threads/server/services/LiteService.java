@@ -219,25 +219,6 @@ public class LiteService {
         }
     }
 
-    public static void connect(@NonNull Context context, @NonNull String pid) {
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            try {
-
-                IPFS ipfs = IPFS.getInstance(context);
-                if (!Objects.equals(ipfs.getHost(), pid)) {
-                    if (!ipfs.isConnected(pid)) {
-                        int timeout = InitApplication.getConnectionTimeout(context);
-                        ipfs.swarmConnect(pid, timeout);
-                    }
-                }
-
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        });
-    }
 
     public static void bootstrap(@NonNull Context context, int minPeers) {
 
