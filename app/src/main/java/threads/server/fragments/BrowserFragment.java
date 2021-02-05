@@ -527,6 +527,25 @@ public class BrowserFragment extends Fragment implements
             }
 
 
+            public WebResourceResponse createRedirectMessage(@NonNull Uri uri) {
+                return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
+                        new ByteArrayInputStream(("<!DOCTYPE HTML>\n" +
+                                "<html lang=\"en-US\">\n" +
+                                "    <head>\n" +
+                                "        <meta charset=\"UTF-8\">\n" +
+                                "        <meta http-equiv=\"refresh\" content=\"0; url="+uri.toString()+"\">\n" +
+                                "        <script type=\"text/javascript\">\n" +
+                                "            window.location.href = \""+uri.toString()+"\"\n" +
+                                "        </script>\n" +
+                                "        <title>Page Redirection</title>\n" +
+                                "    </head>\n" +
+                                "    <body>\n" +
+                                "        <!-- Note: don't tell people to `click` the link, just tell them that it is a link. -->\n" +
+                                "        If you are not redirected automatically, follow this <a href='"+uri.toString()+"'>link to example</a>.\n" +
+                                "    </body>\n" +
+                                "</html>").getBytes()));
+            }
+
             public WebResourceResponse createEmptyResource() {
                 return new WebResourceResponse("text/plain", Content.UTF8,
                         new ByteArrayInputStream("".getBytes()));
@@ -574,11 +593,7 @@ public class BrowserFragment extends Fragment implements
                         {
                             Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
                             if (result.second) {
-                                mActivity.runOnUiThread(() -> {
-                                    mWebView.stopLoading();
-                                    mWebView.loadUrl(result.first.toString());
-                                });
-                                return createEmptyResource();
+                                return createRedirectMessage(result.first);
                             }
                             uri = result.first;
                         }
