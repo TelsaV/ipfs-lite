@@ -728,6 +728,17 @@ public class MainActivity extends AppCompatActivity implements
                     Objects.requireNonNull(textObject);
                     String text = textObject.toString();
                     if (!text.isEmpty()) {
+
+                        Uri uri = Uri.parse(text);
+                        if (uri != null) {
+                            if (Objects.equals(uri.getScheme(), Content.IPNS) ||
+                                    Objects.equals(uri.getScheme(), Content.HTTP) ||
+                                    Objects.equals(uri.getScheme(), Content.HTTPS) ) {
+                                openBrowserView(uri);
+                                return;
+                            }
+                        }
+
                         CodecDecider result = CodecDecider.evaluate(getApplicationContext(), text);
 
                         if (result.getCodex() == CodecDecider.Codec.P2P_URI) {
@@ -747,8 +758,7 @@ public class MainActivity extends AppCompatActivity implements
                                     getSupportFragmentManager(), EditContentDialogFragment.TAG);
 
                         } else if (result.getCodex() == CodecDecider.Codec.IPNS_URI) {
-                            Uri uri = Uri.parse(text);
-                            openBrowserView(uri);
+                            openBrowserView(Uri.parse(text));
                         } else if (result.getCodex() == CodecDecider.Codec.MULTIADDRESS) {
 
                             String user = result.getPeerID();
@@ -769,8 +779,7 @@ public class MainActivity extends AppCompatActivity implements
 
                         } else {
                             if (URLUtil.isValidUrl(text)) {
-                                Uri uri = Uri.parse(text);
-                                openBrowserView(uri);
+                                openBrowserView(Uri.parse(text));
                             } else {
                                 UploadService.storeText(
                                         getApplicationContext(), 0L, text, false);
