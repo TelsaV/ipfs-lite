@@ -24,7 +24,7 @@ import threads.LogUtils;
 public class DnsAddrResolver {
     private static final String LIB2P = "_dnsaddr.bootstrap.libp2p.io";
     private static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
-    public static final String DNS_LINK = "dnslink=/ipfs/";
+    public static final String DNS_LINK = "dnslink=";
     private static final String IPv4 = "/ip4/";
     private static final String IPv6 = "/ip6/";
     private static final String TAG = DnsAddrResolver.class.getSimpleName();
