@@ -106,7 +106,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.7'
 
     // API (IPFS lite)
-    implementation 'lite.ipfs:lite:1.0.8'
+    implementation 'lite.ipfs:lite:1.0.9'
 
     annotationProcessor 'androidx.room:room-compiler:2.2.6'
 
