@@ -669,7 +669,6 @@ public class DOCS {
 
         IPFS.ResolvedName resolvedName = ipfs.resolveName(name, sequence, closeable);
         if (resolvedName == null) {
-
             if (cid != null) {
                 resolves.put(pid, cid);
                 return cid;

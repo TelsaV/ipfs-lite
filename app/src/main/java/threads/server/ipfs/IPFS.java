@@ -28,6 +28,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import lite.DhtClose;
@@ -815,7 +816,7 @@ public class IPFS implements Listener {
     }
 
     @Nullable
-    public ResolvedName resolveName(@NonNull String name, final long sequence,
+    public ResolvedName resolveName(@NonNull String name, long initSequence,
                                     @NonNull Closeable closeable) {
         if (!isDaemonRunning()) {
             return null;
@@ -826,7 +827,8 @@ public class IPFS implements Listener {
 
         AtomicReference<ResolvedName> resolvedName = new AtomicReference<>(null);
         try {
-            AtomicInteger counter = new AtomicInteger(0);
+            AtomicLong sequence = new AtomicLong(initSequence);
+            AtomicBoolean visited = new AtomicBoolean(false);
             AtomicBoolean close = new AtomicBoolean(false);
             node.resolveName(new ResolveInfo() {
                 @Override
@@ -834,27 +836,40 @@ public class IPFS implements Listener {
                     return close.get() || closeable.isClosed();
                 }
 
+                private void setName(@NonNull String hash){
+                    resolvedName.set(new ResolvedName(
+                            sequence.get(), hash.replaceFirst(Content.IPFS_PATH, "")));
+                }
+
                 @Override
                 public void resolved(String hash, long seq) {
 
 
                     LogUtils.error(TAG, "" + seq + " " + hash);
-
-                    if (seq < sequence) {
-                        close.set(true);
-                        return; // newest value already available
-                    }
-
-                    if (hash.startsWith("/ipfs/")) {
-                        if (seq > sequence || counter.get() < 2) {
+                    if(!close.get()) {
+                        long init = sequence.get();
+                        if (seq < init) {
                             close.set(true);
-                        } else {
-                            counter.incrementAndGet();
+                            return; // newest value already available
                         }
-                        resolvedName.set(new ResolvedName(
-                                seq, hash.replaceFirst(Content.IPFS_PATH, "")));
-                    }
 
+                        if (hash.startsWith(Content.IPFS_PATH)) {
+                            if (seq > init) {
+                                sequence.set(seq);
+                                visited.set(false);
+                                setName(hash);
+                            } else {
+                                visited.set(true);
+                                setName(hash);
+                            }
+                            if(visited.get()){
+                                close.set(true);
+                            }
+
+                        } else {
+                            LogUtils.error(TAG, "invalid hash " + hash);
+                        }
+                    }
                 }
             }, name, false, 8);
 
