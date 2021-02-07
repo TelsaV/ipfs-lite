@@ -11,7 +11,6 @@ import android.os.Build;
 import android.provider.DocumentsContract;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -30,10 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -48,7 +43,7 @@ import threads.server.core.DOCS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.IPFS;
-import threads.server.ipfs.LinkInfo;
+import threads.server.ipfs.Link;
 import threads.server.ipfs.Progress;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
@@ -250,6 +245,9 @@ public class UploadThreadWorker extends Worker {
                 try {
 
                     if (threads.getThreadContent(idx) == null) {
+
+                        uri = docs.redirect(uri, this::isStopped);
+
                         DOCS.FileInfo fileInfo = docs.getFileInfo(uri, this::isStopped);
 
 
@@ -352,38 +350,13 @@ public class UploadThreadWorker extends Worker {
     }
 
     private void downloadThread(long idx) {
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-
-        List<Thread> works = new ArrayList<>();
 
         if (!isStopped()) {
-            downloadLinks(works, idx);
+            downloadLinks(idx);
         }
 
         if (!isStopped()) {
             defineDirSize();
-
-            ConcurrentLinkedQueue<Future<Boolean>> futures = new ConcurrentLinkedQueue<>();
-            for (Thread work : works) {
-                futures.add(executor.submit(() -> download(work)));
-            }
-
-            do {
-
-                for (Future<Boolean> future : futures) {
-                    if (future.isDone() || future.isCancelled()) {
-                        futures.remove(future);
-                    }
-                }
-
-
-                if (isStopped()) {
-                    executor.shutdown();
-                    executor.shutdownNow();
-                    break;
-                }
-
-            } while (!futures.isEmpty());
         }
     }
 
@@ -431,12 +404,12 @@ public class UploadThreadWorker extends Worker {
 
     }
 
-    private boolean download(@NonNull Thread thread) {
+    private void download(@NonNull Thread thread) {
 
         long start = System.currentTimeMillis();
 
         LogUtils.info(TAG, " start [" + (System.currentTimeMillis() - start) + "]...");
-        boolean success = false;
+
         try {
 
             long threadIdx = thread.getIdx();
@@ -444,6 +417,9 @@ public class UploadThreadWorker extends Worker {
             Objects.requireNonNull(thread);
             String filename = thread.getName();
             Objects.requireNonNull(filename);
+
+
+            reportProgress(filename, 0);
 
             String cid = thread.getContent();
             Objects.requireNonNull(cid);
@@ -456,13 +432,12 @@ public class UploadThreadWorker extends Worker {
                 threads.setThreadDone(threadIdx);
                 threads.setThreadSize(threadIdx, 0L);
                 threads.setThreadMimeType(threadIdx, MimeType.DIR_MIME_TYPE);
-                success = true;
             } else {
                 File file = FileProvider.getInstance(
                         getApplicationContext()).createDataFile(threadIdx);
 
                 AtomicLong refresh = new AtomicLong(System.currentTimeMillis());
-                success = ipfs.loadToFile(file, cid,
+                boolean success = ipfs.loadToFile(file, cid,
                         new Progress() {
                             @Override
                             public boolean isClosed() {
@@ -535,7 +510,6 @@ public class UploadThreadWorker extends Worker {
         } finally {
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
-        return success;
     }
 
 
@@ -658,11 +632,6 @@ public class UploadThreadWorker extends Worker {
         return builder.build();
     }
 
-    @Nullable
-    private List<LinkInfo> getLinks(@NonNull String cid) {
-        return ipfs.getLinks(cid, this::isStopped);
-    }
-
 
     private Thread getFolderThread(long parent, @NonNull String cid) {
 
@@ -674,10 +643,10 @@ public class UploadThreadWorker extends Worker {
     }
 
 
-    private List<Thread> evalLinks(long parent, @NonNull List<LinkInfo> links) {
+    private List<Thread> evalLinks(long parent, @NonNull List<Link> links) {
         List<Thread> threadList = new ArrayList<>();
 
-        for (LinkInfo link : links) {
+        for (Link link : links) {
 
             String cid = link.getContent();
             Thread entry = getFolderThread(parent, cid);
@@ -698,21 +667,20 @@ public class UploadThreadWorker extends Worker {
         return threadList;
     }
 
-    private long createThread(@NonNull String cid, @NonNull LinkInfo link, long parent) {
+    private long createThread(@NonNull String cid, @NonNull Link link, long parent) {
 
         String name = link.getName();
         String mimeType = null;
-        if (link.isDirectory()) {
+        if (ipfs.isDir(link.getContent(), this::isStopped)) {
             mimeType = MimeType.DIR_MIME_TYPE;
         }
-        long size = link.getSize();
 
         return docs.createDocument(parent, mimeType, cid, null,
-                name, size, false, true);
+                name, -1, false, true);
     }
 
 
-    private void downloadLinks(@NonNull List<Thread> works, long idx) {
+    private void downloadLinks(long idx) {
 
         Thread thread = threads.getThreadByIdx(idx);
         Objects.requireNonNull(thread);
@@ -720,12 +688,12 @@ public class UploadThreadWorker extends Worker {
         String cid = thread.getContent();
         Objects.requireNonNull(cid);
 
-        List<LinkInfo> links = getLinks(cid);
+        List<Link> links = ipfs.links(cid, this::isStopped);
 
         if (links != null) {
             if (links.isEmpty()) {
                 if (!isStopped()) {
-                    works.add(thread);
+                    download(thread);
                 }
             } else {
 
@@ -739,9 +707,9 @@ public class UploadThreadWorker extends Worker {
                 for (Thread child : children) {
                     if (!isStopped()) {
                         if (child.isDir()) {
-                            downloadLinks(works, child.getIdx());
+                            downloadLinks(child.getIdx());
                         } else {
-                            works.add(child);
+                            download(child);
                         }
                     }
                 }

@@ -731,9 +731,10 @@ public class MainActivity extends AppCompatActivity implements
 
                         Uri uri = Uri.parse(text);
                         if (uri != null) {
-                            if (Objects.equals(uri.getScheme(), Content.IPNS) ||
+                            if (Objects.equals(uri.getScheme(), Content.IPFS) ||
+                                    Objects.equals(uri.getScheme(), Content.IPNS) ||
                                     Objects.equals(uri.getScheme(), Content.HTTP) ||
-                                    Objects.equals(uri.getScheme(), Content.HTTPS) ) {
+                                    Objects.equals(uri.getScheme(), Content.HTTPS)) {
                                 openBrowserView(uri);
                                 return;
                             }

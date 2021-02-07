@@ -957,6 +957,86 @@ public class DOCS {
     }
 
     @NonNull
+    public Uri redirect(@NonNull Uri uri, @NonNull Closeable closeable) {
+
+
+        if (Objects.equals(uri.getScheme(), Content.IPNS) ||
+                Objects.equals(uri.getScheme(), Content.IPFS)) {
+            List<String> paths = uri.getPathSegments();
+            String host = uri.getHost();
+            Objects.requireNonNull(host);
+            if (!ipfs.isValidCID(host)) {
+                String link = DnsAddrResolver.getDNSLink(host);
+                if (link == null) {
+                    Uri.Builder builder = new Uri.Builder();
+                    builder.scheme(Content.HTTPS)
+                            .authority(host);
+                    for (String path : paths) {
+                        builder.appendPath(path);
+                    }
+                    return builder.build();
+                } else {
+                    if (link.startsWith(Content.IPFS_PATH)) {
+                        String cid = link.replaceFirst(Content.IPFS_PATH, "");
+                        Uri.Builder builder = new Uri.Builder();
+                        builder.scheme(Content.IPFS)
+                                .authority(cid);
+                        for (String path : paths) {
+                            builder.appendPath(path);
+                        }
+                        return builder.build();
+                    } else if (link.startsWith(Content.IPNS_PATH)) {
+                        String cid = link.replaceFirst(Content.IPNS_PATH, "");
+                        if (!ipfs.decodeName(cid).isEmpty()) {
+                            Uri.Builder builder = new Uri.Builder();
+                            builder.scheme(Content.IPNS)
+                                    .authority(cid);
+                            for (String path : paths) {
+                                builder.appendPath(path);
+                            }
+                            return builder.build();
+                        } else {
+                            // is is assume like /ipns/<dns_link> = > therefore <dns_link> is url
+                            try {
+                                Uri dnsUri = Uri.parse(cid);
+                                if (dnsUri != null) {
+                                    Uri.Builder builder = new Uri.Builder();
+                                    builder.scheme(Content.IPNS)
+                                            .authority(dnsUri.getAuthority());
+                                    for (String path : paths) {
+                                        builder.appendPath(path);
+                                    }
+                                    return redirect(dnsUri, closeable);
+                                }
+                            } catch (Throwable throwable) {
+                                LogUtils.error(TAG, throwable);
+                            }
+                        }
+                    } else {
+                        // is is assume that links is  <dns_link> is url
+                        try {
+                            Uri dnsUri = Uri.parse(link);
+                            if (dnsUri != null) {
+                                Uri.Builder builder = new Uri.Builder();
+                                builder.scheme(Content.IPNS)
+                                        .authority(dnsUri.getAuthority());
+                                for (String path : paths) {
+                                    builder.appendPath(path);
+                                }
+                                return redirect(dnsUri, closeable);
+                            }
+                        } catch (Throwable throwable) {
+                            LogUtils.error(TAG, throwable);
+                        }
+                    }
+                }
+
+            }
+        }
+        return uri;
+    }
+
+    @NonNull
     public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) {
 
 

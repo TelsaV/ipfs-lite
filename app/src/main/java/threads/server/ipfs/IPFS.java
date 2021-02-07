@@ -27,7 +27,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -1072,6 +1071,28 @@ public class IPFS implements Listener {
         return size;
     }
 
+
+    @Nullable
+    public List<Link> links(@NonNull String cid, @NonNull Closeable closeable) {
+
+        LogUtils.info(TAG, "Lookup CID : " + cid);
+
+        List<Link> links = lss(cid, closeable);
+        if (links == null) {
+            LogUtils.info(TAG, "no links or stopped");
+            return null;
+        }
+
+        List<Link> result = new ArrayList<>();
+        for (Link link : links) {
+            LogUtils.info(TAG, "Link : " + link.toString());
+            if (!link.getName().isEmpty()) {
+                result.add(link);
+            }
+        }
+        return result;
+    }
+
     @Nullable
     public List<LinkInfo> getLinks(@NonNull String cid, @NonNull Closeable closeable) {
 
@@ -1093,6 +1114,38 @@ public class IPFS implements Listener {
         return result;
     }
 
+
+    @Nullable
+    public List<Link> lss(@NonNull String cid, @NonNull Closeable closeable) {
+        if (!isDaemonRunning()) {
+            return Collections.emptyList();
+        }
+        List<Link> infoList = new ArrayList<>();
+        try {
+
+            node.ls(cid, new LsInfoClose() {
+                @Override
+                public boolean close() {
+                    return closeable.isClosed();
+                }
+
+                @Override
+                public void lsInfo(String name, String hash, long size, int type) {
+                    Link info = Link.create(name, hash);
+                    infoList.add(info);
+                    LogUtils.error(TAG, info.toString());
+                }
+            }, false);
+
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+            return null;
+        }
+        if (closeable.isClosed()) {
+            return null;
+        }
+        return infoList;
+    }
 
 
     @Nullable
