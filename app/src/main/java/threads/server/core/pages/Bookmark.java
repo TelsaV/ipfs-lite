@@ -1,4 +1,4 @@
-package threads.server.core.page;
+package threads.server.core.pages;
 
 
 import android.graphics.Bitmap;

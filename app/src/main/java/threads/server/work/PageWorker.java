@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import threads.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
-import threads.server.core.page.Page;
+import threads.server.core.pages.Page;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;

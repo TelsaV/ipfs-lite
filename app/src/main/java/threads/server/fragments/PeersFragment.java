@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -198,7 +199,8 @@ public class PeersFragment extends Fragment implements
                 android.R.color.holo_green_dark,
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark);
-
+        final DisplayMetrics metrics = getResources().getDisplayMetrics();
+        mSwipeRefreshLayout.setDistanceToTriggerSync((int) metrics.density * 128);
 
         LinearLayoutManager linearLayout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(linearLayout);

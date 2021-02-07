@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -114,6 +115,8 @@ public class SwarmFragment extends Fragment implements
                 android.R.color.holo_green_dark,
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark);
+        final DisplayMetrics metrics = getResources().getDisplayMetrics();
+        mSwipeRefreshLayout.setDistanceToTriggerSync((int) metrics.density * 128);
 
         LinearLayoutManager linearLayout = new LinearLayoutManager(getContext());
         mRecyclerView.setLayoutManager(linearLayout);
@@ -197,7 +200,7 @@ public class SwarmFragment extends Fragment implements
 
         try {
             // CHECKED if pid is valid
-            if (!IPFS.getInstance(mContext).isValidPID(pid)) {
+            if (IPFS.getInstance(mContext).decodeName(pid).isEmpty()) {
                 EVENTS.getInstance(mContext).error(getString(R.string.pid_not_valid));
                 return;
             }

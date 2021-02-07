@@ -16,15 +16,15 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 import threads.LogUtils;
-import threads.server.core.page.PAGES;
-import threads.server.core.page.Page;
-import threads.server.core.page.Resolver;
+import threads.server.core.pages.PAGES;
+import threads.server.core.pages.Page;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.threads.THREADS;
@@ -38,6 +38,7 @@ import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
 import threads.server.services.MimeTypeService;
 import threads.server.utils.MimeType;
+import threads.server.work.PageConnectWorker;
 
 public class DOCS {
 
@@ -50,7 +51,7 @@ public class DOCS {
     private final PEERS peers;
     private final String host;
     private final ContentInfoUtil util;
-
+    private final Hashtable<String, String> resolves = new Hashtable<>();
 
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
@@ -74,51 +75,7 @@ public class DOCS {
         }
         return INSTANCE;
     }
-
-
-    @NonNull
-    public String resolveName(@NonNull Uri uri,
-                              @NonNull String name,
-                              @NonNull Closeable closeable) throws ResolveNameException {
-
-
-        if (Objects.equals(getHost(), name)) {
-            String local = getLocalName();
-            if (local != null) {
-                return local;
-            }
-        }
-
-        Resolver resolver = pages.getResolver(name);
-        if (resolver != null) {
-            return resolver.getContent();
-        }
-
-
-        long sequence = 0L;
-        String ipns = null;
-        String pid = ipfs.base58(name);
-        User user = peers.getUserByPid(pid);
-        if (user != null) {
-            sequence = user.getSequence();
-            ipns = user.getIpns();
-        }
-
-        IPFS.ResolvedName resolvedName = ipfs.resolveName(name, sequence, closeable);
-        if (resolvedName == null) {
-
-            if (ipns != null) {
-                pages.storeResolver(name, ipns);
-                return ipns;
-            }
-
-            throw new ResolveNameException(uri.toString());
-        } else {
-            pages.storeResolver(name, resolvedName.getHash());
-            peers.setUserIpns(pid, resolvedName.getHash(), resolvedName.getSequence());
-            return resolvedName.getHash();
-        }
-    }
+    private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
 
     public String getHost() {
         return host;
@@ -502,9 +459,6 @@ public class DOCS {
         pages.setPageOutdated(getHost());
     }
 
-    public boolean isPinsPageOutdated() {
-        return pages.isPageOutdated(getHost());
-    }
 
     public void updatePinsPage() {
         try {
@@ -685,29 +639,48 @@ public class DOCS {
         return ipfs.link(root, paths, progress);
     }
 
+    @NonNull
+    public String resolveName(@NonNull Uri uri,
+                              @NonNull String name,
+                              @NonNull Closeable closeable) throws ResolveNameException {
 
-    @Nullable
-    public String getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
-        String host = uri.getHost();
-        Objects.requireNonNull(host);
 
-        String root;
-        if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-
-            if (!ipfs.isValidCID(host)) {
-                throw new InvalidNameException(uri.toString());
+        if (Objects.equals(getHost(), name)) {
+            String local = getLocalName();
+            if (local != null) {
+                return local;
             }
-            root = resolveName(uri, host, closeable);
-
-        } else {
-            if (!ipfs.isValidCID(host)) {
-                throw new InvalidNameException(uri.toString());
-            }
-            root = host;
         }
 
-        return root;
+        String pid = ipfs.decodeName(name);
+        String resolved = resolves.get(pid);
+        if (resolved != null) {
+            return resolved;
+        }
 
+
+        long sequence = 0L;
+        String cid = null;
+        User user = peers.getUserByPid(pid);
+        if (user != null) {
+            sequence = user.getSequence();
+            cid = user.getIpns();
+        }
+
+        IPFS.ResolvedName resolvedName = ipfs.resolveName(name, sequence, closeable);
+        if (resolvedName == null) {
+
+            if (cid != null) {
+                resolves.put(pid, cid);
+                return cid;
+            }
+
+            throw new ResolveNameException(uri.toString());
+        } else {
+            resolves.put(pid, resolvedName.getHash());
+            peers.setUserIpns(pid, resolvedName.getHash(), resolvedName.getSequence());
+            return resolvedName.getHash();
+        }
     }
 
     @NonNull
@@ -848,26 +821,6 @@ public class DOCS {
     }
 
 
-    public boolean isLocalUri(@NonNull String url) {
-        try {
-            Uri uri = Uri.parse(url);
-            String host = uri.getHost();
-            Objects.requireNonNull(host);
-
-
-            if (Objects.equals(uri.getScheme(), Content.IPNS) ||
-                    Objects.equals(uri.getScheme(), Content.IPNS)) {
-                if (Objects.equals(host, getHost())) {
-                    return true;
-                }
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-        return false;
-    }
-
-
 
 
     @NonNull
@@ -898,32 +851,27 @@ public class DOCS {
         }
     }
 
-
-    @NonNull
-    public WebResourceResponse getResponse(@NonNull Uri uri,
-                                           @NonNull Closeable closeable) throws Exception {
-
+    @Nullable
+    public String getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
         String host = uri.getHost();
         Objects.requireNonNull(host);
-        List<String> paths = uri.getPathSegments();
-
-        if (!ipfs.isValidCID(host)) {
-            throw new InvalidNameException(uri.toString());
-        }
 
         String root;
         if (Objects.equals(uri.getScheme(), Content.IPNS)) {
+
+            if (ipfs.decodeName(host).isEmpty()) {
+                throw new InvalidNameException(uri.toString());
+            }
             root = resolveName(uri, host, closeable);
+
         } else {
+            if (!ipfs.isValidCID(host)) {
+                throw new InvalidNameException(uri.toString());
+            }
             root = host;
         }
-        Objects.requireNonNull(root);
 
-        if (closeable.isClosed()) {
-            throw new TimeoutException(uri.toString());
-        }
-
-        return getResponse(uri, root, paths, closeable);
+        return root;
 
     }
 
@@ -932,10 +880,6 @@ public class DOCS {
         return pages.getPage(getHost());
     }
 
-    @Nullable
-    public String decodeName(@NonNull String name) {
-        return ipfs.decodeName(name);
-    }
 
     public static class FileInfo {
 
@@ -996,9 +940,25 @@ public class DOCS {
 
     }
 
+    @NonNull
+    public WebResourceResponse getResponse(@NonNull Uri uri,
+                                           @NonNull Closeable closeable) throws Exception {
+
+        List<String> paths = uri.getPathSegments();
+
+        String root = getRoot(uri, closeable);
+        Objects.requireNonNull(root);
+
+        if (closeable.isClosed()) {
+            throw new TimeoutException(uri.toString());
+        }
+
+        return getResponse(uri, root, paths, closeable);
+
+    }
 
     @NonNull
-    public Pair<Uri,Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) {
+    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) {
 
 
         if (Objects.equals(uri.getScheme(), Content.IPNS) ||
@@ -1025,21 +985,46 @@ public class DOCS {
                         for (String path : paths) {
                             builder.appendPath(path);
                         }
-                        return redirect(builder.build(), cid, paths, closeable, true);
-                    } else if(link.startsWith(Content.IPNS_PATH)) {
-                        String cid =  link.replaceFirst(Content.IPNS_PATH, "");
-                        Uri.Builder builder = new Uri.Builder();
-                        builder.scheme(Content.IPNS)
-                                .authority(cid);
-                        for (String path : paths) {
-                            builder.appendPath(path);
+                        return redirect(builder.build(), cid, paths, closeable);
+                    } else if (link.startsWith(Content.IPNS_PATH)) {
+                        String cid = link.replaceFirst(Content.IPNS_PATH, "");
+                        if (!ipfs.decodeName(cid).isEmpty()) {
+                            Uri.Builder builder = new Uri.Builder();
+                            builder.scheme(Content.IPNS)
+                                    .authority(cid);
+                            for (String path : paths) {
+                                builder.appendPath(path);
+                            }
+                            return redirect(builder.build(), cid, paths, closeable);
+                        } else {
+                            // is is assume like /ipns/<dns_link> = > therefore <dns_link> is url
+                            try {
+                                Uri dnsUri = Uri.parse(cid);
+                                if (dnsUri != null) {
+                                    Uri.Builder builder = new Uri.Builder();
+                                    builder.scheme(Content.IPNS)
+                                            .authority(dnsUri.getAuthority());
+                                    for (String path : paths) {
+                                        builder.appendPath(path);
+                                    }
+                                    return redirectUri(dnsUri, closeable);
+                                }
+                            } catch (Throwable throwable) {
+                                LogUtils.error(TAG, throwable);
+                            }
                         }
-                        return redirect(builder.build(), cid, paths, closeable, true);
                     } else {
+                        // is is assume that links is  <dns_link> is url
                         try {
                             Uri dnsUri = Uri.parse(link);
-                            if(dnsUri != null){
-                                return Pair.create(dnsUri, true);
+                            if (dnsUri != null) {
+                                Uri.Builder builder = new Uri.Builder();
+                                builder.scheme(Content.IPNS)
+                                        .authority(dnsUri.getAuthority());
+                                for (String path : paths) {
+                                    builder.appendPath(path);
+                                }
+                                return redirectUri(dnsUri, closeable);
                             }
                         } catch (Throwable throwable){
                             LogUtils.error(TAG, throwable);
@@ -1048,15 +1033,10 @@ public class DOCS {
                 }
 
             } else {
-                String root;
                 try {
-                    if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-                        root = resolveName(uri, host, closeable);
-                    } else {
-                        root = host;
-                    }
+                    String root = getRoot(uri, closeable);
                     Objects.requireNonNull(root);
-                    return redirect(uri, root, paths, closeable, false);
+                    return redirect(uri, root, paths, closeable);
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 }
@@ -1065,11 +1045,9 @@ public class DOCS {
         return Pair.create(uri, false);
     }
 
-
     @NonNull
     public Pair<Uri, Boolean> redirect(@NonNull Uri uri, @NonNull String root,
-                                       @NonNull List<String> paths, @NonNull Closeable closeable,
-                                       boolean redirect) {
+                                       @NonNull List<String> paths, @NonNull Closeable closeable) {
 
         if (paths.isEmpty()) {
 
@@ -1109,6 +1087,79 @@ public class DOCS {
             }
 
         }
-        return Pair.create(uri, redirect);
+        return Pair.create(uri, false);
+    }
+
+    @Nullable
+    public String getHost(@NonNull Uri uri) {
+        try {
+            if (Objects.equals(uri.getScheme(), Content.IPNS)) {
+                return uri.getHost();
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+        return null;
+    }
+
+    public void connectUri(@NonNull Context context, @NonNull Uri uri) {
+
+        try {
+            String host = getHost(uri);
+            if (host != null) {
+                String pid = ipfs.decodeName(host);
+                if (!pid.isEmpty()) {
+                    PageConnectWorker.connect(context, pid);
+                }
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+
+    }
+
+    public void storeRedirect(@NonNull Uri redirectUri, @NonNull Uri uri) {
+        redirects.put(redirectUri, uri);
+    }
+
+    @NonNull
+    public Uri getOriginalUri(@NonNull Uri redirectUri) {
+        Uri original = recursiveUri(redirectUri);
+        if (original != null) {
+            return original;
+        }
+        return redirectUri;
+    }
+
+    @Nullable
+    private Uri recursiveUri(@NonNull Uri redirectUri) {
+        Uri original = redirects.get(redirectUri);
+        if (original != null) {
+            Uri recursive = recursiveUri(original);
+            if (recursive != null) {
+                return recursive;
+            } else {
+                return original;
+            }
+        }
+        return null;
+    }
+
+
+    public void cleanupResolver(@NonNull Uri uri) {
+
+        try {
+            String host = getHost(uri);
+            if (host != null) {
+                String pid = ipfs.decodeName(host);
+                if (!pid.isEmpty()) {
+                    resolves.remove(pid);
+                }
+            }
+
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
+
     }
 }

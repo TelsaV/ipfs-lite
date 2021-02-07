@@ -1,4 +1,4 @@
-package threads.server.core.page;
+package threads.server.core.pages;
 
 import android.content.Context;
 
@@ -12,20 +12,17 @@ public class PAGES {
     private static PAGES INSTANCE = null;
 
     private final PageDatabase pageDatabase;
-    private final ResolverDatabase resolverDatabase;
+
 
     private PAGES(final PAGES.Builder builder) {
         pageDatabase = builder.pageDatabase;
-        resolverDatabase = builder.resolverDatabase;
     }
 
     @NonNull
-    private static PAGES createPages(@NonNull PageDatabase threadsDatabase,
-                                     @NonNull ResolverDatabase resolverDatabase) {
+    private static PAGES createPages(@NonNull PageDatabase pageDatabase) {
 
         return new Builder()
-                .pageDatabase(threadsDatabase)
-                .resolverDatabase(resolverDatabase)
+                .pageDatabase(pageDatabase)
                 .build();
     }
 
@@ -41,11 +38,7 @@ public class PAGES {
                             fallbackToDestructiveMigration().
                             build();
 
-
-                    ResolverDatabase resolverDatabase = Room.inMemoryDatabaseBuilder(context,
-                            ResolverDatabase.class).allowMainThreadQueries().
-                            fallbackToDestructiveMigration().build();
-                    INSTANCE = PAGES.createPages(pageDatabase, resolverDatabase);
+                    INSTANCE = PAGES.createPages(pageDatabase);
                 }
             }
         }
@@ -76,11 +69,6 @@ public class PAGES {
         pageDatabase.pageDao().setOutdated(hash, true);
     }
 
-    public boolean isPageOutdated(@NonNull String hash) {
-        return pageDatabase.pageDao().isOutdated(hash);
-    }
-
-
     @Nullable
     public Page getPage(@NonNull String hash) {
         return pageDatabase.pageDao().getPage(hash);
@@ -104,29 +92,6 @@ public class PAGES {
     }
 
 
-    public void storeResolver(@NonNull String name, @NonNull String content) {
-        storeResolver(createResolver(name, content));
-    }
-
-    @NonNull
-    private Resolver createResolver(@NonNull String name, @NonNull String content) {
-        return new Resolver(name, content);
-    }
-
-    private void storeResolver(@NonNull Resolver resolver) {
-        resolverDatabase.resolverDao().insertResolver(resolver);
-    }
-
-
-    @Nullable
-    public Resolver getResolver(@NonNull String name) {
-        return resolverDatabase.resolverDao().getResolver(name);
-    }
-
-    public void removeResolver(@NonNull String name) {
-        resolverDatabase.resolverDao().removeResolver(name);
-    }
-
     @Nullable
     public String getPageContent(@NonNull String hash) {
         return pageDatabase.pageDao().getPageContent(hash);
@@ -136,7 +101,6 @@ public class PAGES {
     static class Builder {
 
         PageDatabase pageDatabase = null;
-        ResolverDatabase resolverDatabase = null;
 
         PAGES build() {
 
@@ -146,11 +110,6 @@ public class PAGES {
         PAGES.Builder pageDatabase(@NonNull PageDatabase pageDatabase) {
 
             this.pageDatabase = pageDatabase;
-            return this;
-        }
-
-        public Builder resolverDatabase(ResolverDatabase resolverDatabase) {
-            this.resolverDatabase = resolverDatabase;
             return this;
         }
     }

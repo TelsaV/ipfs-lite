@@ -19,8 +19,8 @@ import java.util.List;
 import threads.LogUtils;
 import threads.server.R;
 import threads.server.core.events.EVENTS;
-import threads.server.core.page.Bookmark;
-import threads.server.core.page.PAGES;
+import threads.server.core.pages.Bookmark;
+import threads.server.core.pages.PAGES;
 
 
 public class BookmarksViewAdapter extends RecyclerView.Adapter<BookmarksViewAdapter.ViewHolder> {

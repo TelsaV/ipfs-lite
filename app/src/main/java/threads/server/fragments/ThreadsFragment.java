@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.DocumentsContract;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -805,6 +806,9 @@ public class ThreadsFragment extends Fragment implements
                 android.R.color.holo_green_dark,
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark);
+
+        final DisplayMetrics metrics = getResources().getDisplayMetrics();
+        mSwipeRefreshLayout.setDistanceToTriggerSync((int) metrics.density * 128);
 
 
         mSelectionTracker = new SelectionTracker.Builder<>(TAG, mRecyclerView,

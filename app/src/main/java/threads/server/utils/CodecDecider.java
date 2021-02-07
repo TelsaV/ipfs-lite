@@ -49,13 +49,6 @@ public class CodecDecider {
                         codecDecider.setCodex(Codec.IPNS_URI);
                         return codecDecider;
 
-                } else if (Objects.equals(uri.getScheme(), "p2p")) { // todo remove in the future
-                    String multihash = uri.getHost();
-                    if (ipfs.isValidPID(multihash)) {
-                        codecDecider.setMultihash(multihash);
-                        codecDecider.setCodex(Codec.P2P_URI);
-                        return codecDecider;
-                    }
                 }
             }
         } catch (Throwable e) {
@@ -74,7 +67,7 @@ public class CodecDecider {
 
                 if (code.startsWith("/ip4/") || code.startsWith("/ip6/")) {
                     String peerID = getValidPeerID(ipfs, code);
-                    if (peerID != null) {
+                    if (peerID != null && !peerID.isEmpty()) {
                         codecDecider.setPeerID(peerID);
 
 
@@ -182,9 +175,8 @@ public class CodecDecider {
                 LogUtils.error(TAG, e);
             }
 
-            if (ipfs.isValidPID(pid)) {
-                return pid;
-            }
+            return ipfs.decodeName(pid);
+
         }
 
         return null;

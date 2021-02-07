@@ -33,8 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import threads.LogUtils;
 import threads.server.R;
-import threads.server.core.events.EVENTS;
 import threads.server.core.Content;
+import threads.server.core.events.EVENTS;
 import threads.server.ipfs.IPFS;
 import threads.server.services.LiteService;
 
@@ -126,10 +126,8 @@ public class EditPeerDialogFragment extends BottomSheetDialogFragment {
             }
 
 
-            IPFS ipfs = IPFS.getInstance(mContext);
-            if (ipfs.isValidPID(multi)) {
-                return multi;
-            }
+            return IPFS.getInstance(mContext).decodeName(multi);
+
         }
 
         return multihash;
@@ -350,7 +348,7 @@ public class EditPeerDialogFragment extends BottomSheetDialogFragment {
     private void clickConnectPeer(@NonNull String pid, @Nullable String name, @Nullable String address) {
         try {
 
-            if (!IPFS.getInstance(mContext).isValidPID(pid)) {
+            if (IPFS.getInstance(mContext).decodeName(pid).isEmpty()) {
                 EVENTS.getInstance(mContext).error(getString(R.string.pid_not_valid));
                 return;
             }

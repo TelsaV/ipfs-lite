@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -51,8 +52,8 @@ import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import threads.server.core.page.Bookmark;
-import threads.server.core.page.PAGES;
+import threads.server.core.pages.Bookmark;
+import threads.server.core.pages.PAGES;
 import threads.server.ipfs.Closeable;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
@@ -62,10 +63,9 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearCacheWorker;
 import threads.server.work.DownloadContentWorker;
 import threads.server.work.DownloadFileWorker;
-import threads.server.work.PageConnectWorker;
 
-public class BrowserFragment extends Fragment implements
-        SwipeRefreshLayout.OnRefreshListener {
+
+public class BrowserFragment extends Fragment {
 
 
     private static final String TAG = BrowserFragment.class.getSimpleName();
@@ -128,6 +128,7 @@ public class BrowserFragment extends Fragment implements
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private long mLastClickTime = 0;
     private MenuItem mActionBookmark;
+    private DOCS docs;
     private CustomWebChromeClient mCustomWebChromeClient;
 
     @Override
@@ -138,13 +139,7 @@ public class BrowserFragment extends Fragment implements
 
     }
 
-    @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        mContext = context;
-        mActivity = getActivity();
-        mListener = (BrowserFragment.ActionListener) getActivity();
-    }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -176,33 +171,13 @@ public class BrowserFragment extends Fragment implements
     }
 
 
-    private void loadUrl(@NonNull String uri) {
-
-        mProgressBar.setVisibility(View.VISIBLE);
-        preload(Uri.parse(uri));
-        checkBookmark(uri);
-        mListener.updateTitle(uri);
-        mWebView.loadUrl(uri);
-
-
-    }
-
-    private void preload(@NonNull Uri uri) {
-        if (Objects.equals(uri.getScheme(), Content.IPFS) ||
-                Objects.equals(uri.getScheme(), Content.IPNS)) {
-            try {
-                if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-                    PAGES pages = PAGES.getInstance(mContext);
-                    String name = uri.getHost();
-                    if (name != null) {
-                        pages.removeResolver(name);
-                    }
-                }
-
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-        }
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mContext = context;
+        docs = DOCS.getInstance(context);
+        mActivity = getActivity();
+        mListener = (BrowserFragment.ActionListener) getActivity();
     }
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -216,7 +191,8 @@ public class BrowserFragment extends Fragment implements
                 }
                 mLastClickTime = SystemClock.elapsedRealtime();
 
-                String uri = mWebView.getUrl();
+                String url = mWebView.getUrl();
+                Uri uri = docs.getOriginalUri(Uri.parse(url));
 
 
                 ComponentName[] names = {new ComponentName(mContext, MainActivity.class)};
@@ -249,13 +225,12 @@ public class BrowserFragment extends Fragment implements
             mLastClickTime = SystemClock.elapsedRealtime();
 
             try {
-                String uri = mWebView.getUrl();
-
-                Objects.requireNonNull(uri);
+                String url = mWebView.getUrl();
+                Uri uri = docs.getOriginalUri(Uri.parse(url));
 
                 PAGES pages = PAGES.getInstance(mContext);
 
-                Bookmark bookmark = pages.getBookmark(uri);
+                Bookmark bookmark = pages.getBookmark(uri.toString());
                 if (bookmark != null) {
                     String name = bookmark.getTitle();
                     pages.removeBookmark(bookmark);
@@ -265,14 +240,14 @@ public class BrowserFragment extends Fragment implements
                     EVENTS.getInstance(mContext).warning(
                             getString(R.string.bookmark_removed, name));
                 } else {
-                    Bitmap bitmap = mCustomWebChromeClient.getFavicon(uri);
+                    Bitmap bitmap = mCustomWebChromeClient.getFavicon(url);
 
-                    String title = mCustomWebChromeClient.getTitle(uri);
+                    String title = mCustomWebChromeClient.getTitle(url);
                     if (title == null) {
                         title = "" + mWebView.getTitle();
                     }
 
-                    bookmark = pages.createBookmark(uri, title);
+                    bookmark = pages.createBookmark(uri.toString(), title);
                     if (bitmap != null) {
                         bookmark.setBitmapIcon(bitmap);
                     }
@@ -344,15 +319,25 @@ public class BrowserFragment extends Fragment implements
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final DOCS docs = DOCS.getInstance(mContext);
 
         mSwipeRefreshLayout = view.findViewById(R.id.swipe_container);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
+
+        mSwipeRefreshLayout.setOnRefreshListener(() -> {
+            try {
+                mSwipeRefreshLayout.setRefreshing(true);
+                reload();
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            } finally {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        });
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent,
                 android.R.color.holo_green_dark,
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark);
-        mSwipeRefreshLayout.setProgressViewOffset(false, 100, 500);
+        final DisplayMetrics metrics = getResources().getDisplayMetrics();
+        mSwipeRefreshLayout.setDistanceToTriggerSync((int) metrics.density * 128);
 
         mProgressBar = view.findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
@@ -376,9 +361,15 @@ public class BrowserFragment extends Fragment implements
         SelectionViewModel mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
 
 
-        mSelectionViewModel.getUri().observe(getViewLifecycleOwner(), (uri) -> {
-            if (uri != null) {
-                loadUrl(uri);
+        mSelectionViewModel.getUri().observe(getViewLifecycleOwner(), (url) -> {
+            if (url != null) {
+
+                mProgressBar.setVisibility(View.VISIBLE);
+                Uri uri = Uri.parse(url);
+                docs.cleanupResolver(uri);
+                checkBookmark(uri);
+                mListener.updateTitle(uri);
+                mWebView.loadUrl(uri.toString());
             }
         });
 
@@ -441,15 +432,17 @@ public class BrowserFragment extends Fragment implements
 
 
                 mProgressBar.setVisibility(View.VISIBLE);
-                checkBookmark(url);
-                mListener.updateTitle(url);
+                Uri uri = docs.getOriginalUri(Uri.parse(url));
+                checkBookmark(uri);
+                mListener.updateTitle(uri);
                 super.doUpdateVisitedHistory(view, url, isReload);
             }
 
             @Override
-            public void onPageStarted(WebView view, String uri, Bitmap favicon) {
-                LogUtils.error(TAG, "onPageStarted : " + uri);
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                LogUtils.error(TAG, "onPageStarted : " + url);
 
+                Uri uri = docs.getOriginalUri(Uri.parse(url));
                 checkBookmark(uri);
                 mListener.updateTitle(uri);
             }
@@ -571,19 +564,6 @@ public class BrowserFragment extends Fragment implements
 
                         mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
 
-                        String host = getHost(uri.toString());
-                        if (host != null) {
-                            try {
-                                String pid = docs.decodeName(host);
-                                if (pid != null) {
-                                    if (!Objects.equals(docs.getHost(), pid)) {
-                                        PageConnectWorker.connect(mContext, pid);
-                                    }
-                                }
-                            } catch (Throwable throwable) {
-                                LogUtils.error(TAG, throwable);
-                            }
-                        }
 
                         final AtomicLong time = new AtomicLong(System.currentTimeMillis());
                         long timeout = 100000; // BROWSER TIMEOUT
@@ -592,14 +572,20 @@ public class BrowserFragment extends Fragment implements
                         Closeable closeable = () -> System.currentTimeMillis() - time.get() > timeout;
                         {
                             Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
-                            if (result.second) {
-                                return createRedirectMessage(result.first);
+                            Uri redirectUri = result.first;
+                            if (!Objects.equals(uri, redirectUri)) {
+                                docs.storeRedirect(redirectUri, uri);
                             }
-                            uri = result.first;
+                            if (result.second) {
+                                return createRedirectMessage(redirectUri);
+                            }
+                            uri = redirectUri;
                         }
                         if (closeable.isClosed()) {
                             throw new DOCS.TimeoutException(uri.toString());
                         }
+
+                        docs.connectUri(mContext, uri);
 
                         return docs.getResponse(uri, closeable);
                     }
@@ -612,13 +598,34 @@ public class BrowserFragment extends Fragment implements
 
     }
 
+    public void reload() {
+
+        try {
+            mProgressBar.setVisibility(View.GONE);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+
+        try {
+            docs.cleanupResolver(Uri.parse(mWebView.getUrl()));
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+
+        try {
+            mWebView.reload();
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+
+    }
 
 
-    private void checkBookmark(@Nullable String uri) {
+    private void checkBookmark(@Nullable Uri uri) {
         try {
             if (uri != null) {
                 PAGES pages = PAGES.getInstance(mContext);
-                if (pages.hasBookmark(uri)) {
+                if (pages.hasBookmark(uri.toString())) {
                     if (mActionBookmark != null) {
                         mActionBookmark.setIcon(R.drawable.star);
                     }
@@ -699,24 +706,6 @@ public class BrowserFragment extends Fragment implements
     }
 
 
-    @Override
-    public void onRefresh() {
-        mSwipeRefreshLayout.setRefreshing(true);
-
-        try {
-            preload(Uri.parse(mWebView.getUrl()));
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-        try {
-            mWebView.reload();
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        } finally {
-            mSwipeRefreshLayout.setRefreshing(false);
-        }
-
-    }
 
     private ActionMode.Callback createFindActionModeCallback() {
         return new ActionMode.Callback() {
@@ -824,22 +813,9 @@ public class BrowserFragment extends Fragment implements
 
 
 
-    @Nullable
-    private String getHost(@NonNull String url) {
-        try {
-            Uri uri = Uri.parse(url);
-            if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-                return uri.getHost();
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-        return null;
-    }
-
     public interface ActionListener {
 
-        void updateTitle(@Nullable String uri);
+        void updateTitle(@Nullable Uri uri);
 
     }
 }

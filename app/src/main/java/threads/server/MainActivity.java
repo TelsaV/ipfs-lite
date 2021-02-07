@@ -56,7 +56,7 @@ import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
-import threads.server.core.page.PageViewModel;
+import threads.server.core.pages.PageViewModel;
 import threads.server.core.peers.PEERS;
 import threads.server.core.threads.THREADS;
 import threads.server.fragments.BrowserFragment;
@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements
         final DOCS docs = DOCS.getInstance(getApplicationContext());
         Uri uri = docs.getPinsPageUri();
         mSelectionViewModel.setUri(uri.toString());
-        updateTitle(uri.toString());
+        updateTitle(uri);
 
 
         mFloatingActionButton = findViewById(R.id.floating_action_button);
@@ -843,10 +843,10 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void updateTitle(@Nullable String uri) {
+    public void updateTitle(@Nullable Uri uri) {
 
         if (uri != null) {
-            boolean http = Objects.equals(Uri.parse(uri).getScheme(), Content.HTTP);
+            boolean http = Objects.equals(uri.getScheme(), Content.HTTP);
 
             mBrowserText.setTextAppearance(R.style.TextAppearance_AppCompat_Small);
             mBrowserText.setClickable(true);
@@ -863,7 +863,7 @@ public class MainActivity extends AppCompatActivity implements
             mBrowserText.setBackgroundResource(R.drawable.browser);
             mBrowserText.getBackground().setAlpha(30);
 
-            mBrowserText.setText(uri);
+            mBrowserText.setText(uri.toString());
         }
     }
 
