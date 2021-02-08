@@ -143,10 +143,6 @@ public class PEERS {
         getUsersDatabase().userDao().setVisible(pids);
     }
 
-    public void setUserIpns(@NonNull String pid, String ipns, long sequence) {
-        getUsersDatabase().userDao().setIpns(pid, ipns, sequence);
-    }
-
 
     static class Builder {
         UsersDatabase usersDatabase = null;

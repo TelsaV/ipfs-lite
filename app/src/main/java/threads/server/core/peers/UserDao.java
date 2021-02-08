@@ -53,9 +53,6 @@ public interface UserDao {
     @Query("UPDATE User SET address = :address WHERE pid = :pid")
     void setAddress(String pid, String address);
 
-    @Query("UPDATE User SET ipns = :ipns, sequence = :sequence WHERE pid = :pid")
-    void setIpns(String pid, String ipns, long sequence);
-
     @Query("UPDATE User SET lite = 1 WHERE pid = :pid")
     void setLite(String pid);
 

@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import threads.LogUtils;
 import threads.server.core.Content;
+import threads.server.core.pages.PAGES;
 import threads.server.core.peers.PEERS;
 import threads.server.core.threads.SortOrder;
 import threads.server.ipfs.IPFS;
@@ -232,9 +233,9 @@ public class InitApplication extends Application {
             long sequence = Long.parseLong(seq);
             if (sequence >= 0) {
                 if (ipfs.isValidCID(ipns)) {
-
-                    PEERS peers = PEERS.getInstance(getApplicationContext());
-                    peers.setUserIpns(pid, ipns, sequence);
+                    PAGES pages = PAGES.getInstance(getApplicationContext());
+                    pages.setPageSequence(pid, sequence);
+                    pages.setPageContent(pid, ipns);
                 }
             }
 

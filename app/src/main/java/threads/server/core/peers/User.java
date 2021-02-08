@@ -31,8 +31,10 @@ public class User {
     @Nullable
     @ColumnInfo(name = "agent")
     private String agent;
+    @Deprecated
     @ColumnInfo(name = "sequence")
     private long sequence;
+    @Deprecated
     @Nullable
     @ColumnInfo(name = "ipns")
     private String ipns;
@@ -54,19 +56,19 @@ public class User {
     }
 
     @Nullable
-    public String getIpns() {
+    String getIpns() {
         return ipns;
     }
 
-    public void setIpns(@Nullable String ipns) {
+    void setIpns(@Nullable String ipns) {
         this.ipns = ipns;
     }
 
-    public long getSequence() {
+    long getSequence() {
         return sequence;
     }
 
-    public void setSequence(long sequence) {
+    void setSequence(long sequence) {
         this.sequence = sequence;
     }
 
