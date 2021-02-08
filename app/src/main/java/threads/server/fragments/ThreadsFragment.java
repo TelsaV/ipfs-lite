@@ -68,6 +68,7 @@ import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
+import threads.server.core.pages.PAGES;
 import threads.server.core.threads.SortOrder;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
@@ -1073,14 +1074,10 @@ public class ThreadsFragment extends Fragment implements
                 Objects.requireNonNull(thread);
                 ComponentName[] names = {new ComponentName(
                         mContext.getApplicationContext(), MainActivity.class)};
-
-                String content = thread.getContent();
-                Objects.requireNonNull(content);
-                String url = Content.IPFS + "://" + content;
-
+                Uri uri = DOCS.getInstance(mContext).getPath(thread);
 
                 Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_TEXT, url);
+                intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
                 intent.setType(MimeType.PLAIN_MIME_TYPE);
                 intent.putExtra(Intent.EXTRA_SUBJECT, thread.getName());
                 intent.putExtra(Intent.EXTRA_TITLE, thread.getName());
@@ -1321,10 +1318,8 @@ public class ThreadsFragment extends Fragment implements
 
                     return;
                 } else if (Objects.equals(mimeType, MimeType.HTML_MIME_TYPE)) {
-
-                    DOCS docs = DOCS.getInstance(mContext);
-                    String uri = docs.getPath(thread);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                    Uri uri = DOCS.getInstance(mContext).getPath(thread);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);

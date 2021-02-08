@@ -244,7 +244,7 @@ public class UploadThreadWorker extends Worker {
 
                     if (threads.getThreadContent(idx) == null) {
 
-                        uri = docs.redirect(uri, this::isStopped);
+                        uri = docs.redirect(uri);
 
                         DOCS.FileInfo fileInfo = docs.getFileInfo(uri, this::isStopped);
 

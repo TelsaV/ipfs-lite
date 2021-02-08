@@ -284,7 +284,6 @@ public class THREADS {
         return INSTANCE;
     }
 
-
     static class Builder {
 
         ThreadsDatabase threadsDatabase = null;

@@ -64,6 +64,16 @@ public class DOCS {
         initPinsPage();
     }
 
+/*
+    public String getPath(@NonNull Thread thread) {
+        long parent = thread.getParent();
+        if(parent == 0L) {
+            return thread.getName();
+        } else {
+            return getPath(threads.getThreadByIdx(parent));
+        }
+    }*/
+
     public static DOCS getInstance(@NonNull Context context) {
 
         if (INSTANCE == null) {
@@ -515,23 +525,15 @@ public class DOCS {
     }
 
     @NonNull
-    public String getPath(@NonNull Thread thread) {
-        StringBuilder builder = new StringBuilder();
+    public Uri getPath(@NonNull Thread thread) {
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme(Content.IPNS)
+                .authority(getHost());
         List<Thread> ancestors = threads.getAncestors(thread.getIdx());
-        builder.append(Content.IPFS + "://");
-        boolean first = true;
         for (Thread ancestor : ancestors) {
-            if (first) {
-                String cid = ancestor.getContent();
-                Objects.requireNonNull(cid);
-                builder.append(cid);
-                first = false;
-            } else {
-                builder.append("/").append(ancestor.getName());
-            }
+            builder.appendPath(ancestor.getName());
         }
-
-        return builder.toString();
+        return builder.build();
 
     }
 
@@ -961,9 +963,7 @@ public class DOCS {
     }
 
     @NonNull
-    public Uri redirect(@NonNull Uri uri, @NonNull Closeable closeable) {
-
-
+    public Uri redirect(@NonNull Uri uri) {
         if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                 Objects.equals(uri.getScheme(), Content.IPFS)) {
             List<String> paths = uri.getPathSegments();
@@ -1010,7 +1010,7 @@ public class DOCS {
                                     for (String path : paths) {
                                         builder.appendPath(path);
                                     }
-                                    return redirect(dnsUri, closeable);
+                                    return redirect(dnsUri);
                                 }
                             } catch (Throwable throwable) {
                                 LogUtils.error(TAG, throwable);
@@ -1027,7 +1027,7 @@ public class DOCS {
                                 for (String path : paths) {
                                     builder.appendPath(path);
                                 }
-                                return redirect(dnsUri, closeable);
+                                return redirect(dnsUri);
                             }
                         } catch (Throwable throwable) {
                             LogUtils.error(TAG, throwable);
