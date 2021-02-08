@@ -20,8 +20,8 @@ import java.util.Objects;
 
 import threads.LogUtils;
 import threads.server.R;
-import threads.server.core.pages.Bookmark;
-import threads.server.core.pages.BookmarkViewModel;
+import threads.server.core.books.Bookmark;
+import threads.server.core.books.BookmarkViewModel;
 import threads.server.utils.BookmarksViewAdapter;
 import threads.server.utils.SelectionViewModel;
 import threads.server.utils.SwipeToDeleteCallback;

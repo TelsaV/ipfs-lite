@@ -51,9 +51,9 @@ import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
+import threads.server.core.books.BOOKS;
+import threads.server.core.books.Bookmark;
 import threads.server.core.events.EVENTS;
-import threads.server.core.pages.Bookmark;
-import threads.server.core.pages.PAGES;
 import threads.server.ipfs.Closeable;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
@@ -228,12 +228,12 @@ public class BrowserFragment extends Fragment {
                 String url = mWebView.getUrl();
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
 
-                PAGES pages = PAGES.getInstance(mContext);
+                BOOKS books = BOOKS.getInstance(mContext);
 
-                Bookmark bookmark = pages.getBookmark(uri.toString());
+                Bookmark bookmark = books.getBookmark(uri.toString());
                 if (bookmark != null) {
                     String name = bookmark.getTitle();
-                    pages.removeBookmark(bookmark);
+                    books.removeBookmark(bookmark);
                     if (mActionBookmark != null) {
                         mActionBookmark.setIcon(R.drawable.star_outline);
                     }
@@ -247,12 +247,12 @@ public class BrowserFragment extends Fragment {
                         title = "" + mWebView.getTitle();
                     }
 
-                    bookmark = pages.createBookmark(uri.toString(), title);
+                    bookmark = books.createBookmark(uri.toString(), title);
                     if (bitmap != null) {
                         bookmark.setBitmapIcon(bitmap);
                     }
 
-                    pages.storeBookmark(bookmark);
+                    books.storeBookmark(bookmark);
 
                     if (mActionBookmark != null) {
                         mActionBookmark.setIcon(R.drawable.star);
@@ -625,8 +625,8 @@ public class BrowserFragment extends Fragment {
     private void checkBookmark(@Nullable Uri uri) {
         try {
             if (uri != null) {
-                PAGES pages = PAGES.getInstance(mContext);
-                if (pages.hasBookmark(uri.toString())) {
+                BOOKS books = BOOKS.getInstance(mContext);
+                if (books.hasBookmark(uri.toString())) {
                     if (mActionBookmark != null) {
                         mActionBookmark.setIcon(R.drawable.star);
                     }

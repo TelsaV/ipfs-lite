@@ -46,15 +46,6 @@ public class PAGES {
     }
 
     @NonNull
-    public Bookmark createBookmark(@NonNull String uri, @NonNull String title) {
-        return new Bookmark(uri, title, System.currentTimeMillis());
-    }
-
-    public void storeBookmark(@NonNull Bookmark bookmark) {
-        pageDatabase.bookmarkDao().insertBookmark(bookmark);
-    }
-
-    @NonNull
     public Page createPage(@NonNull String hash) {
         return new Page(hash);
     }
@@ -77,18 +68,6 @@ public class PAGES {
     @NonNull
     public PageDatabase getPageDatabase() {
         return pageDatabase;
-    }
-
-    public Bookmark getBookmark(@NonNull String uri) {
-        return pageDatabase.bookmarkDao().getBookmark(uri);
-    }
-
-    public boolean hasBookmark(@NonNull String uri) {
-        return getBookmark(uri) != null;
-    }
-
-    public void removeBookmark(@NonNull Bookmark bookmark) {
-        pageDatabase.bookmarkDao().removeBookmark(bookmark);
     }
 
 

@@ -18,9 +18,9 @@ import java.util.List;
 
 import threads.LogUtils;
 import threads.server.R;
+import threads.server.core.books.BOOKS;
+import threads.server.core.books.Bookmark;
 import threads.server.core.events.EVENTS;
-import threads.server.core.pages.Bookmark;
-import threads.server.core.pages.PAGES;
 
 
 public class BookmarksViewAdapter extends RecyclerView.Adapter<BookmarksViewAdapter.ViewHolder> {
@@ -109,8 +109,8 @@ public class BookmarksViewAdapter extends RecyclerView.Adapter<BookmarksViewAdap
             Bookmark bookmark = bookmarks.get(position);
             if (bookmark != null) {
                 String name = bookmark.getTitle();
-                PAGES pages = PAGES.getInstance(mContext);
-                pages.removeBookmark(bookmark);
+                BOOKS books = BOOKS.getInstance(mContext);
+                books.removeBookmark(bookmark);
 
                 EVENTS.getInstance(mContext).info(
                         mContext.getString(R.string.bookmark_removed, name));
