@@ -21,6 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
 import threads.server.core.pages.PAGES;
@@ -52,16 +57,6 @@ public class DOCS {
     private final ContentInfoUtil util;
     private final Hashtable<String, String> resolves = new Hashtable<>();
     private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
-
-/*
-    public String getPath(@NonNull Thread thread) {
-        long parent = thread.getParent();
-        if(parent == 0L) {
-            return thread.getName();
-        } else {
-            return getPath(threads.getThreadByIdx(parent));
-        }
-    }*/
 
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
@@ -866,6 +861,31 @@ public class DOCS {
     public void bootstrap() {
         if (ipfs.numSwarmPeers() < 10) {
             ipfs.bootstrap(10, 10);
+        }
+
+        try {
+            if (ipfs.numSwarmPeers() < 5) {
+                List<Page> bootstraps = pages.getBootstraps(5);
+                List<String> addresses = new ArrayList<>();
+                for (Page bootstrap : bootstraps) {
+                    String address = bootstrap.getAddress();
+                    if (!address.isEmpty()) {
+                        addresses.add(address);
+                    }
+                }
+
+                List<Callable<Boolean>> tasks = new ArrayList<>();
+                ExecutorService executor = Executors.newFixedThreadPool(addresses.size());
+                for (String address : addresses) {
+                    tasks.add(() -> ipfs.swarmConnect(address, null, 5));
+                }
+                List<Future<Boolean>> result = executor.invokeAll(tasks, 5, TimeUnit.SECONDS);
+                for (Future<Boolean> future : result) {
+                    LogUtils.error(TAG, "Bootstrap done " + future.isDone());
+                }
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
     }
 
