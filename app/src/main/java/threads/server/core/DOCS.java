@@ -26,7 +26,6 @@ import threads.LogUtils;
 import threads.server.core.pages.PAGES;
 import threads.server.core.pages.Page;
 import threads.server.core.peers.PEERS;
-import threads.server.core.peers.User;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.Closeable;
@@ -52,6 +51,17 @@ public class DOCS {
     private final String host;
     private final ContentInfoUtil util;
     private final Hashtable<String, String> resolves = new Hashtable<>();
+    private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
+
+/*
+    public String getPath(@NonNull Thread thread) {
+        long parent = thread.getParent();
+        if(parent == 0L) {
+            return thread.getName();
+        } else {
+            return getPath(threads.getThreadByIdx(parent));
+        }
+    }*/
 
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
@@ -64,16 +74,6 @@ public class DOCS {
         initPinsPage();
     }
 
-/*
-    public String getPath(@NonNull Thread thread) {
-        long parent = thread.getParent();
-        if(parent == 0L) {
-            return thread.getName();
-        } else {
-            return getPath(threads.getThreadByIdx(parent));
-        }
-    }*/
-
     public static DOCS getInstance(@NonNull Context context) {
 
         if (INSTANCE == null) {
@@ -85,7 +85,6 @@ public class DOCS {
         }
         return INSTANCE;
     }
-    private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
 
     public String getHost() {
         return host;
@@ -155,8 +154,6 @@ public class DOCS {
             deleteThread(idx);
         }
 
-
-        setPinsPageOutdated();
     }
 
     private void deleteThread(long idx) {
@@ -266,12 +263,9 @@ public class DOCS {
     }
 
 
-    public void finishDocument(long idx, boolean pinsOutdated) {
+    public void finishDocument(long idx) {
         updateParentDocument(idx);
         updateParentSize(idx);
-        if (pinsOutdated) {
-            setPinsPageOutdated();
-        }
     }
 
     private void updateParentSize(long idx) {
@@ -385,10 +379,10 @@ public class DOCS {
         thread.setWork(null);
 
 
-        long result = threads.storeThread(thread);
+        long res = threads.storeThread(thread);
 
-        finishDocument(result, true);
-        return result;
+        finishDocument(res);
+        return res;
     }
 
     private String checkMimeType(@Nullable String mimeType, @NonNull String name) {
@@ -437,9 +431,6 @@ public class DOCS {
         String oldName = threads.getThreadName(idx);
         if (!Objects.equals(oldName, displayName)) {
             threads.setThreadName(idx, displayName);
-
-            setPinsPageOutdated();
-
             updateParentDocument(idx, oldName);
         }
 
@@ -453,7 +444,6 @@ public class DOCS {
                 page = pages.createPage(getHost());
                 String dir = ipfs.createEmptyDir();
                 Objects.requireNonNull(dir);
-                page.setOutdated(false);
                 page.setContent(dir);
                 pages.storePage(page);
             } else {
@@ -462,11 +452,6 @@ public class DOCS {
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
-    }
-
-
-    public void setPinsPageOutdated() {
-        pages.setPageOutdated(getHost());
     }
 
 
@@ -491,7 +476,6 @@ public class DOCS {
                     Objects.requireNonNull(dir);
                 }
             }
-            page.setOutdated(false);
             page.setContent(dir);
             pages.storePage(page);
 
@@ -547,7 +531,6 @@ public class DOCS {
                 throwable.getMessage() +
                 "</div></body></html>";
     }
-
 
 
     public String generateDirectoryHtml(@NonNull Uri uri, @NonNull String root, List<String> paths, @Nullable List<LinkInfo> links) {
@@ -646,42 +629,44 @@ public class DOCS {
                               @NonNull String name,
                               @NonNull Closeable closeable) throws ResolveNameException {
 
-
         if (Objects.equals(getHost(), name)) {
             String local = getLocalName();
             if (local != null) {
                 return local;
             }
         }
-
         String pid = ipfs.decodeName(name);
         String resolved = resolves.get(pid);
         if (resolved != null) {
             return resolved;
         }
 
-
         long sequence = 0L;
         String cid = null;
-        User user = peers.getUserByPid(pid);
-        if (user != null) {
-            sequence = user.getSequence();
-            cid = user.getIpns();
+        Page page = pages.getPage(pid);
+        if (page != null) {
+            sequence = page.getSequence();
+            cid = page.getContent();
+        } else {
+            page = pages.createPage(pid);
+            pages.storePage(page);
         }
+
 
         IPFS.ResolvedName resolvedName = ipfs.resolveName(name, sequence, closeable);
         if (resolvedName == null) {
+
             if (cid != null) {
                 resolves.put(pid, cid);
                 return cid;
             }
 
             throw new ResolveNameException(uri.toString());
-        } else {
-            resolves.put(pid, resolvedName.getHash());
-            peers.setUserIpns(pid, resolvedName.getHash(), resolvedName.getSequence());
-            return resolvedName.getHash();
         }
+        resolves.put(pid, resolvedName.getHash());
+        pages.setPageContent(pid, resolvedName.getHash());
+        pages.setPageSequence(pid, resolvedName.getSequence());
+        return resolvedName.getHash();
     }
 
     @NonNull
@@ -704,7 +689,6 @@ public class DOCS {
             throw new RuntimeException(throwable);
         }
     }
-
 
 
     @NonNull
@@ -801,7 +785,6 @@ public class DOCS {
     }
 
 
-
     @NonNull
     private String getMimeType(@NonNull Uri uri,
                                @NonNull String element,
@@ -821,8 +804,6 @@ public class DOCS {
         }
 
     }
-
-
 
 
     @NonNull
@@ -886,71 +867,6 @@ public class DOCS {
         if (ipfs.numSwarmPeers() < 10) {
             ipfs.bootstrap(10, 10);
         }
-    }
-    public static class FileInfo {
-
-        @NonNull
-        private final String filename;
-        @NonNull
-        private final String mimeType;
-        @NonNull
-        private final String content;
-
-
-        public FileInfo(@NonNull String filename, @NonNull String mimeType, @NonNull String content) {
-            this.filename = filename;
-            this.mimeType = mimeType;
-            this.content = content;
-        }
-
-        @NonNull
-        public String getFilename() {
-            return filename;
-        }
-
-        @NonNull
-        public String getMimeType() {
-            return mimeType;
-        }
-
-        @NonNull
-        public String getContent() {
-            return content;
-        }
-
-    }
-
-    public static class TimeoutException extends Exception {
-
-        public TimeoutException(@NonNull String name) {
-            super("Timeout for " + name);
-        }
-
-    }
-
-    public static class ContentException extends Exception {
-
-        public ContentException(@NonNull String name) {
-            super("Content not found for " + name);
-        }
-    }
-
-    public static class ResolveNameException extends Exception {
-
-
-        public ResolveNameException(@NonNull String name) {
-            super("Resolve name failed for " + name);
-        }
-
-    }
-
-    public static class InvalidNameException extends Exception {
-
-
-        public InvalidNameException(@NonNull String name) {
-            super("Invalid name " + name);
-        }
-
     }
 
     @NonNull
@@ -1068,8 +984,8 @@ public class DOCS {
                     }
                     return Pair.create(builder.build(), false);
                 } else {
-                    if(link.startsWith(Content.IPFS_PATH)) {
-                        String cid =  link.replaceFirst(Content.IPFS_PATH, "");
+                    if (link.startsWith(Content.IPFS_PATH)) {
+                        String cid = link.replaceFirst(Content.IPFS_PATH, "");
                         Uri.Builder builder = new Uri.Builder();
                         builder.scheme(Content.IPFS)
                                 .authority(cid);
@@ -1117,7 +1033,7 @@ public class DOCS {
                                 }
                                 return redirectUri(dnsUri, closeable);
                             }
-                        } catch (Throwable throwable){
+                        } catch (Throwable throwable) {
                             LogUtils.error(TAG, throwable);
                         }
                     }
@@ -1236,7 +1152,6 @@ public class DOCS {
         return null;
     }
 
-
     public void cleanupResolver(@NonNull Uri uri) {
 
         try {
@@ -1250,6 +1165,72 @@ public class DOCS {
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
+        }
+
+    }
+
+    public static class FileInfo {
+
+        @NonNull
+        private final String filename;
+        @NonNull
+        private final String mimeType;
+        @NonNull
+        private final String content;
+
+
+        public FileInfo(@NonNull String filename, @NonNull String mimeType, @NonNull String content) {
+            this.filename = filename;
+            this.mimeType = mimeType;
+            this.content = content;
+        }
+
+        @NonNull
+        public String getFilename() {
+            return filename;
+        }
+
+        @NonNull
+        public String getMimeType() {
+            return mimeType;
+        }
+
+        @NonNull
+        public String getContent() {
+            return content;
+        }
+
+    }
+
+    public static class TimeoutException extends Exception {
+
+        public TimeoutException(@NonNull String name) {
+            super("Timeout for " + name);
+        }
+
+    }
+
+    public static class ContentException extends Exception {
+
+        public ContentException(@NonNull String name) {
+            super("Content not found for " + name);
+        }
+    }
+
+    public static class ResolveNameException extends Exception {
+
+
+        public ResolveNameException(@NonNull String name) {
+            super("Resolve name failed for " + name);
+        }
+
+    }
+
+    public static class InvalidNameException extends Exception {
+
+
+        public InvalidNameException(@NonNull String name) {
+            super("Invalid name " + name);
         }
 
     }

@@ -204,15 +204,13 @@ public class UploadThreadsWorker extends Worker {
 
                             threads.setThreadDone(idx, cid);
 
-                            docs.finishDocument(idx, false);
+                            docs.finishDocument(idx);
 
                         } else {
                             docs.deleteDocument(idx);
                         }
                     } catch (Throwable e) {
                         threads.setThreadError(idx);
-                    } finally {
-                        docs.setPinsPageOutdated();
                     }
                 }
             }

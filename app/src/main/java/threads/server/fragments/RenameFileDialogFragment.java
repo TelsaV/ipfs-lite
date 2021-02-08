@@ -25,8 +25,8 @@ import java.util.Objects;
 
 import threads.LogUtils;
 import threads.server.R;
-import threads.server.core.DOCS;
 import threads.server.core.Content;
+import threads.server.core.DOCS;
 
 public class RenameFileDialogFragment extends DialogFragment {
     public static final String TAG = RenameFileDialogFragment.class.getSimpleName();

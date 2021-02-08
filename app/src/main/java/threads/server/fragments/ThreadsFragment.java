@@ -68,7 +68,6 @@ import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import threads.server.core.pages.PAGES;
 import threads.server.core.threads.SortOrder;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;

@@ -22,8 +22,8 @@ import java.util.Objects;
 
 import threads.LogUtils;
 import threads.server.R;
-import threads.server.core.events.EVENTS;
 import threads.server.core.Content;
+import threads.server.core.events.EVENTS;
 import threads.server.services.UploadService;
 
 @SuppressWarnings("WeakerAccess")

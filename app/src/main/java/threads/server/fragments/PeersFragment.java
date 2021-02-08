@@ -165,7 +165,7 @@ public class PeersFragment extends Fragment implements
 
 
             return true;
-        } else  if (itemId == R.id.action_documentation) {
+        } else if (itemId == R.id.action_documentation) {
             try {
                 String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
 
@@ -322,7 +322,7 @@ public class PeersFragment extends Fragment implements
                     mUsersViewAdapter.selectAllUsers();
 
                     return true;
-                }  else if (itemId == R.id.action_mode_delete) {
+                } else if (itemId == R.id.action_mode_delete) {
 
                     if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
                         return true;
@@ -520,7 +520,6 @@ public class PeersFragment extends Fragment implements
             LogUtils.error(TAG, e);
         }
     }
-
 
 
     private void clickUserRename(@NonNull String pid) {

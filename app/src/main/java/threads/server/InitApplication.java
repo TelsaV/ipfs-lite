@@ -41,6 +41,7 @@ public class InitApplication extends Application {
     private static final String TIMEOUT_KEY = "timeoutKey";
     private static final String AUTO_DISCOVERY_KEY = "autoDiscoveryKey";
     private static final String SORT_KEY = "sortKey";
+    private final Gson gson = new Gson();
 
     public static void setAutoDiscovery(Context context, boolean auto) {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
@@ -54,7 +55,6 @@ public class InitApplication extends Application {
         return sharedPref.getBoolean(AUTO_DISCOVERY_KEY, true);
 
     }
-
 
     @NonNull
     public static SortOrder getSortOrder(@NonNull Context context) {
@@ -71,7 +71,6 @@ public class InitApplication extends Application {
         editor.apply();
     }
 
-
     public static int getConnectionTimeout(@NonNull Context context) {
 
         SharedPreferences sharedPref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
@@ -85,7 +84,6 @@ public class InitApplication extends Application {
         editor.putInt(TIMEOUT_KEY, timeout);
         editor.apply();
     }
-
 
     private static void createChannel(@NonNull Context context) {
 
@@ -136,7 +134,6 @@ public class InitApplication extends Application {
         }
     }
 
-
     @SuppressLint("SetJavaScriptEnabled")
     public static void setWebSettings(@NonNull WebView webView) {
 
@@ -171,14 +168,11 @@ public class InitApplication extends Application {
         settings.setGeolocationEnabled(false);
     }
 
-
     public static void syncData(@NonNull Context context) {
         IPFS ipfs = IPFS.getInstance(context);
         PEERS peers = PEERS.getInstance(context);
         ipfs.swarmEnhance(peers.getSwarm());
     }
-
-    private final Gson gson = new Gson();
 
     @Override
     public void onCreate() {

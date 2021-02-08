@@ -64,7 +64,7 @@ public interface UserDao {
 
     @Query("UPDATE User SET visible = 0 WHERE pid IN(:pids)")
     void setInvisible(String... pids);
-    
+
     @Query("SELECT pid FROM User WHERE visible = 1")
     List<String> getSwarm();
 }

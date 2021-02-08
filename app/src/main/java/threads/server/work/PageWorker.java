@@ -167,12 +167,11 @@ public class PageWorker extends Worker {
 
                 int seq = IPFS.getSequence(getApplicationContext());
                 seq++;
-                IPFS.setSequence(getApplicationContext(),seq);
+                IPFS.setSequence(getApplicationContext(), seq);
 
                 publishSequence(content, seq);
 
                 ipfs.publishName(content, this::isStopped, seq);
-
 
 
                 LogUtils.error(TAG, "End publish name " + content);

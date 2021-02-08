@@ -110,11 +110,11 @@ public class UsersViewAdapter extends
                     }
                 } else {
 
-                        userViewHolder.user_action.setImageResource(R.drawable.dots);
-                        userViewHolder.user_action.setVisibility(View.VISIBLE);
-                        userViewHolder.user_action.setOnClickListener((v) ->
-                                mListener.invokeAction(user, v)
-                        );
+                    userViewHolder.user_action.setImageResource(R.drawable.dots);
+                    userViewHolder.user_action.setVisibility(View.VISIBLE);
+                    userViewHolder.user_action.setOnClickListener((v) ->
+                            mListener.invokeAction(user, v)
+                    );
 
                 }
 

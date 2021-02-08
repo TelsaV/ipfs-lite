@@ -46,8 +46,8 @@ public class PAGES {
     }
 
     @NonNull
-    public Page createPage(@NonNull String hash) {
-        return new Page(hash);
+    public Page createPage(@NonNull String pid) {
+        return new Page(pid);
     }
 
 
@@ -55,14 +55,9 @@ public class PAGES {
         pageDatabase.pageDao().insertPage(page);
     }
 
-
-    public void setPageOutdated(@NonNull String hash) {
-        pageDatabase.pageDao().setOutdated(hash, true);
-    }
-
     @Nullable
-    public Page getPage(@NonNull String hash) {
-        return pageDatabase.pageDao().getPage(hash);
+    public Page getPage(@NonNull String pid) {
+        return pageDatabase.pageDao().getPage(pid);
     }
 
     @NonNull
@@ -72,10 +67,40 @@ public class PAGES {
 
 
     @Nullable
-    public String getPageContent(@NonNull String hash) {
-        return pageDatabase.pageDao().getPageContent(hash);
+    public String getPageContent(@NonNull String pid) {
+        return pageDatabase.pageDao().getPageContent(pid);
     }
 
+
+    public void setPageContent(@NonNull String pid, @NonNull String content) {
+        pageDatabase.pageDao().setContent(pid, content);
+    }
+
+    public void setPageSequence(@NonNull String pid, long sequence) {
+        pageDatabase.pageDao().setSequence(pid, sequence);
+    }
+
+    public void setPageAddress(@NonNull String pid, @NonNull String address) {
+        pageDatabase.pageDao().setAddress(pid, address);
+    }
+
+
+    public void incrementRating(String pid) {
+        pageDatabase.pageDao().incrementRating(pid);
+    }
+
+    public void resetBootstrap(String pid) {
+        pageDatabase.pageDao().resetBootstrap(pid);
+    }
+
+    public void setBootstrap(String pid) {
+        pageDatabase.pageDao().setBootstrap(pid);
+    }
+
+
+    public void clear() {
+        getPageDatabase().clearAllTables();
+    }
 
     static class Builder {
 

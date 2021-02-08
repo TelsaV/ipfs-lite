@@ -146,7 +146,6 @@ public class DaemonService extends Service {
     }
 
 
-
     @Override
     public void onCreate() {
         try {

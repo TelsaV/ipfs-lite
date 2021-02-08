@@ -231,7 +231,6 @@ public class UploadFolderWorker extends Worker {
 
                 threads.resetThreadWork(parent);
 
-                docs.setPinsPageOutdated();
             } finally {
                 closeNotification();
             }
@@ -264,7 +263,7 @@ public class UploadFolderWorker extends Worker {
     private long createDir(long parent, @NonNull String name, boolean init) {
         long idx = docs.createDocument(parent, MimeType.DIR_MIME_TYPE, ipfs.createEmptyDir(),
                 null, name, 0L, false, init);
-        docs.finishDocument(idx, false);
+        docs.finishDocument(idx);
         return idx;
     }
 
@@ -284,10 +283,10 @@ public class UploadFolderWorker extends Worker {
                     threads.setThreadLeaching(child);
                     copyDir(child, docFile);
                     threads.setThreadDone(child);
-                    docs.finishDocument(child, false);
+                    docs.finishDocument(child);
                 } else {
                     long child = copyFile(parent, docFile, index, maxIndex);
-                    docs.finishDocument(child, false);
+                    docs.finishDocument(child);
                 }
             }
         }

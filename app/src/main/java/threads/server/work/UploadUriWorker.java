@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
 import threads.server.R;
+import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import threads.server.core.Content;
 import threads.server.provider.FileDocumentsProvider;
 
 public class UploadUriWorker extends Worker {

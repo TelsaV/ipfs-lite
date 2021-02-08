@@ -140,7 +140,6 @@ public class BrowserFragment extends Fragment {
     }
 
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -460,7 +459,6 @@ public class BrowserFragment extends Fragment {
             }
 
 
-
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 
@@ -526,15 +524,15 @@ public class BrowserFragment extends Fragment {
                                 "<html lang=\"en-US\">\n" +
                                 "    <head>\n" +
                                 "        <meta charset=\"UTF-8\">\n" +
-                                "        <meta http-equiv=\"refresh\" content=\"0; url="+uri.toString()+"\">\n" +
+                                "        <meta http-equiv=\"refresh\" content=\"0; url=" + uri.toString() + "\">\n" +
                                 "        <script type=\"text/javascript\">\n" +
-                                "            window.location.href = \""+uri.toString()+"\"\n" +
+                                "            window.location.href = \"" + uri.toString() + "\"\n" +
                                 "        </script>\n" +
                                 "        <title>Page Redirection</title>\n" +
                                 "    </head>\n" +
                                 "    <body>\n" +
                                 "        <!-- Note: don't tell people to `click` the link, just tell them that it is a link. -->\n" +
-                                "        If you are not redirected automatically, follow this <a href='"+uri.toString()+"'>link to example</a>.\n" +
+                                "        If you are not redirected automatically, follow this <a href='" + uri.toString() + "'>link to example</a>.\n" +
                                 "    </body>\n" +
                                 "</html>").getBytes()));
             }
@@ -708,7 +706,6 @@ public class BrowserFragment extends Fragment {
     }
 
 
-
     private ActionMode.Callback createFindActionModeCallback() {
         return new ActionMode.Callback() {
             @Override
@@ -812,7 +809,6 @@ public class BrowserFragment extends Fragment {
         };
 
     }
-
 
 
     public interface ActionListener {

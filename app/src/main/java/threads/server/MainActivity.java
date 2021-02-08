@@ -56,7 +56,6 @@ import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
-import threads.server.core.pages.PageViewModel;
 import threads.server.core.peers.PEERS;
 import threads.server.core.threads.THREADS;
 import threads.server.fragments.BrowserFragment;
@@ -78,7 +77,6 @@ import threads.server.utils.MimeType;
 import threads.server.utils.PermissionAction;
 import threads.server.utils.SelectionViewModel;
 import threads.server.work.LocalConnectWorker;
-import threads.server.work.PageWorker;
 import threads.server.work.SwarmConnectWorker;
 import threads.server.work.UploadThreadWorker;
 import threads.server.work.UploadUriWorker;
@@ -331,21 +329,6 @@ public class MainActivity extends AppCompatActivity implements
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
 
-
-        PageViewModel pageViewModel =
-                new ViewModelProvider(this).get(PageViewModel.class);
-
-        pageViewModel.getPage(docs.getHost()).observe(this, (page) -> {
-            try {
-                if (page != null) {
-                    if (page.isOutdated()) {
-                        PageWorker.publish(getApplicationContext(), true);
-                    }
-                }
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        });
 
         EventViewModel eventViewModel =
                 new ViewModelProvider(this).get(EventViewModel.class);
@@ -651,7 +634,7 @@ public class MainActivity extends AppCompatActivity implements
 
         final String action = intent.getAction();
         try {
-            ShareCompat.IntentReader intentReader =  new ShareCompat.IntentReader(this);
+            ShareCompat.IntentReader intentReader = new ShareCompat.IntentReader(this);
             if (Intent.ACTION_SEND.equals(action) ||
                     Intent.ACTION_SEND_MULTIPLE.equals(action)) {
                 handleSend(intentReader);

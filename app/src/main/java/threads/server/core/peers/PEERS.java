@@ -104,7 +104,6 @@ public class PEERS {
     }
 
 
-
     public void setUserAlias(@NonNull String pid, @NonNull String alias) {
 
         getUsersDatabase().userDao().setAlias(pid, alias);

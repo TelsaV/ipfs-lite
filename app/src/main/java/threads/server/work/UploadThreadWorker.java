@@ -320,7 +320,7 @@ public class UploadThreadWorker extends Worker {
                         Objects.requireNonNull(cid);
 
                         threads.setThreadDone(idx, cid);
-                        docs.finishDocument(idx, true);
+                        docs.finishDocument(idx);
 
                     }
                 } catch (Throwable e) {
@@ -367,7 +367,7 @@ public class UploadThreadWorker extends Worker {
 
             if (seeding) {
                 threads.setThreadDone(parent);
-                docs.finishDocument(parent, false);
+                docs.finishDocument(parent);
                 checkParentSeeding(threads.getThreadParent(parent));
             }
 
@@ -468,7 +468,7 @@ public class UploadThreadWorker extends Worker {
                         threads.setThreadUri(threadIdx, uri.toString());
                     }
 
-                    docs.finishDocument(threadIdx, false);
+                    docs.finishDocument(threadIdx);
 
                     checkParentSeeding(parent);
                 } else {

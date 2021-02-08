@@ -46,8 +46,8 @@ public class CodecDecider {
                     String multihash = uri.getHost();
 
                     codecDecider.setMultihash(multihash);
-                        codecDecider.setCodex(Codec.IPNS_URI);
-                        return codecDecider;
+                    codecDecider.setCodex(Codec.IPNS_URI);
+                    return codecDecider;
 
                 }
             }

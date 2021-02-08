@@ -275,7 +275,6 @@ public class SettingsFragment extends Fragment {
         );
 
 
-
         TextView publisher_service_time_text = view.findViewById(R.id.publisher_service_time_text);
         SeekBar publisher_service_time = view.findViewById(R.id.publisher_service_time);
 
@@ -344,7 +343,6 @@ public class SettingsFragment extends Fragment {
                 // ignore, not used
             }
         });
-
 
 
         mSwarmKey = view.findViewById(R.id.swarm_key);

@@ -53,7 +53,7 @@ public class UploadService {
                         long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid,
                                 null, cid, text.length(), true, false);
 
-                        docs.finishDocument(idx, true);
+                        docs.finishDocument(idx);
 
                     } else {
                         EVENTS.getInstance(context).warning(
@@ -73,7 +73,7 @@ public class UploadService {
                     long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid,
                             null, name, text.length(), true, false);
 
-                    docs.finishDocument(idx, true);
+                    docs.finishDocument(idx);
                 }
 
             } catch (Throwable e) {

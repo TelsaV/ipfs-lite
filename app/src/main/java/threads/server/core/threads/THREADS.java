@@ -22,6 +22,33 @@ public class THREADS {
     }
 
     @NonNull
+    private static THREADS createThreads(@NonNull ThreadsDatabase threadsDatabase) {
+
+
+        return new THREADS.Builder()
+                .threadsDatabase(threadsDatabase)
+                .build();
+    }
+
+    public static THREADS getInstance(@NonNull Context context) {
+
+        if (INSTANCE == null) {
+            synchronized (THREADS.class) {
+                if (INSTANCE == null) {
+                    ThreadsDatabase threadsDatabase = Room.databaseBuilder(context,
+                            ThreadsDatabase.class,
+                            ThreadsDatabase.class.getSimpleName()).
+                            allowMainThreadQueries().
+                            fallbackToDestructiveMigration().
+                            build();
+                    INSTANCE = THREADS.createThreads(threadsDatabase);
+                }
+            }
+        }
+        return INSTANCE;
+    }
+
+    @NonNull
     public ThreadsDatabase getThreadsDatabase() {
         return threadsDatabase;
     }
@@ -255,33 +282,6 @@ public class THREADS {
     @Nullable
     public SortOrder getThreadSortOrder(long idx) {
         return getThreadsDatabase().threadDao().getSortOrder(idx);
-    }
-
-    @NonNull
-    private static THREADS createThreads(@NonNull ThreadsDatabase threadsDatabase) {
-
-
-        return new THREADS.Builder()
-                .threadsDatabase(threadsDatabase)
-                .build();
-    }
-
-    public static THREADS getInstance(@NonNull Context context) {
-
-        if (INSTANCE == null) {
-            synchronized (THREADS.class) {
-                if (INSTANCE == null) {
-                    ThreadsDatabase threadsDatabase = Room.databaseBuilder(context,
-                            ThreadsDatabase.class,
-                            ThreadsDatabase.class.getSimpleName()).
-                            allowMainThreadQueries().
-                            fallbackToDestructiveMigration().
-                            build();
-                    INSTANCE = THREADS.createThreads(threadsDatabase);
-                }
-            }
-        }
-        return INSTANCE;
     }
 
     static class Builder {

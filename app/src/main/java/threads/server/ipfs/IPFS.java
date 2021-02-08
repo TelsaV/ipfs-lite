@@ -835,7 +835,7 @@ public class IPFS implements Listener {
                     return close.get() || closeable.isClosed();
                 }
 
-                private void setName(@NonNull String hash){
+                private void setName(@NonNull String hash) {
                     resolvedName.set(new ResolvedName(
                             sequence.get(), hash.replaceFirst(Content.IPFS_PATH, "")));
                 }
@@ -845,7 +845,7 @@ public class IPFS implements Listener {
 
 
                     LogUtils.error(TAG, "" + seq + " " + hash);
-                    if(!close.get()) {
+                    if (!close.get()) {
                         long init = sequence.get();
                         if (seq < init) {
                             close.set(true);
@@ -861,7 +861,7 @@ public class IPFS implements Listener {
                                 visited.set(true);
                                 setName(hash);
                             }
-                            if(visited.get()){
+                            if (visited.get()) {
                                 close.set(true);
                             }
 

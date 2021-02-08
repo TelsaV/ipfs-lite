@@ -26,8 +26,8 @@ import java.util.Objects;
 import threads.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
-import threads.server.core.events.EVENTS;
 import threads.server.core.Content;
+import threads.server.core.events.EVENTS;
 import threads.server.utils.MimeType;
 
 public class ContentDialogFragment extends DialogFragment {

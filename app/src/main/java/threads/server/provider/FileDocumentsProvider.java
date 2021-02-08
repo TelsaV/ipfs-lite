@@ -639,7 +639,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
             long idx = docs.createDocument(parent, type, content, null, displayName,
                     0L, seeding, init);
             if (content != null) {
-                docs.finishDocument(idx, true);
+                docs.finishDocument(idx);
             }
             return String.valueOf(idx);
         } catch (Throwable throwable) {
@@ -673,7 +673,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
                             threads.setThreadSize(idx, size);
                             threads.setThreadDone(idx, cid);
 
-                            docs.finishDocument(idx, true);
+                            docs.finishDocument(idx);
 
                         });
             } else {
