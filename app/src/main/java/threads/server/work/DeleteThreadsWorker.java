@@ -81,7 +81,6 @@ public class DeleteThreadsWorker extends Worker {
                 document.delete();
             }
 
-
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
 

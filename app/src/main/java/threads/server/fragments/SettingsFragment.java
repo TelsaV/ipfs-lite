@@ -295,7 +295,7 @@ public class SettingsFragment extends Fragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
                 LiteService.setPublisherServiceTime(mContext, progress);
-                PageWorker.publish(mContext, true);
+                PageWorker.publish(mContext);
                 publisher_service_time_text.setText(
                         getString(R.string.publisher_service_time,
                                 String.valueOf(progress)));

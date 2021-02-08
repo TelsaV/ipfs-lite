@@ -61,16 +61,9 @@ public class PageWorker extends Worker {
 
     }
 
-    public static void publish(@NonNull Context context, boolean replace) {
-
-        if (replace) {
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+    public static void publish(@NonNull Context context) {
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
                     TAG, ExistingPeriodicWorkPolicy.REPLACE, getWork(context));
-        } else {
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                    TAG, ExistingPeriodicWorkPolicy.KEEP, getWork(context));
-        }
-
     }
 
 

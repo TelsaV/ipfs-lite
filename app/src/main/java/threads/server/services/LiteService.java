@@ -27,6 +27,7 @@ import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileProvider;
 import threads.server.work.DeleteThreadsWorker;
+import threads.server.work.PageWorker;
 import threads.server.work.UploadThreadsWorker;
 import threads.server.work.UserConnectWorker;
 
@@ -179,6 +180,7 @@ public class LiteService {
                     context, BuildConfig.APPLICATION_ID, file);
             Objects.requireNonNull(uri);
 
+            PageWorker.publish(context);
             DeleteThreadsWorker.delete(context, uri);
 
         } catch (Throwable throwable) {

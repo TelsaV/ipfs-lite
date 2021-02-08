@@ -185,7 +185,7 @@ public class InitApplication extends Application {
 
 
         // periodic jobs
-        PageWorker.publish(getApplicationContext(), false);
+        PageWorker.publish(getApplicationContext());
         CleanupWorker.cleanup(getApplicationContext());
 
 

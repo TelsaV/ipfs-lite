@@ -1515,7 +1515,7 @@ public class ThreadsFragment extends Fragment implements
         try {
             EVENTS.getInstance(mContext).warning(getString(R.string.publish_files));
 
-            PageWorker.publish(mContext, true);
+            PageWorker.publish(mContext);
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
