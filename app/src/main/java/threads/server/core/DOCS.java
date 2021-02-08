@@ -741,8 +741,9 @@ public class DOCS {
             if (closeable.isClosed()) {
                 throw new TimeoutException(uri.toString());
             }
-            Objects.requireNonNull(cid);
-
+            if (cid == null) {
+                throw new ContentException(uri.toString());
+            }
             if (ipfs.isEmptyDir(cid)) {
                 String answer = generateDirectoryHtml(uri, root, paths, new ArrayList<>());
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
@@ -925,6 +926,13 @@ public class DOCS {
             super("Timeout for " + name);
         }
 
+    }
+
+    public static class ContentException extends Exception {
+
+        public ContentException(@NonNull String name) {
+            super("Content not found for " + name);
+        }
     }
 
     public static class ResolveNameException extends Exception {

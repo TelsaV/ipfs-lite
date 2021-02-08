@@ -570,6 +570,7 @@ public class BrowserFragment extends Fragment {
                         final AtomicLong time = new AtomicLong(System.currentTimeMillis());
                         long timeout = 100000; // BROWSER TIMEOUT
 
+                        docs.connectUri(mContext, uri);
                         Closeable closeable = () -> System.currentTimeMillis() - time.get() > timeout;
                         {
                             Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
