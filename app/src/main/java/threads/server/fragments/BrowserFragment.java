@@ -63,6 +63,7 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearCacheWorker;
 import threads.server.work.DownloadContentWorker;
 import threads.server.work.DownloadFileWorker;
+import threads.server.work.PageResolveWorker;
 
 
 public class BrowserFragment extends Fragment {
@@ -552,14 +553,13 @@ public class BrowserFragment extends Fragment {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 
-                try {
-                    Uri uri = request.getUrl();
-                    LogUtils.error(TAG, "shouldInterceptRequest : " + uri.toString());
+                Uri uri = request.getUrl();
+                LogUtils.error(TAG, "shouldInterceptRequest : " + uri.toString());
 
-                    if (Objects.equals(uri.getScheme(), Content.IPNS) ||
-                            Objects.equals(uri.getScheme(), Content.IPFS)) {
+                if (Objects.equals(uri.getScheme(), Content.IPNS) ||
+                        Objects.equals(uri.getScheme(), Content.IPFS)) {
 
-
+                    try {
                         docs.bootstrap();
 
                         mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
@@ -588,10 +588,17 @@ public class BrowserFragment extends Fragment {
                         docs.connectUri(mContext, uri);
 
                         return docs.getResponse(uri, closeable);
+                    } catch (Throwable throwable) {
+
+
+                        if (Objects.equals(uri.getScheme(), Content.IPNS)) {
+                            PageResolveWorker.resolve(mContext, uri.getHost());
+                        }
+
+                        return createErrorMessage(throwable);
                     }
-                } catch (Throwable throwable) {
-                    return createErrorMessage(throwable);
                 }
+
                 return null;
             }
         });
