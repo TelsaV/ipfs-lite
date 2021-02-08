@@ -215,8 +215,8 @@ public class UploadDirectoryWorker extends Worker {
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
-            return Result.failure();
         } finally {
+            PageWorker.publish(getApplicationContext());
             closeNotification();
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }

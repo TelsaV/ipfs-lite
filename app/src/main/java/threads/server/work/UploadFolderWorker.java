@@ -238,8 +238,8 @@ public class UploadFolderWorker extends Worker {
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
-            return Result.failure();
         } finally {
+            PageWorker.publish(getApplicationContext());
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
 

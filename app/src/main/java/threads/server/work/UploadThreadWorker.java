@@ -77,15 +77,7 @@ public class UploadThreadWorker extends Worker {
     }
 
 
-    public static OneTimeWorkRequest getSharedWork() {
-        return new OneTimeWorkRequest.Builder(UploadThreadWorker.class)
-                .addTag(TAG)
-                .setInitialDelay(1, TimeUnit.MILLISECONDS)
-                .build();
-    }
-
-
-    public static OneTimeWorkRequest getWork(long idx, boolean bootstrap) {
+    private static OneTimeWorkRequest getWork(long idx, boolean bootstrap) {
 
         Data.Builder data = new Data.Builder();
         data.putLong(Content.IDX, idx);
@@ -338,8 +330,8 @@ public class UploadThreadWorker extends Worker {
             }
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
-            return Result.failure();
         } finally {
+            PageWorker.publish(getApplicationContext());
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
 

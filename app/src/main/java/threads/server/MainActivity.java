@@ -32,7 +32,6 @@ import androidx.core.app.ShareCompat;
 import androidx.core.view.MenuCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.work.WorkContinuation;
 import androidx.work.WorkManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -40,10 +39,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
 
+import java.io.File;
+import java.io.PrintStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -67,6 +66,7 @@ import threads.server.fragments.SwarmFragment;
 import threads.server.fragments.ThreadsFragment;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
+import threads.server.provider.FileProvider;
 import threads.server.services.DiscoveryService;
 import threads.server.services.LiteService;
 import threads.server.services.RegistrationService;
@@ -78,8 +78,7 @@ import threads.server.utils.PermissionAction;
 import threads.server.utils.SelectionViewModel;
 import threads.server.work.LocalConnectWorker;
 import threads.server.work.SwarmConnectWorker;
-import threads.server.work.UploadThreadWorker;
-import threads.server.work.UploadUriWorker;
+import threads.server.work.UploadThreadsWorker;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -671,38 +670,28 @@ public class MainActivity extends AppCompatActivity implements
         try {
             Objects.requireNonNull(intentReader);
             if (intentReader.isMultipleShare()) {
-
                 int items = intentReader.getStreamCount();
+
                 if (items > 0) {
-                    List<WorkContinuation> continuations = new ArrayList<>();
+                    FileProvider fileProvider =
+                            FileProvider.getInstance(getApplicationContext());
+                    File file = fileProvider.createTempDataFile();
 
-                    for (int i = 0; i < items; i++) {
-                        Uri uri = intentReader.getStream(i);
-                        if (uri != null) {
-
-                            if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
-                                EVENTS.getInstance(getApplicationContext()).error(
-                                        getString(R.string.file_has_no_read_permission));
-                                continue;
+                    try (PrintStream out = new PrintStream(file)) {
+                        for (int i = 0; i < items; i++) {
+                            Uri uri = intentReader.getStream(i);
+                            if (uri != null) {
+                                out.println(uri.toString());
                             }
-
-                            if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
-
-                                EVENTS.getInstance(getApplicationContext()).error(
-                                        getString(R.string.file_not_found));
-
-                                continue;
-                            }
-
-
-                            continuations.add(WorkManager.getInstance(getApplicationContext())
-                                    .beginWith(UploadUriWorker.getWork(uri, i * 250))
-                                    .then(UploadThreadWorker.getSharedWork()));
                         }
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
                     }
-                    WorkContinuation.combine(continuations).enqueue();
 
-
+                    Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                            getApplicationContext(), BuildConfig.APPLICATION_ID, file);
+                    Objects.requireNonNull(uri);
+                    UploadThreadsWorker.load(getApplicationContext(), 0L, uri);
                 }
             } else {
                 String type = intentReader.getType();
@@ -795,10 +784,8 @@ public class MainActivity extends AppCompatActivity implements
                         return;
                     }
 
-                    WorkManager.getInstance(getApplicationContext()).beginWith(
-                            UploadUriWorker.getWork(uri, 0))
-                            .then(UploadThreadWorker.getSharedWork())
-                            .enqueue();
+                    UploadService.uploadFile(getApplicationContext(), 0L, uri);
+
                 }
             }
 
