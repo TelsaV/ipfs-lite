@@ -562,13 +562,13 @@ public class BrowserFragment extends Fragment {
                             Objects.equals(uri.getScheme(), Content.IPFS)) {
 
 
+                        docs.bootstrap();
+
                         mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
 
 
                         final AtomicLong time = new AtomicLong(System.currentTimeMillis());
                         long timeout = 100000; // BROWSER TIMEOUT
-
-                        docs.connectUri(mContext, uri);
 
                         Closeable closeable = () -> System.currentTimeMillis() - time.get() > timeout;
                         {

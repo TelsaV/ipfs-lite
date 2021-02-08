@@ -879,7 +879,11 @@ public class DOCS {
         return pages.getPage(getHost());
     }
 
-
+    public void bootstrap() {
+        if (ipfs.numSwarmPeers() < 10) {
+            ipfs.bootstrap(10, 10);
+        }
+    }
     public static class FileInfo {
 
         @NonNull

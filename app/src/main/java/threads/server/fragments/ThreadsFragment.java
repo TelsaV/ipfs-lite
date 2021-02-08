@@ -1336,23 +1336,17 @@ public class ThreadsFragment extends Fragment implements
                 Uri uri = FileDocumentsProvider.getUriForThread(thread);
 
 
+                Intent intent;
                 if (MimeTypes.isVideo(mimeType)) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri,
-                            mContext, ExoPlayerActivity.class);
-                    intent.putExtra(Intent.EXTRA_TITLE, thread.getName());
-                    intent.setDataAndType(uri, mimeType);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
-
+                    intent = new Intent(Intent.ACTION_VIEW, uri, mContext, ExoPlayerActivity.class);
                 } else {
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.putExtra(Intent.EXTRA_TITLE, thread.getName());
-                    intent.setDataAndType(uri, mimeType);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
+                    intent = new Intent(Intent.ACTION_VIEW);
 
                 }
+                intent.putExtra(Intent.EXTRA_TITLE, thread.getName());
+                intent.setDataAndType(uri, mimeType);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(intent);
             }
         } catch (Throwable ignore) {
             EVENTS.getInstance(mContext).warning(getString(R.string.no_activity_found_to_handle_uri));

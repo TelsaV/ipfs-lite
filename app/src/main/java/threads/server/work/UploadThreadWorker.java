@@ -62,9 +62,7 @@ public class UploadThreadWorker extends Worker {
     private final IPFS ipfs;
     private final NotificationManager mNotificationManager;
     private final AtomicReference<Notification> mLastNotification = new AtomicReference<>(null);
-    private final Object lock = new Object();
     private final AtomicBoolean finished = new AtomicBoolean(true);
-    private long idx;
 
     @SuppressWarnings("WeakerAccess")
     public UploadThreadWorker(
@@ -116,7 +114,7 @@ public class UploadThreadWorker extends Worker {
             notification = createCompatNotification(title, progress);
         }
         mLastNotification.set(notification);
-        return new ForegroundInfo((int) idx, notification);
+        return new ForegroundInfo(getId().hashCode(), notification);
     }
 
     @NonNull
@@ -124,7 +122,7 @@ public class UploadThreadWorker extends Worker {
     public Result doWork() {
 
 
-        idx = getInputData().getLong(Content.IDX, -1);
+        long idx = getInputData().getLong(Content.IDX, -1);
 
         long start = System.currentTimeMillis();
         LogUtils.info(TAG, " start ... " + idx);
@@ -230,7 +228,7 @@ public class UploadThreadWorker extends Worker {
                 } catch (Throwable e) {
                     if (!isStopped()) {
                         threads.setThreadError(idx);
-                        buildFailedNotification((int) idx, thread.getName());
+                        buildFailedNotification(thread.getName());
                     }
                     throw e;
                 } finally {
@@ -269,13 +267,13 @@ public class UploadThreadWorker extends Worker {
 
                     if (!isStopped()) {
                         if (!finished.get()) {
-                            buildFailedNotification((int) idx, thread.getName());
+                            buildFailedNotification(thread.getName());
                         }
                     }
 
                 } catch (Throwable e) {
                     if (!isStopped()) {
-                        buildFailedNotification((int) idx, thread.getName());
+                        buildFailedNotification(thread.getName());
                     }
                     throw e;
                 } finally {
@@ -328,7 +326,7 @@ public class UploadThreadWorker extends Worker {
                 } catch (Throwable e) {
                     if (!isStopped()) {
                         threads.setThreadError(idx);
-                        buildFailedNotification((int) idx, thread.getName());
+                        buildFailedNotification(thread.getName());
                     }
                     throw e;
                 } finally {
@@ -349,30 +347,6 @@ public class UploadThreadWorker extends Worker {
 
     }
 
-    private void downloadThread(long idx) {
-
-        if (!isStopped()) {
-            downloadLinks(idx);
-        }
-
-        if (!isStopped()) {
-            defineDirSize();
-        }
-    }
-
-    private void defineDirSize() {
-        Thread thread = threads.getThreadByIdx(idx);
-        Objects.requireNonNull(thread);
-        if (thread.isDir() && thread.getSize() == 0) {
-            updateParentSize(idx);
-        }
-    }
-
-    private void updateParentSize(long idx) {
-        long size = threads.getChildrenSummarySize(idx);
-        threads.setThreadSize(idx, size);
-    }
-
 
     private void checkParentSeeding(long parent) {
 
@@ -382,8 +356,6 @@ public class UploadThreadWorker extends Worker {
 
         try {
             int allSeeding = 0;
-
-            updateParentSize(parent);
 
             List<Thread> list = threads.getChildren(parent);
             for (Thread entry : list) {
@@ -395,6 +367,7 @@ public class UploadThreadWorker extends Worker {
 
             if (seeding) {
                 threads.setThreadDone(parent);
+                docs.finishDocument(parent, false);
                 checkParentSeeding(threads.getThreadParent(parent));
             }
 
@@ -490,21 +463,19 @@ public class UploadThreadWorker extends Worker {
                         threads.setThreadMimeType(threadIdx, mimeType);
                     }
 
-                    Uri uri = FileProvider.getDataUri(getApplicationContext(), idx);
+                    Uri uri = FileProvider.getDataUri(getApplicationContext(), threadIdx);
                     if (uri != null) {
-                        threads.setThreadUri(idx, uri.toString());
+                        threads.setThreadUri(threadIdx, uri.toString());
                     }
+
+                    docs.finishDocument(threadIdx, false);
+
+                    checkParentSeeding(parent);
                 } else {
                     finished.set(false);
                     threads.resetThreadLeaching(threadIdx);
                 }
             }
-
-            synchronized (lock) {
-                checkParentSeeding(parent);
-            }
-
-
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         } finally {
@@ -513,7 +484,7 @@ public class UploadThreadWorker extends Worker {
     }
 
 
-    private void buildFailedNotification(int idx, @NonNull String name) {
+    private void buildFailedNotification(@NonNull String name) {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
                 getApplicationContext(), InitApplication.CHANNEL_ID);
@@ -531,7 +502,7 @@ public class UploadThreadWorker extends Worker {
         NotificationManager notificationManager = (NotificationManager)
                 getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
-            notificationManager.notify(idx, notification);
+            notificationManager.notify(getId().hashCode(), notification);
         }
     }
 
@@ -547,7 +518,7 @@ public class UploadThreadWorker extends Worker {
             }
 
             if (mNotificationManager != null) {
-                mNotificationManager.notify((int) idx, notification);
+                mNotificationManager.notify(getId().hashCode(), notification);
             }
 
         }
@@ -680,7 +651,7 @@ public class UploadThreadWorker extends Worker {
     }
 
 
-    private void downloadLinks(long idx) {
+    private void downloadThread(long idx) {
 
         Thread thread = threads.getThreadByIdx(idx);
         Objects.requireNonNull(thread);
@@ -707,7 +678,7 @@ public class UploadThreadWorker extends Worker {
                 for (Thread child : children) {
                     if (!isStopped()) {
                         if (child.isDir()) {
-                            downloadLinks(child.getIdx());
+                            downloadThread(child.getIdx());
                         } else {
                             download(child);
                         }
