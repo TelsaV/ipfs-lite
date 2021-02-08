@@ -590,11 +590,11 @@ public class BrowserFragment extends Fragment {
                         return docs.getResponse(uri, closeable);
                     } catch (Throwable throwable) {
 
-
-                        if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-                            PageResolveWorker.resolve(mContext, uri.getHost());
+                        if(throwable instanceof DOCS.ContentException) {
+                            if (Objects.equals(uri.getScheme(), Content.IPNS)) {
+                                PageResolveWorker.resolve(mContext, uri.getHost());
+                            }
                         }
-
                         return createErrorMessage(throwable);
                     }
                 }
