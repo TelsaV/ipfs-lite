@@ -43,7 +43,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 import threads.LogUtils;
 import threads.server.InitApplication;
@@ -364,12 +363,20 @@ public class BrowserFragment extends Fragment {
         mSelectionViewModel.getUri().observe(getViewLifecycleOwner(), (url) -> {
             if (url != null) {
 
-                mProgressBar.setVisibility(View.VISIBLE);
                 Uri uri = Uri.parse(url);
+
                 docs.cleanupResolver(uri);
+
+                docs.releaseThreads();
+
+                mWebView.stopLoading();
+
                 checkBookmark(uri);
                 mListener.updateTitle(uri);
+
                 mWebView.loadUrl(uri.toString());
+
+                mProgressBar.setVisibility(View.VISIBLE);
             }
         });
 
@@ -572,12 +579,14 @@ public class BrowserFragment extends Fragment {
 
                         mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
 
-
-                        final AtomicLong time = new AtomicLong(System.currentTimeMillis());
-                        long timeout = 100000; // BROWSER TIMEOUT
-
                         docs.connectUri(mContext, uri);
-                        Closeable closeable = () -> System.currentTimeMillis() - time.get() > timeout;
+
+                        Thread thread = Thread.currentThread();
+
+                        docs.attachThread(thread.getId());
+
+                        Closeable closeable = () -> !docs.shouldRun(thread.getId());
+
                         {
                             Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
                             Uri redirectUri = result.first;
