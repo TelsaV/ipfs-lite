@@ -63,6 +63,9 @@ public class IPFS implements Listener {
     private static final String PRIVATE_KEY = "privateKey";
     private static final String TAG = IPFS.class.getSimpleName();
     private static IPFS INSTANCE = null;
+
+    public static final int TIMEOUT_BOOTSTRAP = 5;
+    public static final int MIN_PEERS = 10;
     private final EVENTS events;
     private final Node node;
     private final Object locker = new Object();
@@ -620,9 +623,9 @@ public class IPFS implements Listener {
         executor.submit(() -> events.reachable(this.reachable.name()));
     }
 
-    public void bootstrap(int minPeers, int timeout) {
+    public void bootstrap() {
         if (isDaemonRunning()) {
-            if (numSwarmPeers() < minPeers) {
+            if (numSwarmPeers() < MIN_PEERS) {
                 try {
                     Pair<List<String>, List<String>> result = DnsAddrResolver.getBootstrap();
 
@@ -630,10 +633,10 @@ public class IPFS implements Listener {
                     List<Callable<Boolean>> tasks = new ArrayList<>();
                     ExecutorService executor = Executors.newFixedThreadPool(bootstrap.size());
                     for (String address : bootstrap) {
-                        tasks.add(() -> swarmConnect(address, null, timeout));
+                        tasks.add(() -> swarmConnect(address, null, TIMEOUT_BOOTSTRAP));
                     }
 
-                    List<Future<Boolean>> futures = executor.invokeAll(tasks, timeout, TimeUnit.SECONDS);
+                    List<Future<Boolean>> futures = executor.invokeAll(tasks, TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                     for (Future<Boolean> future : futures) {
                         LogUtils.info(TAG, "\nBootstrap done " + future.isDone());
                     }
@@ -644,10 +647,10 @@ public class IPFS implements Listener {
                     if(!second.isEmpty()) {
                         executor = Executors.newFixedThreadPool(second.size());
                         for (String address : second) {
-                            tasks.add(() -> swarmConnect(address, null, timeout));
+                            tasks.add(() -> swarmConnect(address, null, TIMEOUT_BOOTSTRAP));
                         }
                         futures.clear();
-                        futures = executor.invokeAll(tasks, timeout, TimeUnit.SECONDS);
+                        futures = executor.invokeAll(tasks, TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                         for (Future<Boolean> future : futures) {
                             LogUtils.info(TAG, "\nConnect done " + future.isDone());
                         }

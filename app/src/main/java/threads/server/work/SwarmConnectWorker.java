@@ -12,8 +12,8 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import threads.LogUtils;
+import threads.server.ipfs.IPFS;
 import threads.server.services.ConnectService;
-import threads.server.services.LiteService;
 
 public class SwarmConnectWorker extends Worker {
 
@@ -53,7 +53,17 @@ public class SwarmConnectWorker extends Worker {
         LogUtils.info(TAG, " start ...");
         try {
 
-            LiteService.bootstrap(getApplicationContext(), 10);
+            try {
+                IPFS ipfs = IPFS.getInstance(getApplicationContext());
+
+                if (!ipfs.isPrivateNetwork()) {
+
+                    ipfs.bootstrap();
+                }
+
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
 
 
             ConnectService.connect(getApplicationContext());

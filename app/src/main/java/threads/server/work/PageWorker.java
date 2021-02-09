@@ -3,9 +3,7 @@ package threads.server.work;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
@@ -76,12 +74,22 @@ public class PageWorker extends Worker {
 
             if (!isStopped()) {
                 try {
+                    IPFS ipfs = IPFS.getInstance(getApplicationContext());
 
-                    LiteService.bootstrap(getApplicationContext(), 20);
+                    if (!ipfs.isPrivateNetwork()) {
+
+                        ipfs.bootstrap();
+                    }
+
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
+                try {
 
                     if (ipfs.isPrivateNetwork()) {
                         ConnectService.connect(getApplicationContext());
                     }
+
                 } catch (Throwable e) {
                     LogUtils.error(TAG, e);
                 }

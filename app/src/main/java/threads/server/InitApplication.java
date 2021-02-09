@@ -135,6 +135,7 @@ public class InitApplication extends Application {
         }
     }
 
+
     @SuppressLint("SetJavaScriptEnabled")
     public static void setWebSettings(@NonNull WebView webView) {
 
@@ -142,8 +143,10 @@ public class InitApplication extends Application {
         WebSettings settings = webView.getSettings();
         settings.setUserAgentString("Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ")");
 
+
         settings.setJavaScriptEnabled(true);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
+
 
         settings.setSafeBrowsingEnabled(true);
         settings.setAllowFileAccessFromFileURLs(false);

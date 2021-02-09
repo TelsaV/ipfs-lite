@@ -220,24 +220,6 @@ public class LiteService {
         }
     }
 
-
-    public static void bootstrap(@NonNull Context context, int minPeers) {
-
-        try {
-
-
-            IPFS ipfs = IPFS.getInstance(context);
-
-            if (!ipfs.isPrivateNetwork()) {
-
-                ipfs.bootstrap(minPeers, 10);
-            }
-
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
-
     public static void connect(@NonNull Context context,
                                @NonNull String user,
                                @Nullable String name,

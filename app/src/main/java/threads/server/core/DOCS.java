@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import threads.LogUtils;
 import threads.server.core.pages.PAGES;
 import threads.server.core.pages.Page;
-import threads.server.core.peers.PEERS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.Closeable;
@@ -864,12 +863,12 @@ public class DOCS {
     }
 
     public void bootstrap() {
-        if (ipfs.numSwarmPeers() < 10) {
-            ipfs.bootstrap(10, 10);
-        }
 
         try {
-            if (ipfs.numSwarmPeers() < 5) {
+            ipfs.bootstrap();
+
+
+            if (ipfs.numSwarmPeers() < IPFS.MIN_PEERS) {
                 List<Page> bootstraps = pages.getBootstraps(5);
                 List<String> addresses = new ArrayList<>();
                 for (Page bootstrap : bootstraps) {
@@ -882,9 +881,10 @@ public class DOCS {
                 List<Callable<Boolean>> tasks = new ArrayList<>();
                 ExecutorService executor = Executors.newFixedThreadPool(addresses.size());
                 for (String address : addresses) {
-                    tasks.add(() -> ipfs.swarmConnect(address, null, 5));
+                    tasks.add(() -> ipfs.swarmConnect(address, null, IPFS.TIMEOUT_BOOTSTRAP));
                 }
-                List<Future<Boolean>> result = executor.invokeAll(tasks, 5, TimeUnit.SECONDS);
+                List<Future<Boolean>> result = executor.invokeAll(tasks,
+                        IPFS.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                 for (Future<Boolean> future : result) {
                     LogUtils.error(TAG, "Bootstrap done " + future.isDone());
                 }

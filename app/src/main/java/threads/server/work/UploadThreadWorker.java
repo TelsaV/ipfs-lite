@@ -50,7 +50,6 @@ import threads.server.magic.ContentInfoUtil;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.services.ConnectService;
-import threads.server.services.LiteService;
 import threads.server.utils.MimeType;
 
 public class UploadThreadWorker extends Worker {
@@ -159,7 +158,15 @@ public class UploadThreadWorker extends Worker {
                 if (bootstrap) {
                     if (!isStopped()) {
                         try {
-                            LiteService.bootstrap(getApplicationContext(), 10);
+                            if (!ipfs.isPrivateNetwork()) {
+
+                                ipfs.bootstrap();
+                            }
+
+                        } catch (Throwable throwable) {
+                            LogUtils.error(TAG, throwable);
+                        }
+                        try {
 
                             ConnectService.connect(getApplicationContext());
                         } catch (Throwable e) {
