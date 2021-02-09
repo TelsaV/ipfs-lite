@@ -957,7 +957,7 @@ public class DOCS {
                                     for (String path : paths) {
                                         builder.appendPath(path);
                                     }
-                                    return redirect(dnsUri);
+                                    return redirect(builder.build());
                                 }
                             } catch (Throwable throwable) {
                                 LogUtils.error(TAG, throwable);
@@ -974,7 +974,7 @@ public class DOCS {
                                 for (String path : paths) {
                                     builder.appendPath(path);
                                 }
-                                return redirect(dnsUri);
+                                return redirect(builder.build());
                             }
                         } catch (Throwable throwable) {
                             LogUtils.error(TAG, throwable);
@@ -1035,7 +1035,7 @@ public class DOCS {
                                     for (String path : paths) {
                                         builder.appendPath(path);
                                     }
-                                    return redirectUri(dnsUri, closeable);
+                                    return redirectUri(builder.build(), closeable);
                                 }
                             } catch (Throwable throwable) {
                                 LogUtils.error(TAG, throwable);
@@ -1052,7 +1052,7 @@ public class DOCS {
                                 for (String path : paths) {
                                     builder.appendPath(path);
                                 }
-                                return redirectUri(dnsUri, closeable);
+                                return redirectUri(builder.build(), closeable);
                             }
                         } catch (Throwable throwable) {
                             LogUtils.error(TAG, throwable);
