@@ -52,7 +52,6 @@ public class DOCS {
     private final IPFS ipfs;
     private final THREADS threads;
     private final PAGES pages;
-    private final PEERS peers;
     private final String host;
     private final ContentInfoUtil util;
     private final Hashtable<String, String> resolves = new Hashtable<>();
@@ -62,7 +61,6 @@ public class DOCS {
         ipfs = IPFS.getInstance(context);
         threads = THREADS.getInstance(context);
         pages = PAGES.getInstance(context);
-        peers = PEERS.getInstance(context);
         host = ipfs.getHost();
         util = ContentInfoUtil.getInstance(context);
 
@@ -914,7 +912,7 @@ public class DOCS {
     }
 
     @NonNull
-    public Uri redirect(@NonNull Uri uri) {
+    public Uri redirect(@NonNull Uri uri) throws ResolveNameException, InvalidNameException {
         if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                 Objects.equals(uri.getScheme(), Content.IPFS)) {
             List<String> paths = uri.getPathSegments();
@@ -922,14 +920,12 @@ public class DOCS {
             Objects.requireNonNull(host);
             if (!ipfs.isValidCID(host)) {
                 String link = DnsAddrResolver.getDNSLink(host);
-                if (link == null) {
-                    Uri.Builder builder = new Uri.Builder();
-                    builder.scheme(Content.HTTPS)
-                            .authority(host);
-                    for (String path : paths) {
-                        builder.appendPath(path);
+                if (link.isEmpty()) {
+                    if (Objects.equals(uri.getScheme(), Content.IPNS)) {
+                        throw new DOCS.ResolveNameException(uri.toString());
+                    } else {
+                        throw new DOCS.InvalidNameException(uri.toString());
                     }
-                    return builder.build();
                 } else {
                     if (link.startsWith(Content.IPFS_PATH)) {
                         String cid = link.replaceFirst(Content.IPFS_PATH, "");
@@ -992,7 +988,7 @@ public class DOCS {
     }
 
     @NonNull
-    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) {
+    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
 
 
         if (Objects.equals(uri.getScheme(), Content.IPNS) ||
@@ -1002,14 +998,12 @@ public class DOCS {
             Objects.requireNonNull(host);
             if (!ipfs.isValidCID(host)) {
                 String link = DnsAddrResolver.getDNSLink(host);
-                if (link == null) {
-                    Uri.Builder builder = new Uri.Builder();
-                    builder.scheme(Content.HTTPS)
-                            .authority(host);
-                    for (String path : paths) {
-                        builder.appendPath(path);
+                if (link.isEmpty()) {
+                    if (Objects.equals(uri.getScheme(), Content.IPNS)) {
+                        throw new DOCS.ResolveNameException(uri.toString());
+                    } else {
+                        throw new DOCS.InvalidNameException(uri.toString());
                     }
-                    return Pair.create(builder.build(), false);
                 } else {
                     if (link.startsWith(Content.IPFS_PATH)) {
                         String cid = link.replaceFirst(Content.IPFS_PATH, "");
@@ -1257,7 +1251,7 @@ public class DOCS {
 
 
         public InvalidNameException(@NonNull String name) {
-            super("Invalid name " + name);
+            super("Invalid name detected for " + name);
         }
 
     }

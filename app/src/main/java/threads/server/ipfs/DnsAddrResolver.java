@@ -50,7 +50,7 @@ public class DnsAddrResolver {
     }
 
 
-    @Nullable
+    @NonNull
     public static String getDNSLink(@NonNull String host) {
 
         List<String> txtRecords = getTxtRecords("_dnslink.".concat(host));
@@ -63,7 +63,7 @@ public class DnsAddrResolver {
                 LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
             }
         }
-        return null;
+        return "";
     }
 
     @NonNull
