@@ -574,40 +574,39 @@ public class BrowserFragment extends Fragment {
                 if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                         Objects.equals(uri.getScheme(), Content.IPFS)) {
 
+
+                    docs.bootstrap();
+
+                    mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
+
+                    docs.connectUri(mContext, uri);
+
+                    Thread thread = Thread.currentThread();
+
+                    docs.attachThread(thread.getId());
+
+                    Closeable closeable = () -> !docs.shouldRun(thread.getId());
                     try {
-                        docs.bootstrap();
 
-                        mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
-
-                        docs.connectUri(mContext, uri);
-
-                        Thread thread = Thread.currentThread();
-
-                        docs.attachThread(thread.getId());
-
-                        Closeable closeable = () -> !docs.shouldRun(thread.getId());
-
-                        {
-                            Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
-                            Uri redirectUri = result.first;
-                            if (!Objects.equals(uri, redirectUri)) {
-                                docs.storeRedirect(redirectUri, uri);
-                            }
-                            if (result.second) {
-                                return createRedirectMessage(redirectUri);
-                            }
-                            uri = redirectUri;
+                        Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
+                        Uri redirectUri = result.first;
+                        if (!Objects.equals(uri, redirectUri)) {
+                            docs.storeRedirect(redirectUri, uri);
                         }
-                        if (closeable.isClosed()) {
-                            throw new DOCS.TimeoutException(uri.toString());
+                        if (result.second) {
+                            return createRedirectMessage(redirectUri);
                         }
+                        uri = redirectUri;
+
 
                         docs.connectUri(mContext, uri);
 
                         return docs.getResponse(uri, closeable);
                     } catch (Throwable throwable) {
-
-                        if(throwable instanceof DOCS.ContentException) {
+                        if (closeable.isClosed()) {
+                            return createEmptyResource();
+                        }
+                        if (throwable instanceof DOCS.ContentException) {
                             if (Objects.equals(uri.getScheme(), Content.IPNS)) {
                                 PageResolveWorker.resolve(mContext, uri.getHost());
                             }

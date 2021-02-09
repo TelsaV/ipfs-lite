@@ -1321,11 +1321,11 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable, long readTimeoutMillis) throws Exception {
+    public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
 
         Loader loader = getLoader(cid, closeable);
 
-        return new CloseableInputStream(loader, readTimeoutMillis);
+        return new CloseableInputStream(loader, closeable);
 
     }
 
@@ -1741,21 +1741,20 @@ public class IPFS implements Listener {
         }
     }
 
-
     private static class CloseableInputStream extends InputStream implements AutoCloseable {
-        private final Loader mLoader;
-        private final long readTimeoutMillis;
+        private final Loader loader;
+        private final Closeable closeable;
         private int position = 0;
         private byte[] data = null;
 
-        CloseableInputStream(@NonNull Loader loader, long readTimeoutMillis) {
-            this.mLoader = loader;
-            this.readTimeoutMillis = readTimeoutMillis;
+        CloseableInputStream(@NonNull Loader loader, @NonNull Closeable closeable) {
+            this.loader = loader;
+            this.closeable = closeable;
         }
 
         @Override
         public int available() {
-            long size = mLoader.getSize();
+            long size = loader.getSize();
             return (int) size;
         }
 
@@ -1799,12 +1798,11 @@ public class IPFS implements Listener {
 
 
         private boolean preLoad() throws Exception {
-            long start = System.currentTimeMillis();
-            mLoader.load(4096, () -> (System.currentTimeMillis() - start) > (readTimeoutMillis));
-            int read = (int) mLoader.getRead();
+            loader.load(4096, closeable::isClosed);
+            int read = (int) loader.getRead();
             if (read > 0) {
                 data = new byte[read];
-                byte[] values = mLoader.getData();
+                byte[] values = loader.getData();
                 System.arraycopy(values, 0, data, 0, read);
                 return true;
             }
@@ -1813,12 +1811,13 @@ public class IPFS implements Listener {
 
         public void close() {
             try {
-                mLoader.close();
+                loader.close();
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }
         }
     }
+
 
     private static class WriterStream implements lite.WriterStream {
         private final InputStream mInputStream;
