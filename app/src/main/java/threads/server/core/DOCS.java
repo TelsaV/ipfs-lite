@@ -743,7 +743,7 @@ public class DOCS {
             if (closeable.isClosed()) {
                 throw new ClosedException(uri.toString());
             }
-            if (cid == null) {
+            if (cid.isEmpty()) {
                 throw new ContentException(uri.toString());
             }
             if (ipfs.isEmptyDir(cid)) {
@@ -1052,7 +1052,7 @@ public class DOCS {
     }
 
     @NonNull
-    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
+    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException, ClosedException {
 
 
         if (Objects.equals(uri.getScheme(), Content.IPNS) ||
@@ -1134,6 +1134,9 @@ public class DOCS {
                 }
             }
         }
+        if (closeable.isClosed()) {
+            throw new ClosedException(uri.toString());
+        }
         return Pair.create(uri, false);
     }
 
@@ -1162,7 +1165,7 @@ public class DOCS {
 
             String cid = ipfs.resolve(root, paths, closeable);
 
-            if (cid != null) {
+            if (!cid.isEmpty()) {
                 if (!ipfs.isEmptyDir(cid)) {
                     boolean exists = ipfs.resolve(cid, INDEX_HTML, closeable);
                     if (exists) {

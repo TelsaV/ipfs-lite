@@ -43,6 +43,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import threads.LogUtils;
 import threads.server.InitApplication;
@@ -146,6 +147,18 @@ public class BrowserFragment extends Fragment {
         this.setHasOptionsMenu(true);
     }
 
+    private void goBack() {
+        mWebView.stopLoading();
+        docs.releaseThreads();
+        mWebView.goBack();
+    }
+
+    private void goForward() {
+        mWebView.stopLoading();
+        docs.releaseThreads();
+        mWebView.goForward();
+    }
+
     @Override
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater);
@@ -162,7 +175,7 @@ public class BrowserFragment extends Fragment {
     public boolean onBackPressed() {
 
         if (mWebView.canGoBack()) {
-            mWebView.goBack();
+            goBack();
             return true;
         }
 
@@ -402,7 +415,7 @@ public class BrowserFragment extends Fragment {
         });
 
         mWebView.setWebViewClient(new WebViewClient() {
-
+            private final AtomicBoolean progressActive = new AtomicBoolean(false);
 
             @Override
             public void onPageCommitVisible(WebView view, String url) {
@@ -495,6 +508,7 @@ public class BrowserFragment extends Fragment {
                             contentDownloader(uri);
                             return true;
                         }
+                        progressActive.set(true);
                         return false;
 
                     } else if (Objects.equals(uri.getScheme(), Content.MAGNET)) {
@@ -577,7 +591,10 @@ public class BrowserFragment extends Fragment {
 
                     docs.bootstrap();
 
-                    mActivity.runOnUiThread(() -> mProgressBar.setVisibility(View.VISIBLE));
+                    if (progressActive.get()) {
+                        mActivity.runOnUiThread(() ->
+                                mProgressBar.setVisibility(View.VISIBLE));
+                    }
 
                     docs.connectUri(mContext, uri);
 
@@ -612,6 +629,11 @@ public class BrowserFragment extends Fragment {
                             }
                         }
                         return createErrorMessage(throwable);
+                    } finally {
+                        if (progressActive.getAndSet(false)) {
+                            mActivity.runOnUiThread(() ->
+                                    mProgressBar.setVisibility(View.INVISIBLE));
+                        }
                     }
                 }
 
