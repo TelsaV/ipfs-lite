@@ -504,15 +504,22 @@ public class DOCS {
     }
 
     @NonNull
-    public Uri getPath(@NonNull Thread thread) {
-        Uri.Builder builder = new Uri.Builder();
-        builder.scheme(Content.IPNS)
-                .authority(getHost());
-        List<Thread> ancestors = threads.getAncestors(thread.getIdx());
-        for (Thread ancestor : ancestors) {
-            builder.appendPath(ancestor.getName());
+    public Uri getPath(@NonNull Thread thread, boolean ipns) {
+        if(ipns) {
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme(Content.IPNS)
+                    .authority(getHost());
+            List<Thread> ancestors = threads.getAncestors(thread.getIdx());
+            for (Thread ancestor : ancestors) {
+                builder.appendPath(ancestor.getName());
+            }
+            return builder.build();
+        } else {
+            Uri.Builder builder = new Uri.Builder();
+            builder.scheme(Content.IPFS)
+                    .authority(thread.getContent());
+            return builder.build();
         }
-        return builder.build();
 
     }
 

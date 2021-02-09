@@ -49,14 +49,8 @@ public class PageWorker extends Worker {
 
         int time = LiteService.getPublishServiceTime(context);
 
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-
         return new PeriodicWorkRequest.Builder(PageWorker.class, time, TimeUnit.HOURS)
                 .addTag(TAG)
-                .setConstraints(constraints)
                 .build();
 
     }
