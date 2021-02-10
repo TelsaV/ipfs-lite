@@ -113,6 +113,7 @@ public class IPFS implements Listener {
         node.setPushing(false);
         node.setPort(IPFS.getSwarmPort(context));
 
+        node.setConcurrency(25);
         node.setGracePeriod(getGracePeriod(context));
         node.setHighWater(getHighWater(context));
         node.setLowWater(getLowWater(context));
@@ -640,7 +641,6 @@ public class IPFS implements Listener {
                     for (Future<Boolean> future : futures) {
                         LogUtils.info(TAG, "\nBootstrap done " + future.isDone());
                     }
-
 
                     List<String> second = result.second;
                     tasks.clear();
