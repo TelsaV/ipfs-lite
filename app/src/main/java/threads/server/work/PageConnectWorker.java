@@ -75,11 +75,13 @@ public class PageConnectWorker extends Worker {
                     String address = page.getAddress();
                     if (!address.isEmpty()) {
                         connected = ipfs.swarmConnect(
-                                address.concat(Content.P2P_PATH).concat(page.getPid()), 5);
+                                address.concat(Content.P2P_PATH).concat(page.getPid()),
+                                null,5);
                     }
                 }
                 if (!connected) {
-                    connected = ipfs.swarmConnect("/p2p/" + pid, 10);
+                    connected = ipfs.swarmConnect(Content.P2P_PATH + pid,
+                            null,10);
                 }
             }
 

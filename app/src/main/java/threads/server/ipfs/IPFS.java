@@ -717,13 +717,6 @@ public class IPFS implements Listener {
         }
     }
 
-    public boolean swarmConnect(@NonNull String pid, int timeout) {
-        if (!isDaemonRunning()) {
-            return false;
-        }
-        return swarmConnect("/p2p/" + pid, pid, timeout);
-    }
-
     public boolean swarmConnect(@NonNull String multiAddress, @Nullable String pid, int timeout) {
         if (!isDaemonRunning()) {
             return false;

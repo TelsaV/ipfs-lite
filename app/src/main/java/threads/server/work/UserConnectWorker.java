@@ -124,14 +124,14 @@ public class UserConnectWorker extends Worker {
                 Objects.requireNonNull(user);
                 String address = user.getAddress();
                 if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-                    if (ipfs.swarmConnect(pid, timeout)) {
+                    if (ipfs.swarmConnect(Content.P2P_PATH + pid, null, timeout)) {
                         return;
                     }
                 }
             }
 
             if (!isStopped()) {
-                ipfs.swarmConnect(pid, timeout);
+                ipfs.swarmConnect(Content.P2P_PATH + pid, null, timeout);
             }
         }
     }

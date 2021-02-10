@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
 import threads.server.InitApplication;
+import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
@@ -59,13 +60,13 @@ public class ConnectService {
         Objects.requireNonNull(user);
         String address = user.getAddress();
         if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-            if (ipfs.swarmConnect(pid, 5)) {
+            if (ipfs.swarmConnect(Content.P2P_PATH + pid, null,5)) {
                 return true;
             }
         }
         int timeout = InitApplication.getConnectionTimeout(context);
 
-        return ipfs.swarmConnect(pid, timeout);
+        return ipfs.swarmConnect(Content.P2P_PATH + pid, null, timeout);
 
 
     }

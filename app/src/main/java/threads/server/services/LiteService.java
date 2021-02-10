@@ -101,7 +101,7 @@ public class LiteService {
                     IPFS ipfs = IPFS.getInstance(context);
 
                     if (!ipfs.isConnected(host)) {
-                        ipfs.swarmConnect("/p2p/" + host, 10);
+                        ipfs.swarmConnect(Content.P2P_PATH + host, null, 10);
                     }
                 }
             } catch (Throwable throwable) {
