@@ -415,15 +415,13 @@ public class BrowserFragment extends Fragment {
         });
 
         mWebView.setWebViewClient(new WebViewClient() {
-            private final AtomicBoolean progressActive = new AtomicBoolean(false);
+
 
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
                 LogUtils.error(TAG, "onPageCommitVisible " + url);
-
                 mProgressBar.setVisibility(View.GONE);
-
             }
 
 
@@ -451,11 +449,9 @@ public class BrowserFragment extends Fragment {
                 LogUtils.error(TAG, "doUpdateVisitedHistory : " + url + " " + isReload);
 
 
-                mProgressBar.setVisibility(View.VISIBLE);
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
                 checkBookmark(uri);
                 mListener.updateTitle(uri);
-                super.doUpdateVisitedHistory(view, url, isReload);
             }
 
             @Override
@@ -470,7 +466,18 @@ public class BrowserFragment extends Fragment {
             @Override
             public void onPageFinished(WebView view, String url) {
                 LogUtils.error(TAG, "onPageFinished : " + url);
-                mProgressBar.setVisibility(View.GONE);
+
+                Uri uri = Uri.parse(url);
+                if (Objects.equals(uri.getScheme(), Content.IPNS) ||
+                        Objects.equals(uri.getScheme(), Content.IPFS)) {
+
+                    if (docs.numUris() == 0) {
+                        mProgressBar.setVisibility(View.GONE);
+                    }
+
+                } else {
+                    mProgressBar.setVisibility(View.GONE);
+                }
             }
 
             @Override
@@ -508,7 +515,9 @@ public class BrowserFragment extends Fragment {
                             contentDownloader(uri);
                             return true;
                         }
-                        progressActive.set(true);
+                        mProgressBar.setVisibility(View.VISIBLE);
+                        docs.attachUri(uri);
+                        docs.releaseThreads();
                         return false;
 
                     } else if (Objects.equals(uri.getScheme(), Content.MAGNET)) {
@@ -588,13 +597,7 @@ public class BrowserFragment extends Fragment {
                 if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                         Objects.equals(uri.getScheme(), Content.IPFS)) {
 
-
                     docs.bootstrap();
-
-                    if (progressActive.get()) {
-                        mActivity.runOnUiThread(() ->
-                                mProgressBar.setVisibility(View.VISIBLE));
-                    }
 
                     docs.connectUri(mContext, uri);
 
@@ -613,12 +616,10 @@ public class BrowserFragment extends Fragment {
                         if (result.second) {
                             return createRedirectMessage(redirectUri);
                         }
-                        uri = redirectUri;
 
+                        docs.connectUri(mContext, redirectUri);
 
-                        docs.connectUri(mContext, uri);
-
-                        return docs.getResponse(uri, closeable);
+                        return docs.getResponse(redirectUri, closeable);
                     } catch (Throwable throwable) {
                         if (closeable.isClosed()) {
                             return createEmptyResource();
@@ -630,10 +631,7 @@ public class BrowserFragment extends Fragment {
                         }
                         return createErrorMessage(throwable);
                     } finally {
-                        if (progressActive.getAndSet(false)) {
-                            mActivity.runOnUiThread(() ->
-                                    mProgressBar.setVisibility(View.INVISIBLE));
-                        }
+                        docs.detachUri(uri);
                     }
                 }
 

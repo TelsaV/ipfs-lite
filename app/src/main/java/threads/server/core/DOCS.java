@@ -34,6 +34,7 @@ import threads.server.core.pages.Page;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.Closeable;
+import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.DnsAddrResolver;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.Link;
@@ -57,6 +58,7 @@ public class DOCS {
     private final Hashtable<String, String> resolves = new Hashtable<>();
     private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
     private static final HashSet<Long> runs = new HashSet<>();
+    private static final HashSet<Uri> uris = new HashSet<>();
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
         threads = THREADS.getInstance(context);
@@ -77,6 +79,24 @@ public class DOCS {
             }
         }
         return INSTANCE;
+    }
+
+    public int numUris() {
+        synchronized (TAG.intern()) {
+            return uris.size();
+        }
+    }
+
+    public void detachUri(@NonNull Uri uri) {
+        synchronized (TAG.intern()) {
+            uris.remove(uri);
+        }
+    }
+
+    public void attachUri(@NonNull Uri uri) {
+        synchronized (TAG.intern()) {
+            uris.add(uri);
+        }
     }
 
     public void attachThread(@NonNull Long thread) {
@@ -696,13 +716,13 @@ public class DOCS {
             String mimeType = getMimeType(root, closeable);
 
             if (closeable.isClosed()) {
-                throw new ClosedException(uri.toString());
+                throw new ClosedException();
             }
 
             return new FileInfo(root, mimeType, root);
         } catch (Throwable throwable) {
             if (closeable.isClosed()) {
-                throw new ClosedException(uri.toString());
+                throw new ClosedException();
             }
             throw new RuntimeException(throwable);
         }
@@ -721,11 +741,11 @@ public class DOCS {
                         new ByteArrayInputStream(answer.getBytes()));
             } else if (ipfs.isDir(root, closeable)) {
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
                 List<LinkInfo> links = ipfs.getLinks(root, closeable);
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
                 String answer = generateDirectoryHtml(uri, root, paths, links);
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
@@ -733,21 +753,21 @@ public class DOCS {
             } else {
                 String mimeType = getMimeType(root, closeable);
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
 
                 long size = ipfs.getSize(root, closeable);
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
-                return getContentResponse(uri, root, mimeType, size, closeable);
+                return getContentResponse(root, mimeType, size, closeable);
             }
 
 
         } else {
             String cid = ipfs.resolve(root, paths, closeable);
             if (closeable.isClosed()) {
-                throw new ClosedException(uri.toString());
+                throw new ClosedException();
             }
             if (cid.isEmpty()) {
                 throw new ContentException(uri.toString());
@@ -758,11 +778,11 @@ public class DOCS {
                         new ByteArrayInputStream(answer.getBytes()));
             } else if (ipfs.isDir(cid, closeable)) {
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
                 List<LinkInfo> links = ipfs.getLinks(cid, closeable);
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
                 String answer = generateDirectoryHtml(uri, root, paths, links);
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
@@ -771,14 +791,13 @@ public class DOCS {
             } else {
                 String mimeType = getMimeType(uri, cid, closeable);
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
                 long size = ipfs.getSize(cid, closeable);
                 if (closeable.isClosed()) {
-                    throw new ClosedException(uri.toString());
+                    throw new ClosedException();
                 }
-                return getContentResponse(uri, cid, mimeType,
-                        size, closeable);
+                return getContentResponse(cid, mimeType, size, closeable);
             }
 
 
@@ -786,8 +805,7 @@ public class DOCS {
     }
 
     @NonNull
-    private WebResourceResponse getContentResponse(@NonNull Uri uri,
-                                                   @NonNull String content,
+    private WebResourceResponse getContentResponse(@NonNull String content,
                                                    @NonNull String mimeType, long size,
                                                    @NonNull Closeable closeable) throws ClosedException {
 
@@ -795,7 +813,7 @@ public class DOCS {
 
             InputStream in = ipfs.getLoaderStream(content, closeable);
             if (closeable.isClosed()) {
-                throw new ClosedException(uri.toString());
+                throw new ClosedException();
             }
 
             Map<String, String> responseHeaders = new HashMap<>();
@@ -808,7 +826,7 @@ public class DOCS {
                     "OK", responseHeaders, new BufferedInputStream(in));
         } catch (Throwable throwable) {
             if (closeable.isClosed()) {
-                throw new ClosedException(uri.toString());
+                throw new ClosedException();
             }
             throw new RuntimeException(throwable);
         }
@@ -938,7 +956,7 @@ public class DOCS {
         Objects.requireNonNull(root);
 
         if (closeable.isClosed()) {
-            throw new ClosedException(uri.toString());
+            throw new ClosedException();
         }
 
         return getResponse(uri, root, paths, closeable);
@@ -1066,7 +1084,8 @@ public class DOCS {
     }
 
     @NonNull
-    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException, ClosedException {
+    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable)
+            throws ResolveNameException, InvalidNameException, ClosedException {
 
 
         if (Objects.equals(uri.getScheme(), Content.IPNS) ||
@@ -1104,25 +1123,8 @@ public class DOCS {
                             return redirect(builder.build(), cid, paths, closeable);
                         } else {
                             // is is assume like /ipns/<dns_link> = > therefore <dns_link> is url
-                            try {
-                                Uri dnsUri = Uri.parse(cid);
-                                if (dnsUri != null) {
-                                    Uri.Builder builder = new Uri.Builder();
-                                    builder.scheme(Content.IPNS)
-                                            .authority(dnsUri.getAuthority());
-                                    for (String path : paths) {
-                                        builder.appendPath(path);
-                                    }
-                                    return redirectUri(builder.build(), closeable);
-                                }
-                            } catch (Throwable throwable) {
-                                LogUtils.error(TAG, throwable);
-                            }
-                        }
-                    } else {
-                        // is is assume that links is  <dns_link> is url
-                        try {
-                            Uri dnsUri = Uri.parse(link);
+
+                            Uri dnsUri = Uri.parse(cid);
                             if (dnsUri != null) {
                                 Uri.Builder builder = new Uri.Builder();
                                 builder.scheme(Content.IPNS)
@@ -1132,36 +1134,49 @@ public class DOCS {
                                 }
                                 return redirectUri(builder.build(), closeable);
                             }
-                        } catch (Throwable throwable) {
-                            LogUtils.error(TAG, throwable);
+
                         }
+                    } else {
+                        // is is assume that links is  <dns_link> is url
+
+                        Uri dnsUri = Uri.parse(link);
+                        if (dnsUri != null) {
+                            Uri.Builder builder = new Uri.Builder();
+                            builder.scheme(Content.IPNS)
+                                    .authority(dnsUri.getAuthority());
+                            for (String path : paths) {
+                                builder.appendPath(path);
+                            }
+                            return redirectUri(builder.build(), closeable);
+                        }
+
                     }
                 }
 
             } else {
-                try {
-                    String root = getRoot(uri, closeable);
-                    Objects.requireNonNull(root);
-                    return redirect(uri, root, paths, closeable);
-                } catch (Throwable throwable) {
-                    LogUtils.error(TAG, throwable);
-                }
+
+                String root = getRoot(uri, closeable);
+                Objects.requireNonNull(root);
+                return redirect(uri, root, paths, closeable);
+
             }
         }
-        if (closeable.isClosed()) {
-            throw new ClosedException(uri.toString());
-        }
+
         return Pair.create(uri, false);
     }
 
     @NonNull
     public Pair<Uri, Boolean> redirect(@NonNull Uri uri, @NonNull String root,
-                                       @NonNull List<String> paths, @NonNull Closeable closeable) {
+                                       @NonNull List<String> paths,
+                                       @NonNull Closeable closeable) throws ClosedException {
 
         if (paths.isEmpty()) {
 
             if (!ipfs.isEmptyDir(root)) {
                 boolean exists = ipfs.resolve(root, INDEX_HTML, closeable);
+                if (closeable.isClosed()) {
+                    throw new ClosedException();
+                }
                 if (exists) {
                     Uri.Builder builder = new Uri.Builder();
                     builder.scheme(uri.getScheme())
@@ -1173,15 +1188,18 @@ public class DOCS {
                     return Pair.create(builder.build(), true);
                 }
             }
-
-
         } else {
 
             String cid = ipfs.resolve(root, paths, closeable);
-
+            if (closeable.isClosed()) {
+                throw new ClosedException();
+            }
             if (!cid.isEmpty()) {
                 if (!ipfs.isEmptyDir(cid)) {
                     boolean exists = ipfs.resolve(cid, INDEX_HTML, closeable);
+                    if (closeable.isClosed()) {
+                        throw new ClosedException();
+                    }
                     if (exists) {
                         Uri.Builder builder = new Uri.Builder();
                         builder.scheme(uri.getScheme())
@@ -1300,14 +1318,6 @@ public class DOCS {
         @NonNull
         public String getContent() {
             return content;
-        }
-
-    }
-
-    private static class ClosedException extends Exception {
-
-        public ClosedException(@NonNull String name) {
-            super("Closed for " + name);
         }
 
     }
