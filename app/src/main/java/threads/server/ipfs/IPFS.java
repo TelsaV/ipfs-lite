@@ -113,7 +113,7 @@ public class IPFS implements Listener {
         node.setPushing(false);
         node.setPort(IPFS.getSwarmPort(context));
 
-        node.setConcurrency(25);
+        node.setConcurrency(15);
         node.setGracePeriod(getGracePeriod(context));
         node.setHighWater(getHighWater(context));
         node.setLowWater(getLowWater(context));
