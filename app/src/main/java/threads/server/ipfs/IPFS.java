@@ -814,9 +814,10 @@ public class IPFS implements Listener {
 
 
     public void resolveName(@NonNull String name, @NonNull Closeable closeable) {
-
+        if (!isDaemonRunning()) {
+            return;
+        }
         try {
-
             node.resolveName(new ResolveInfo() {
                 @Override
                 public boolean close() {
@@ -827,7 +828,7 @@ public class IPFS implements Listener {
                 public void resolved(String hash, long seq) {
                     LogUtils.error(TAG, "" + seq + " " + hash);
                 }
-            }, name, false, 64);
+            }, name, false, 32);
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -840,8 +841,6 @@ public class IPFS implements Listener {
         if (!isDaemonRunning()) {
             return null;
         }
-
-
         long time = System.currentTimeMillis();
 
         AtomicReference<ResolvedName> resolvedName = new AtomicReference<>(null);

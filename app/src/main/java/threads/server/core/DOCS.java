@@ -1233,9 +1233,9 @@ public class DOCS {
 
         try {
             String host = getHost(uri);
-            if (host != null) {
+            if (host != null && !Objects.equals(getHost(), host)) {
                 String pid = ipfs.decodeName(host);
-                if (!pid.isEmpty()) {
+                if (!pid.isEmpty() ) {
                     PageConnectWorker.connect(context, pid);
                 }
             }

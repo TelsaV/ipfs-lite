@@ -121,11 +121,9 @@ public class PageConnectWorker extends Worker {
             LogUtils.error(TAG, "Connect " + pid + " " + connected);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
-            return Result.failure();
         } finally {
             LogUtils.info(TAG, " finish onStart ...");
         }
-
         return Result.success();
     }
 }

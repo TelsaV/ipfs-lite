@@ -229,7 +229,6 @@ public class BackupWorker extends Worker {
             }
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
-            return Result.failure();
         } finally {
             closeNotification();
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
