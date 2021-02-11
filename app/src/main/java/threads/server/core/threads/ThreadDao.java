@@ -43,9 +43,6 @@ public interface ThreadDao {
     @Query("SELECT * FROM Thread WHERE name = :name AND parent = :parent")
     List<Thread> getThreadsByNameAndParent(String name, long parent);
 
-    @Delete
-    void removeThreads(List<Thread> threads);
-
     @Query("SELECT COUNT(idx) FROM Thread WHERE content =:cid")
     int references(String cid);
 
@@ -112,14 +109,14 @@ public interface ThreadDao {
     @Query("UPDATE Thread SET init = 0 WHERE idx = :idx")
     void resetInit(long idx);
 
-    @Query("SELECT * FROM Thread WHERE deleting = 1 AND lastModified < :time")
-    List<Thread> getDeletedThreads(long time);
+    @Query("SELECT (idx) FROM Thread WHERE deleting = 1 AND lastModified < :time")
+    List<Long> getDeletedThreads(long time);
 
     @Query("UPDATE Thread SET lastModified =:lastModified WHERE idx = :idx")
     void setLastModified(long idx, long lastModified);
 
-    @Query("DELETE FROM Thread WHERE idx =:idx")
-    void removeThread(long idx);
+    @Delete
+    void removeThread(Thread thread);
 
     @Query("SELECT parent FROM Thread WHERE idx = :idx")
     long getParent(long idx);

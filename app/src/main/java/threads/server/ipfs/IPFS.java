@@ -85,9 +85,9 @@ public class IPFS implements Listener {
         blocks = BLOCKS.getInstance(context);
 
 
-        String host = getPeerID(context);
+        String peerID = getPeerID(context);
 
-        boolean init = host == null;
+        boolean init = peerID == null;
 
         node = new Node(this);
 
@@ -98,7 +98,7 @@ public class IPFS implements Listener {
             setPublicKey(context, node.getPublicKey());
             setPrivateKey(context, node.getPrivateKey());
         } else {
-            node.setPeerID(host);
+            node.setPeerID(peerID);
             node.setPrivateKey(IPFS.getPrivateKey(context));
             node.setPublicKey(IPFS.getPublicKey(context));
         }
@@ -558,6 +558,12 @@ public class IPFS implements Listener {
         swarm.addAll(users);
     }
 
+    @NonNull
+    public String getPeerID() {
+        return node.getPeerID();
+    }
+
+    @NonNull
     public String getHost() {
         return base32(node.getPeerID());
     }
@@ -939,8 +945,8 @@ public class IPFS implements Listener {
     public String rmLinkFromDir(String dir, String name) {
         try {
             return node.removeLinkFromDir(dir, name);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+        } catch (Throwable throwable) {
+            // TODO activate again LogUtils.error(TAG, throwable);
         }
         return null;
     }

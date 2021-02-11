@@ -3,7 +3,9 @@ package threads.server.work;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
@@ -44,11 +46,14 @@ public class PageWorker extends Worker {
 
 
     private static PeriodicWorkRequest getWork(@NonNull Context context) {
+        Constraints.Builder builder = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED);
 
         int time = LiteService.getPublishServiceTime(context);
 
         return new PeriodicWorkRequest.Builder(PageWorker.class, time, TimeUnit.HOURS)
                 .addTag(TAG)
+                .setConstraints(builder.build())
                 .build();
 
     }
@@ -69,42 +74,22 @@ public class PageWorker extends Worker {
 
         try {
 
-            docs.updatePinsPage();
 
-
-            if (!isStopped()) {
-                try {
-                    IPFS ipfs = IPFS.getInstance(getApplicationContext());
-
-                    if (!ipfs.isPrivateNetwork()) {
-
-                        ipfs.bootstrap();
-                    }
-
-                } catch (Throwable throwable) {
-                    LogUtils.error(TAG, throwable);
-                }
-                try {
-
-                    if (ipfs.isPrivateNetwork()) {
-                        ConnectService.connect(getApplicationContext());
-                    }
-
-                } catch (Throwable e) {
-                    LogUtils.error(TAG, e);
-                }
+            if (!ipfs.isPrivateNetwork()) {
+                ipfs.bootstrap();
             }
+
+            if (ipfs.isPrivateNetwork()) {
+                ConnectService.connect(getApplicationContext());
+            }
+
 
             if (!isStopped()) {
                 publishPage();
             }
 
-            if (isStopped()) {
-                LogUtils.info(TAG, "Stopped " + getId().toString() +
-                        " onStart [" + (System.currentTimeMillis() - start) + "]...");
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         } finally {
             LogUtils.info(TAG, "Finish " + getId().toString() +
                     " onStart [" + (System.currentTimeMillis() - start) + "]...");
@@ -113,8 +98,7 @@ public class PageWorker extends Worker {
     }
 
     private void publishSequence(@NonNull String content, long sequence) {
-        String host = IPFS.getPeerID(getApplicationContext());
-        Objects.requireNonNull(host);
+
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(() -> {
             try {

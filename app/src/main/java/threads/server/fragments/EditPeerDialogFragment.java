@@ -347,16 +347,13 @@ public class EditPeerDialogFragment extends BottomSheetDialogFragment {
 
     private void clickConnectPeer(@NonNull String pid, @Nullable String name, @Nullable String address) {
         try {
-
-            if (IPFS.getInstance(mContext).decodeName(pid).isEmpty()) {
+            IPFS ipfs = IPFS.getInstance(mContext);
+            if (ipfs.decodeName(pid).isEmpty()) {
                 EVENTS.getInstance(mContext).error(getString(R.string.pid_not_valid));
                 return;
             }
 
-            // CHECKED
-            String host = IPFS.getPeerID(mContext);
-
-            if (pid.equals(host)) {
+            if (pid.equals(ipfs.getPeerID())) {
                 EVENTS.getInstance(mContext).warning(getString(R.string.same_pid_like_host));
                 return;
             }

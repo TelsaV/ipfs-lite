@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.NonNull;
@@ -56,25 +55,25 @@ public class DaemonService extends Service {
 
     private void createChannel(@NonNull Context context) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                CharSequence name = context.getString(R.string.daemon_channel_name);
-                String description = context.getString(R.string.daemon_channel_description);
-                NotificationChannel mChannel = new NotificationChannel(TAG, name,
-                        NotificationManager.IMPORTANCE_LOW);
 
-                mChannel.setDescription(description);
+        try {
+            CharSequence name = context.getString(R.string.daemon_channel_name);
+            String description = context.getString(R.string.daemon_channel_description);
+            NotificationChannel mChannel = new NotificationChannel(TAG, name,
+                    NotificationManager.IMPORTANCE_LOW);
 
-                NotificationManager notificationManager = (NotificationManager) context.getSystemService(
-                        Context.NOTIFICATION_SERVICE);
-                if (notificationManager != null) {
-                    notificationManager.createNotificationChannel(mChannel);
-                }
+            mChannel.setDescription(description);
 
-            } catch (Throwable e) {
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(
+                    Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(mChannel);
+            }
+
+        } catch (Throwable e) {
                 LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
             }
-        }
+
     }
 
 

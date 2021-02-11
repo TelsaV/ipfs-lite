@@ -199,21 +199,22 @@ public class SwarmFragment extends Fragment implements
     private void clickPeerAdd(@NonNull String pid) {
 
         try {
+            IPFS ipfs = IPFS.getInstance(mContext);
             // CHECKED if pid is valid
-            if (IPFS.getInstance(mContext).decodeName(pid).isEmpty()) {
+            if (ipfs.decodeName(pid).isEmpty()) {
                 EVENTS.getInstance(mContext).error(getString(R.string.pid_not_valid));
                 return;
             }
 
             // CHECKED
-            String host = IPFS.getPeerID(mContext);
+            String peerID = ipfs.getPeerID();
 
-            if (pid.equals(host)) {
+            if (pid.equals(peerID)) {
                 EVENTS.getInstance(mContext).warning(getString(R.string.same_pid_like_host));
                 return;
             }
 
-            Peer info = IPFS.getInstance(mContext).swarmPeer(pid);
+            Peer info = ipfs.swarmPeer(pid);
             String address = null;
             if (info != null) {
                 address = info.getAddress();

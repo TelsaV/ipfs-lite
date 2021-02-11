@@ -68,7 +68,6 @@ import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.services.DiscoveryService;
-import threads.server.services.LiteService;
 import threads.server.services.RegistrationService;
 import threads.server.services.UploadService;
 import threads.server.services.UserService;
@@ -76,6 +75,7 @@ import threads.server.utils.CodecDecider;
 import threads.server.utils.MimeType;
 import threads.server.utils.PermissionAction;
 import threads.server.utils.SelectionViewModel;
+import threads.server.work.DeleteThreadsWorker;
 import threads.server.work.LocalConnectWorker;
 import threads.server.work.SwarmConnectWorker;
 import threads.server.work.UploadThreadsWorker;
@@ -142,11 +142,11 @@ public class MainActivity extends AppCompatActivity implements
 
     private void registerService(int port) {
         try {
-            String host = IPFS.getPeerID(getApplicationContext());
-            Objects.requireNonNull(host);
+            String peerID = IPFS.getPeerID(getApplicationContext());
+            Objects.requireNonNull(peerID);
             String serviceType = "_ipfs-discovery._udp";
             NsdServiceInfo serviceInfo = new NsdServiceInfo();
-            serviceInfo.setServiceName(host);
+            serviceInfo.setServiceName(peerID);
             serviceInfo.setServiceType(serviceType);
             serviceInfo.setPort(port);
             mNsdManager = (NsdManager) getSystemService(Context.NSD_SERVICE);
@@ -170,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements
                     try {
 
                         String serviceName = serviceInfo.getServiceName();
-                        boolean connect = !Objects.equals(host, serviceName);
+                        boolean connect = !Objects.equals(peerID, serviceName);
                         if (connect) {
                             InetAddress inetAddress = serviceInfo.getHost();
                             LocalConnectWorker.connect(getApplicationContext(),
@@ -242,12 +242,6 @@ public class MainActivity extends AppCompatActivity implements
 
         mSelectionViewModel = new ViewModelProvider(this).get(SelectionViewModel.class);
 
-        final IPFS ipfs = IPFS.getInstance(getApplicationContext());
-        try {
-            ipfs.startDaemon(IPFS.isPrivateSharingEnabled(getApplicationContext()));
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
 
         final DOCS docs = DOCS.getInstance(getApplicationContext());
         Uri uri = docs.getPinsPageUri();
@@ -416,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements
                                 @Override
                                 public void onDismissed(Snackbar snackbar, int event) {
                                     if (deleteThreads.get()) {
-                                        LiteService.threads(getApplicationContext(), idxs);
+                                        DeleteThreadsWorker.cleanup(getApplicationContext());
                                     }
                                     showFab(true);
 
@@ -583,6 +577,7 @@ public class MainActivity extends AppCompatActivity implements
 
         try {
             if (InitApplication.isAutoDiscovery(getApplicationContext())) {
+                IPFS ipfs = IPFS.getInstance(getApplicationContext());
                 registerService((int) ipfs.getSwarmPort());
             }
         } catch (Throwable e) {
@@ -736,8 +731,8 @@ public class MainActivity extends AppCompatActivity implements
 
                             String user = result.getPeerID();
                             String address = result.getPeerAddress();
-                            String host = IPFS.getPeerID(getApplicationContext());
-                            if (user.equals(host)) {
+                            String peerID = IPFS.getPeerID(getApplicationContext());
+                            if (user.equals(peerID)) {
                                 EVENTS.getInstance(getApplicationContext()).
                                         warning(getString(R.string.same_pid_like_host));
                                 return;

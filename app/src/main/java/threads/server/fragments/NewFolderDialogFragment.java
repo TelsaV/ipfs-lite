@@ -123,8 +123,10 @@ public class NewFolderDialogFragment extends DialogFragment {
 
                     DOCS docs = DOCS.getInstance(mContext);
                     IPFS ipfs = IPFS.getInstance(mContext);
-                    docs.createDocument(parent, MimeType.DIR_MIME_TYPE, ipfs.createEmptyDir(),
+                    long idx = docs.createDocument(parent, MimeType.DIR_MIME_TYPE,
+                            ipfs.createEmptyDir(),
                             null, name, 0L, true, false);
+                    docs.finishDocument(idx);
 
                 })
 

@@ -115,11 +115,11 @@ public class AccountDialogFragment extends DialogFragment {
     private void shareQRCode(@NonNull Uri uri, @NonNull Uri url) {
 
         try {
-            String host = IPFS.getPeerID(mContext);
-            Objects.requireNonNull(host);
+            String peerID = IPFS.getPeerID(mContext);
+            Objects.requireNonNull(peerID);
             String text = getString(R.string.account_access);
 
-            String peerId = getString(R.string.peer_id).concat("\n").concat(host);
+            String peerId = getString(R.string.peer_id).concat("\n").concat(peerID);
             text = text.concat("\n\n").concat(peerId);
             String homepage = getString(R.string.homepage).concat("\n").concat(url.toString());
             text = text.concat("\n\n").concat(homepage);
@@ -128,7 +128,7 @@ public class AccountDialogFragment extends DialogFragment {
             ComponentName[] names = {new ComponentName(mContext, MainActivity.class)};
 
             Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_SUBJECT, host);
+            intent.putExtra(Intent.EXTRA_SUBJECT, peerID);
             intent.putExtra(Intent.EXTRA_TEXT, text);
             intent.putExtra(Intent.EXTRA_STREAM, uri);
             intent.setType(MimeType.RFC_822);

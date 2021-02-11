@@ -128,10 +128,16 @@ public class DOCS {
 
     @Nullable
     public String getLocalName() {
-        return pages.getPageContent(getHost());
+        return pages.getPageContent(ipfs.getPeerID());
     }
 
-    public void deleteDocument(long idx) {
+    private void deleteDocument(long idx) {
+
+
+        List<Thread> children = threads.getChildren(idx);
+        for (Thread thread : children) {
+            deleteDocument(thread.getIdx());
+        }
 
         try {
             removeFromParentDocument(idx);
@@ -151,39 +157,18 @@ public class DOCS {
 
     }
 
-    public void deleteDocuments(@Nullable Context context, long... idxs) {
+    public void deleteDocument(@Nullable Context context, long idx) {
 
         if (context != null) {
-            for (long idx : idxs) {
-                UUID uuid = threads.getThreadWork(idx);
-                if (uuid != null) {
-                    WorkManager.getInstance(context).cancelWorkById(uuid);
-                }
+
+            UUID uuid = threads.getThreadWork(idx);
+            if (uuid != null) {
+                WorkManager.getInstance(context).cancelWorkById(uuid);
             }
+
         }
 
-        for (long idx : idxs) {
-            try {
-                removeFromParentDocument(idx);
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        }
-
-
-        threads.setThreadsDeleting(idxs);
-        for (long idx : idxs) {
-            try {
-                updateParentSize(idx);
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        }
-
-
-        for (long idx : idxs) {
-            deleteThread(idx);
-        }
+        deleteDocument(idx);
 
     }
 
@@ -195,18 +180,15 @@ public class DOCS {
             if (thread != null) {
                 if (thread.isDeleting()) {
 
-                    List<Thread> entries = threads.getSelfAndAllChildren(thread);
-                    threads.removeThreads(entries);
+                    LogUtils.error(TAG, "Delete thread " + thread.getName());
 
-                    for (Thread entry : entries) {
-                        String cid = entry.getContent();
-                        if (cid != null) {
-                            if (!threads.isReferenced(cid)) {
-                                ipfs.rm(cid, !entry.isDir());
-                            }
+                    String cid = thread.getContent();
+                    threads.removeThread(thread);
+                    if (cid != null) {
+                        if (!threads.isReferenced(cid)) {
+                            ipfs.rm(cid, false);
                         }
                     }
-
                 }
             }
         } catch (Throwable e) {
@@ -242,7 +224,7 @@ public class DOCS {
 
         threads.setThreadParent(idx, targetIdx);
 
-        updateParentDocument(idx);
+        updateParentDocument(idx, "");
 
         try {
             updateDirectorySize(sourceIdx);
@@ -295,7 +277,7 @@ public class DOCS {
 
 
     public void finishDocument(long idx) {
-        updateParentDocument(idx);
+        updateParentDocument(idx, "");
         updateParentSize(idx);
     }
 
@@ -312,26 +294,40 @@ public class DOCS {
         }
     }
 
+
     private void updateParentDocument(long idx, @NonNull String oldName) {
         long parent = threads.getThreadParent(idx);
 
+        String cid = threads.getThreadContent(idx);
+        Objects.requireNonNull(cid);
+        String name = threads.getThreadName(idx);
         if (parent > 0) {
-            String cid = threads.getThreadContent(idx);
-            Objects.requireNonNull(cid);
-            String name = threads.getThreadName(idx);
             String dirCid = threads.getThreadContent(parent);
             Objects.requireNonNull(dirCid);
             if (!oldName.isEmpty()) {
-                dirCid = ipfs.rmLinkFromDir(dirCid, oldName);
-            } else {
-                dirCid = ipfs.rmLinkFromDir(dirCid, name);
+                String dir = ipfs.rmLinkFromDir(dirCid, oldName);
+                if(dir != null){
+                    dirCid = dir;
+                }
             }
-            Objects.requireNonNull(dirCid);
             String newDir = ipfs.addLinkToDir(dirCid, name, cid);
             Objects.requireNonNull(newDir);
             threads.setThreadContent(parent, newDir);
             threads.setThreadLastModified(parent, System.currentTimeMillis());
             updateParentDocument(parent, "");
+        } else {
+            String dirCid = pages.getPageContent(ipfs.getPeerID());
+            Objects.requireNonNull(dirCid);
+            if (!oldName.isEmpty()) {
+                String dir = ipfs.rmLinkFromDir(dirCid, oldName);
+                if(dir != null){
+                    dirCid = dir;
+                }
+            }
+            Objects.requireNonNull(dirCid);
+            String newDir = ipfs.addLinkToDir(dirCid, name, cid);
+            Objects.requireNonNull(newDir);
+            pages.setPageContent(ipfs.getPeerID(), newDir);
         }
     }
 
@@ -339,47 +335,24 @@ public class DOCS {
     private void removeFromParentDocument(long idx) {
 
         Thread child = threads.getThreadByIdx(idx);
-        Objects.requireNonNull(child);
-
+        String name = child.getName();
         long parent = child.getParent();
         if (parent > 0) {
-            String name = child.getName();
             String dirCid = threads.getThreadContent(parent);
             Objects.requireNonNull(dirCid);
             String newDir = ipfs.rmLinkFromDir(dirCid, name);
-            Objects.requireNonNull(newDir);
-            threads.setThreadContent(parent, newDir);
-            threads.setThreadLastModified(parent, System.currentTimeMillis());
-            updateParentDocument(parent);
-        }
-    }
-
-
-    private void updateParentDocument(long idx) {
-        try {
-            long parent = threads.getThreadParent(idx);
-            updateParentDocument(idx, parent);
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
-
-    private void updateParentDocument(long idx, long parent) {
-        try {
-            if (parent > 0) {
-                String cid = threads.getThreadContent(idx);
-                Objects.requireNonNull(cid);
-                String name = threads.getThreadName(idx);
-                String dirCid = threads.getThreadContent(parent);
-                Objects.requireNonNull(dirCid);
-                String newDir = ipfs.addLinkToDir(dirCid, name, cid);
-                Objects.requireNonNull(newDir);
+            if(newDir != null) {
                 threads.setThreadContent(parent, newDir);
                 threads.setThreadLastModified(parent, System.currentTimeMillis());
-                updateParentDocument(parent);
+                updateParentDocument(parent, "");
             }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
+        } else {
+            String dirCid = pages.getPageContent(ipfs.getPeerID());
+            Objects.requireNonNull(dirCid);
+            String newDir = ipfs.rmLinkFromDir(dirCid, name);
+            if (newDir != null) {
+                pages.setPageContent(ipfs.getPeerID(), newDir);
+            }
         }
     }
 
@@ -472,26 +445,17 @@ public class DOCS {
         try {
             Page page = getPinsPage();
             if (page == null) {
-                page = pages.createPage(getHost());
+                page = pages.createPage(ipfs.getPeerID());
                 String dir = ipfs.createEmptyDir();
                 Objects.requireNonNull(dir);
                 page.setContent(dir);
                 pages.storePage(page);
-            } else {
-                updatePinsPage();
             }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
 
+            // TODO optimize in the future (just remove)
 
-    public void updatePinsPage() {
-        try {
-
-            Page page = getPinsPage();
+            page = getPinsPage();
             Objects.requireNonNull(page);
-
             String dir = ipfs.createEmptyDir();
             Objects.requireNonNull(dir);
 
@@ -509,6 +473,7 @@ public class DOCS {
             }
             page.setContent(dir);
             pages.storePage(page);
+
 
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -910,7 +875,7 @@ public class DOCS {
 
     @Nullable
     public Page getPinsPage() {
-        return pages.getPage(getHost());
+        return pages.getPage(ipfs.getPeerID());
     }
 
     public void bootstrap() {
@@ -1235,7 +1200,7 @@ public class DOCS {
             String host = getHost(uri);
             if (host != null && !Objects.equals(getHost(), host)) {
                 String pid = ipfs.decodeName(host);
-                if (!pid.isEmpty() ) {
+                if (!pid.isEmpty()) {
                     PageConnectWorker.connect(context, pid);
                 }
             }

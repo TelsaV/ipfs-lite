@@ -17,27 +17,27 @@ import threads.LogUtils;
 import threads.server.core.threads.THREADS;
 import threads.server.provider.FileDocumentsProvider;
 
-public class DeleteThreadsWorker extends Worker {
+public class InitApplicationWorker extends Worker {
 
-    private static final String TAG = DeleteThreadsWorker.class.getSimpleName();
+    private static final String TAG = InitApplicationWorker.class.getSimpleName();
 
     @SuppressWarnings("WeakerAccess")
-    public DeleteThreadsWorker(@NonNull Context context, @NonNull WorkerParameters params) {
+    public InitApplicationWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
     }
 
     private static OneTimeWorkRequest getWork() {
 
 
-        return new OneTimeWorkRequest.Builder(DeleteThreadsWorker.class)
+        return new OneTimeWorkRequest.Builder(InitApplicationWorker.class)
                 .addTag(TAG)
                 .build();
 
     }
 
 
-    public static void cleanup(@NonNull Context context) {
-        WorkManager.getInstance(context).enqueue(DeleteThreadsWorker.getWork());
+    public static void initialize(@NonNull Context context) {
+        WorkManager.getInstance(context).enqueue(InitApplicationWorker.getWork());
     }
 
 

@@ -207,7 +207,7 @@ public class UploadThreadsWorker extends Worker {
                             docs.finishDocument(idx);
 
                         } else {
-                            docs.deleteDocument(idx);
+                            threads.setThreadsDeleting(idx);
                         }
                     } catch (Throwable e) {
                         threads.setThreadError(idx);

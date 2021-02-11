@@ -383,16 +383,13 @@ public class FileDocumentsProvider extends DocumentsProvider {
         }
     }
 
-    private void deleteDocument(long idx) {
-        Context context = getContext();
-        docs.deleteDocuments(context, idx);
-    }
 
     public void removeDocument(String documentId, String parentDocumentId) throws FileNotFoundException {
         LogUtils.info(TAG, "removeDocument : " + documentId);
         try {
             long idx = Long.parseLong(documentId);
-            deleteDocument(idx);
+            Context context = getContext();
+            docs.deleteDocument(context, idx);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
             throw new FileNotFoundException("" + e.getLocalizedMessage());
@@ -403,7 +400,8 @@ public class FileDocumentsProvider extends DocumentsProvider {
         LogUtils.info(TAG, "deleteDocument : " + documentId);
         try {
             long idx = Long.parseLong(documentId);
-            deleteDocument(idx);
+            Context context = getContext();
+            docs.deleteDocument(context, idx);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
             throw new FileNotFoundException("" + e.getLocalizedMessage());

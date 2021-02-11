@@ -347,7 +347,7 @@ public class UploadFolderWorker extends Worker {
                 threads.setThreadDone(idx, cid);
                 return idx;
             } else {
-                threads.removeThread(idx);
+                threads.setThreadsDeleting(idx);
             }
 
         } catch (Throwable throwable) {

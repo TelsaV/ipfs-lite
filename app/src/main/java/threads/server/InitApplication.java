@@ -28,8 +28,7 @@ import threads.server.core.threads.SortOrder;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.TimeoutProgress;
 import threads.server.services.LiteService;
-import threads.server.work.CleanupWorker;
-import threads.server.work.PageWorker;
+import threads.server.work.InitApplicationWorker;
 
 public class InitApplication extends Application {
     public static final String CHANNEL_ID = "CHANNEL_ID";
@@ -88,24 +87,23 @@ public class InitApplication extends Application {
 
     private static void createChannel(@NonNull Context context) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                CharSequence name = context.getString(R.string.channel_name);
-                String description = context.getString(R.string.channel_description);
-                NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name,
-                        NotificationManager.IMPORTANCE_LOW);
-                mChannel.setDescription(description);
+        try {
+            CharSequence name = context.getString(R.string.channel_name);
+            String description = context.getString(R.string.channel_description);
+            NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name,
+                    NotificationManager.IMPORTANCE_LOW);
+            mChannel.setDescription(description);
 
-                NotificationManager notificationManager = (NotificationManager) context.getSystemService(
-                        Context.NOTIFICATION_SERVICE);
-                if (notificationManager != null) {
-                    notificationManager.createNotificationChannel(mChannel);
-                }
-
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(
+                    Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(mChannel);
             }
+
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
         }
+
     }
 
     public static void runUpdatesIfNecessary(@NonNull Context context) {
@@ -187,10 +185,6 @@ public class InitApplication extends Application {
         syncData(getApplicationContext());
 
 
-        // periodic jobs
-        PageWorker.publish(getApplicationContext());
-        CleanupWorker.cleanup(getApplicationContext());
-
 
         if (LogUtils.isDebug()) {
             IPFS.logCacheDir(getApplicationContext());
@@ -201,16 +195,23 @@ public class InitApplication extends Application {
         createChannel(getApplicationContext());
 
 
-        IPFS ipfs = IPFS.getInstance(getApplicationContext());
+        try {
+            IPFS ipfs = IPFS.getInstance(getApplicationContext());
+            LogUtils.error(TAG, "startDaemon...");
+            ipfs.startDaemon(IPFS.isPrivateSharingEnabled(getApplicationContext()));
+            ipfs.setPusher((pid, cid) -> {
+                try {
+                    onMessageReceived(pid, cid);
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
+            });
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
 
+        InitApplicationWorker.initialize(getApplicationContext());
 
-        ipfs.setPusher((pid, cid) -> {
-            try {
-                onMessageReceived(pid, cid);
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        });
     }
 
     public void onMessageReceived(@NonNull String pid, @NonNull String cid) {

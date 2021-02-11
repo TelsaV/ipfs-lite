@@ -112,7 +112,6 @@ public class THREADS {
         return Thread.createThread(parent);
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isReferenced(@NonNull String cid) {
         return getThreadsDatabase().threadDao().references(cid) > 0;
     }
@@ -121,12 +120,8 @@ public class THREADS {
         return getThreadsDatabase().threadDao().getNewestThreads(limit);
     }
 
-    public void removeThread(long idx) {
-        getThreadsDatabase().threadDao().removeThread(idx);
-    }
-
-    public void removeThreads(@NonNull List<Thread> threads) {
-        getThreadsDatabase().threadDao().removeThreads(threads);
+    public void removeThread(@NonNull Thread thread) {
+        getThreadsDatabase().threadDao().removeThread(thread);
     }
 
     public long storeThread(@NonNull Thread thread) {
@@ -239,23 +234,12 @@ public class THREADS {
         getThreadsDatabase().threadDao().resetInit(idx);
     }
 
-    public List<Thread> getDeletedThreads() {
+    public List<Long> getDeletedThreads() {
         return getThreadsDatabase().threadDao().getDeletedThreads(System.currentTimeMillis());
     }
 
     public void setThreadLastModified(long idx, long time) {
         getThreadsDatabase().threadDao().setLastModified(idx, time);
-    }
-
-    public List<Thread> getSelfAndAllChildren(@NonNull Thread thread) {
-
-        List<Thread> children = new ArrayList<>();
-        children.add(thread);
-        List<Thread> entries = getChildren(thread.getIdx());
-        for (Thread entry : entries) {
-            children.addAll(getSelfAndAllChildren(entry));
-        }
-        return children;
     }
 
     public void setThreadUri(long idx, @NonNull String uri) {

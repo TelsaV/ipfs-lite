@@ -155,10 +155,10 @@ public class PeersFragment extends Fragment implements
             mLastClickTime = SystemClock.elapsedRealtime();
 
 
-            String host = IPFS.getPeerID(mContext);
-            Objects.requireNonNull(host);
+            String peerID = IPFS.getPeerID(mContext);
+            Objects.requireNonNull(peerID);
 
-            Uri uri = QRCodeService.getImage(mContext, host);
+            Uri uri = QRCodeService.getImage(mContext, peerID);
 
             AccountDialogFragment.newInstance(uri).show(
                     getChildFragmentManager(), AccountDialogFragment.TAG);
