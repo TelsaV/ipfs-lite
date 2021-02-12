@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,10 +20,10 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResult;
@@ -32,6 +33,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
@@ -86,10 +88,10 @@ import threads.server.utils.ThreadsItemKeyProvider;
 import threads.server.utils.ThreadsViewAdapter;
 import threads.server.work.BackupWorker;
 import threads.server.work.PageWorker;
+import threads.server.work.UploadContentWorker;
 import threads.server.work.UploadDirectoryWorker;
 import threads.server.work.UploadFileWorker;
 import threads.server.work.UploadFolderWorker;
-import threads.server.work.UploadContentWorker;
 
 
 public class ThreadsFragment extends Fragment implements
@@ -394,6 +396,81 @@ public class ThreadsFragment extends Fragment implements
         MenuItem actionBackup = menu.findItem(R.id.action_backup);
         actionBackup.setVisible(topLevel);
 
+        ImageButton actionSorting = (ImageButton) menu.findItem(R.id.action_sorting).getActionView();
+        Drawable drawable = AppCompatResources.getDrawable(mContext, R.drawable.sort_variant);
+        // todo remove stuff
+        actionSorting.setImageDrawable(drawable);
+
+        actionSorting.setOnClickListener(v -> {
+
+            PopupMenu popup = new PopupMenu(mContext, v);
+            MenuInflater inflater = popup.getMenuInflater();
+            inflater.inflate(R.menu.popup_sorting, popup.getMenu());
+
+            popup.getMenu().getItem(0).setChecked(sortOrder == SortOrder.NAME);
+            popup.getMenu().getItem(1).setChecked(sortOrder == SortOrder.NAME_INVERSE);
+            popup.getMenu().getItem(2).setChecked(sortOrder == SortOrder.DATE);
+            popup.getMenu().getItem(3).setChecked(sortOrder == SortOrder.DATE_INVERSE);
+            popup.getMenu().getItem(4).setChecked(sortOrder == SortOrder.SIZE);
+            popup.getMenu().getItem(5).setChecked(sortOrder == SortOrder.SIZE_INVERSE);
+
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    try {
+                        int itemId = item.getItemId();
+                        if (itemId == R.id.sort_date) {
+
+                            setSortOrder(SortOrder.DATE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), true);
+                            return true;
+                        } else if (itemId == R.id.sort_date_inverse) {
+
+                            setSortOrder(SortOrder.DATE_INVERSE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), true);
+                            return true;
+                        } else if (itemId == R.id.sort_name) {
+
+                            setSortOrder(SortOrder.NAME);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), true);
+                            return true;
+                        } else if (itemId == R.id.sort_name_inverse) {
+
+                            setSortOrder(SortOrder.NAME_INVERSE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), true);
+                            return true;
+                        } else if (itemId == R.id.sort_size) {
+
+                            setSortOrder(SortOrder.SIZE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), true);
+                            return true;
+                        } else if (itemId == R.id.sort_size_inverse) {
+
+                            setSortOrder(SortOrder.SIZE_INVERSE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), true);
+                            return true;
+                        }
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    }
+                    return false;
+                }
+            });
+            popup.show();
+        });
+
 
     }
 
@@ -421,6 +498,7 @@ public class ThreadsFragment extends Fragment implements
         }
     }
 
+
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         int itemId = item.getItemId();
@@ -439,69 +517,6 @@ public class ThreadsFragment extends Fragment implements
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
             }
-            return true;
-        } else if (itemId == R.id.action_sort) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            SubMenu subMenu = item.getSubMenu();
-
-
-            subMenu.getItem(0).setChecked(sortOrder == SortOrder.NAME);
-            subMenu.getItem(1).setChecked(sortOrder == SortOrder.NAME_INVERSE);
-            subMenu.getItem(2).setChecked(sortOrder == SortOrder.DATE);
-            subMenu.getItem(3).setChecked(sortOrder == SortOrder.DATE_INVERSE);
-            subMenu.getItem(4).setChecked(sortOrder == SortOrder.SIZE);
-            subMenu.getItem(5).setChecked(sortOrder == SortOrder.SIZE_INVERSE);
-
-            return true;
-
-        } else if (itemId == R.id.sort_date) {
-
-            setSortOrder(SortOrder.DATE);
-
-            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                    mSelectionViewModel.getQuery().getValue(), true);
-            return true;
-        } else if (itemId == R.id.sort_date_inverse) {
-
-            setSortOrder(SortOrder.DATE_INVERSE);
-
-            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                    mSelectionViewModel.getQuery().getValue(), true);
-            return true;
-        } else if (itemId == R.id.sort_name) {
-
-            setSortOrder(SortOrder.NAME);
-
-            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                    mSelectionViewModel.getQuery().getValue(), true);
-            return true;
-        } else if (itemId == R.id.sort_name_inverse) {
-
-            setSortOrder(SortOrder.NAME_INVERSE);
-
-            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                    mSelectionViewModel.getQuery().getValue(), true);
-            return true;
-        } else if (itemId == R.id.sort_size) {
-
-            setSortOrder(SortOrder.SIZE);
-
-            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                    mSelectionViewModel.getQuery().getValue(), true);
-            return true;
-        } else if (itemId == R.id.sort_size_inverse) {
-
-            setSortOrder(SortOrder.SIZE_INVERSE);
-
-            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                    mSelectionViewModel.getQuery().getValue(), true);
             return true;
         } else if (itemId == R.id.action_share) {
 
@@ -585,6 +600,17 @@ public class ThreadsFragment extends Fragment implements
             mLastClickTime = SystemClock.elapsedRealtime();
 
             clickEditContent();
+            return true;
+
+        } else if (itemId == R.id.action_sorting) {
+
+            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
+                return true;
+            }
+
+            mLastClickTime = SystemClock.elapsedRealtime();
+
+
             return true;
 
         } else if (itemId == R.id.action_add_folder) {
