@@ -29,6 +29,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ShareCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -218,8 +219,17 @@ public class MainActivity extends AppCompatActivity implements
 
         setSupportActionBar(mToolbar);
 
+        DOCS docs = DOCS.getInstance(getApplicationContext());
 
         ImageButton mActionHome = findViewById(R.id.action_home);
+
+        if (docs.isPrivateNetwork(getApplicationContext())) {
+            mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                    android.R.color.holo_orange_dark), android.graphics.PorterDuff.Mode.SRC_IN);
+        } else {
+            mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                    R.color.colorAccent), android.graphics.PorterDuff.Mode.SRC_IN);
+        }
 
 
         mBrowserText = findViewById(R.id.action_browser);
@@ -243,7 +253,6 @@ public class MainActivity extends AppCompatActivity implements
         mSelectionViewModel = new ViewModelProvider(this).get(SelectionViewModel.class);
 
 
-        final DOCS docs = DOCS.getInstance(getApplicationContext());
         Uri uri = docs.getPinsPageUri();
         mSelectionViewModel.setUri(uri.toString());
         updateTitle(uri);

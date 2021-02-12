@@ -36,8 +36,7 @@
                         android:clickable="true"
                         android:contentDescription="@null"
                         android:focusable="true"
-                        android:src="@drawable/home_outline"
-                        app:tint="@color/colorAccent">
+                        android:src="@drawable/home_outline">
 
                     </ImageButton>
 

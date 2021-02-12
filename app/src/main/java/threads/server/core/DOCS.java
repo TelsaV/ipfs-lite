@@ -37,7 +37,6 @@ import threads.server.ipfs.Closeable;
 import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.DnsAddrResolver;
 import threads.server.ipfs.IPFS;
-import threads.server.ipfs.Link;
 import threads.server.ipfs.LinkInfo;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
@@ -1225,6 +1224,10 @@ public class DOCS {
             LogUtils.error(TAG, e);
         }
 
+    }
+
+    public boolean isPrivateNetwork(@NonNull Context context) {
+        return ipfs.isPrivateNetwork() || IPFS.isPrivateSharingEnabled(context);
     }
 
     public static class ContentException extends Exception {
