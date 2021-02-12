@@ -47,7 +47,7 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.utils.CodecDecider;
 import threads.server.utils.MimeType;
-import threads.server.work.UploadThreadWorker;
+import threads.server.work.UploadContentWorker;
 
 public class EditContentDialogFragment extends DialogFragment {
     public static final String TAG = EditContentDialogFragment.class.getSimpleName();
@@ -121,7 +121,7 @@ public class EditContentDialogFragment extends DialogFragment {
                 long idx = docs.createDocument(0L, MimeType.OCTET_MIME_TYPE, null,
                         uri, host, 0, false, true);
 
-                UUID work = UploadThreadWorker.load(context, idx, false);
+                UUID work = UploadContentWorker.load(context, idx, false);
                 threads.setThreadWork(idx, work);
 
                 EVENTS.getInstance(context).warning(host);

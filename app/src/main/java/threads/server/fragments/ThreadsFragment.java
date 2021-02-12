@@ -89,7 +89,7 @@ import threads.server.work.PageWorker;
 import threads.server.work.UploadDirectoryWorker;
 import threads.server.work.UploadFileWorker;
 import threads.server.work.UploadFolderWorker;
-import threads.server.work.UploadThreadWorker;
+import threads.server.work.UploadContentWorker;
 
 
 public class ThreadsFragment extends Fragment implements
@@ -1379,7 +1379,7 @@ public class ThreadsFragment extends Fragment implements
     public void invokeLoadAction(@NonNull Thread thread) {
 
 
-        UUID uuid = UploadThreadWorker.load(mContext, thread.getIdx(), true);
+        UUID uuid = UploadContentWorker.load(mContext, thread.getIdx(), true);
 
         Executors.newSingleThreadExecutor().submit(() -> {
             THREADS threads = THREADS.getInstance(mContext);

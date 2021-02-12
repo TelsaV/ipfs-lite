@@ -52,9 +52,9 @@ import threads.server.provider.FileProvider;
 import threads.server.services.ConnectService;
 import threads.server.utils.MimeType;
 
-public class UploadThreadWorker extends Worker {
+public class UploadContentWorker extends Worker {
 
-    private static final String TAG = UploadThreadWorker.class.getSimpleName();
+    private static final String TAG = UploadContentWorker.class.getSimpleName();
 
     private final DOCS docs;
     private final THREADS threads;
@@ -64,7 +64,7 @@ public class UploadThreadWorker extends Worker {
     private final AtomicBoolean finished = new AtomicBoolean(true);
 
     @SuppressWarnings("WeakerAccess")
-    public UploadThreadWorker(
+    public UploadContentWorker(
             @NonNull Context context,
             @NonNull WorkerParameters params) {
         super(context, params);
@@ -82,7 +82,7 @@ public class UploadThreadWorker extends Worker {
         data.putLong(Content.IDX, idx);
         data.putBoolean(Content.BOOT, bootstrap);
 
-        return new OneTimeWorkRequest.Builder(UploadThreadWorker.class)
+        return new OneTimeWorkRequest.Builder(UploadContentWorker.class)
                 .addTag(TAG)
                 .setInputData(data.build())
                 .setInitialDelay(0, TimeUnit.MILLISECONDS)
@@ -245,18 +245,20 @@ public class UploadThreadWorker extends Worker {
 
                         uri = docs.redirect(uri);
 
-                        DOCS.FileInfo fileInfo = docs.getFileInfo(uri, this::isStopped);
+                        String name = docs.getFileName(uri);
 
+                        String content = docs.getContent(uri, this::isStopped);
 
-                        String name = fileInfo.getFilename();
+                        String mimeType = docs.getMimeType(uri, content, this::isStopped);
+
                         List<Thread> names = threads.getThreadsByNameAndParent(name, 0L);
                         names.remove(thread);
                         if (!names.isEmpty()) {
                             name = docs.getUniqueName(name, 0L);
                         }
                         threads.setThreadName(idx, name);
-                        threads.setThreadMimeType(idx, fileInfo.getMimeType());
-                        threads.setThreadContent(idx, fileInfo.getContent());
+                        threads.setThreadMimeType(idx, mimeType);
+                        threads.setThreadContent(idx, content);
 
                         downloadThread(idx);
 

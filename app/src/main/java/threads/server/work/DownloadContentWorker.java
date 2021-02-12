@@ -365,10 +365,8 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void downloadLinks(@NonNull DocumentFile doc,
-                               @NonNull String cid,
-                               @NonNull String mimeType,
-                               @NonNull String name) {
+    private void downloadLinks(@NonNull DocumentFile doc, @NonNull String cid,
+                               @NonNull String mimeType, @NonNull String name) {
 
 
         List<LinkInfo> links = ipfs.getLinks(cid, this::isStopped);

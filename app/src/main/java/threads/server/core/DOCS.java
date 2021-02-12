@@ -335,23 +335,25 @@ public class DOCS {
     private void removeFromParentDocument(long idx) {
 
         Thread child = threads.getThreadByIdx(idx);
-        String name = child.getName();
-        long parent = child.getParent();
-        if (parent > 0) {
-            String dirCid = threads.getThreadContent(parent);
-            Objects.requireNonNull(dirCid);
-            String newDir = ipfs.rmLinkFromDir(dirCid, name);
-            if(newDir != null) {
-                threads.setThreadContent(parent, newDir);
-                threads.setThreadLastModified(parent, System.currentTimeMillis());
-                updateParentDocument(parent, "");
-            }
-        } else {
-            String dirCid = pages.getPageContent(ipfs.getPeerID());
-            Objects.requireNonNull(dirCid);
-            String newDir = ipfs.rmLinkFromDir(dirCid, name);
-            if (newDir != null) {
-                pages.setPageContent(ipfs.getPeerID(), newDir);
+        if(child != null) {
+            String name = child.getName();
+            long parent = child.getParent();
+            if (parent > 0) {
+                String dirCid = threads.getThreadContent(parent);
+                Objects.requireNonNull(dirCid);
+                String newDir = ipfs.rmLinkFromDir(dirCid, name);
+                if (newDir != null) {
+                    threads.setThreadContent(parent, newDir);
+                    threads.setThreadLastModified(parent, System.currentTimeMillis());
+                    updateParentDocument(parent, "");
+                }
+            } else {
+                String dirCid = pages.getPageContent(ipfs.getPeerID());
+                Objects.requireNonNull(dirCid);
+                String newDir = ipfs.rmLinkFromDir(dirCid, name);
+                if (newDir != null) {
+                    pages.setPageContent(ipfs.getPeerID(), newDir);
+                }
             }
         }
     }
@@ -618,15 +620,6 @@ public class DOCS {
         }
     }
 
-
-    @Nullable
-    public Link getLink(@NonNull Uri uri, @NonNull String root, @NonNull Closeable progress) {
-        List<String> paths = uri.getPathSegments();
-        String host = uri.getHost();
-        Objects.requireNonNull(host);
-        return ipfs.link(root, paths, progress);
-    }
-
     @NonNull
     public String resolveName(@NonNull Uri uri,
                               @NonNull String name,
@@ -671,28 +664,6 @@ public class DOCS {
         pages.setPageSequence(pid, resolvedName.getSequence());
         return resolvedName.getHash();
     }
-
-    @NonNull
-    private FileInfo getDataInfo(@NonNull Uri uri, @NonNull String root, @NonNull Closeable closeable) throws ClosedException {
-        String host = uri.getHost();
-        Objects.requireNonNull(host);
-
-        try {
-            String mimeType = getMimeType(root, closeable);
-
-            if (closeable.isClosed()) {
-                throw new ClosedException();
-            }
-
-            return new FileInfo(root, mimeType, root);
-        } catch (Throwable throwable) {
-            if (closeable.isClosed()) {
-                throw new ClosedException();
-            }
-            throw new RuntimeException(throwable);
-        }
-    }
-
 
     @NonNull
     public WebResourceResponse getResponse(@NonNull Uri uri, @NonNull String root,
@@ -850,33 +821,6 @@ public class DOCS {
 
     }
 
-    @NonNull
-    public FileInfo getFileInfo(@NonNull Uri uri, @NonNull Closeable closeable)
-            throws InvalidNameException, ResolveNameException, ClosedException {
-
-        String host = uri.getHost();
-        Objects.requireNonNull(host);
-
-        String root = getRoot(uri, closeable);
-        Objects.requireNonNull(root);
-
-
-        Link linkInfo = getLink(uri, root, closeable);
-        if (linkInfo != null) {
-            String filename = linkInfo.getName();
-            if (ipfs.isDir(linkInfo.getContent(), closeable)) {
-                return new FileInfo(filename, MimeType.DIR_MIME_TYPE, linkInfo.getContent());
-            } else {
-
-                String mimeType = getMimeType(uri, linkInfo.getContent(), closeable);
-
-                return new FileInfo(filename, mimeType, linkInfo.getContent());
-            }
-
-        } else {
-            return getDataInfo(uri, root, closeable);
-        }
-    }
 
     @Nullable
     public String getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
@@ -1279,39 +1223,6 @@ public class DOCS {
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
-        }
-
-    }
-
-    public static class FileInfo {
-
-        @NonNull
-        private final String filename;
-        @NonNull
-        private final String mimeType;
-        @NonNull
-        private final String content;
-
-
-        public FileInfo(@NonNull String filename, @NonNull String mimeType, @NonNull String content) {
-            this.filename = filename;
-            this.mimeType = mimeType;
-            this.content = content;
-        }
-
-        @NonNull
-        public String getFilename() {
-            return filename;
-        }
-
-        @NonNull
-        public String getMimeType() {
-            return mimeType;
-        }
-
-        @NonNull
-        public String getContent() {
-            return content;
         }
 
     }

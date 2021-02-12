@@ -78,7 +78,7 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.DeleteThreadsWorker;
 import threads.server.work.LocalConnectWorker;
 import threads.server.work.SwarmConnectWorker;
-import threads.server.work.UploadThreadsWorker;
+import threads.server.work.UploadFilesWorker;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -686,7 +686,7 @@ public class MainActivity extends AppCompatActivity implements
                     Uri uri = androidx.core.content.FileProvider.getUriForFile(
                             getApplicationContext(), BuildConfig.APPLICATION_ID, file);
                     Objects.requireNonNull(uri);
-                    UploadThreadsWorker.load(getApplicationContext(), 0L, uri);
+                    UploadFilesWorker.load(getApplicationContext(), 0L, uri);
                 }
             } else {
                 String type = intentReader.getType();

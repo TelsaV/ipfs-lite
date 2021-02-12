@@ -22,7 +22,7 @@ import threads.server.core.threads.Thread;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.utils.MimeType;
-import threads.server.work.UploadThreadWorker;
+import threads.server.work.UploadContentWorker;
 
 public class UploadService {
 
@@ -100,7 +100,7 @@ public class UploadService {
                 long idx = docs.createDocument(parent, mimeType, null,
                         uri, name, size, false, true);
 
-                UUID request = UploadThreadWorker.load(context, idx, false);
+                UUID request = UploadContentWorker.load(context, idx, false);
                 threads.setThreadWork(idx, request);
 
             } catch (Throwable e) {

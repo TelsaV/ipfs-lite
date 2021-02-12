@@ -12,7 +12,6 @@ import androidx.work.WorkManager;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -26,7 +25,7 @@ import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileProvider;
-import threads.server.work.UploadThreadsWorker;
+import threads.server.work.UploadFilesWorker;
 import threads.server.work.UserConnectWorker;
 
 
@@ -173,7 +172,7 @@ public class LiteService {
                 Uri uri = androidx.core.content.FileProvider.getUriForFile(
                         context, BuildConfig.APPLICATION_ID, file);
                 Objects.requireNonNull(uri);
-                UploadThreadsWorker.load(context, parent, uri);
+                UploadFilesWorker.load(context, parent, uri);
             }
 
         } catch (Throwable throwable) {

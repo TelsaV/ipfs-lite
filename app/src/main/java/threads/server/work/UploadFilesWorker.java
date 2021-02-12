@@ -42,9 +42,9 @@ import threads.server.ipfs.IPFS;
 import threads.server.ipfs.Progress;
 import threads.server.provider.FileDocumentsProvider;
 
-public class UploadThreadsWorker extends Worker {
+public class UploadFilesWorker extends Worker {
 
-    private static final String TAG = UploadThreadsWorker.class.getSimpleName();
+    private static final String TAG = UploadFilesWorker.class.getSimpleName();
     private static final int UTW = 17000;
     private final DOCS docs;
     private final IPFS ipfs;
@@ -53,7 +53,7 @@ public class UploadThreadsWorker extends Worker {
     private final AtomicReference<Notification> mLastNotification = new AtomicReference<>(null);
 
     @SuppressWarnings("WeakerAccess")
-    public UploadThreadsWorker(
+    public UploadFilesWorker(
             @NonNull Context context,
             @NonNull WorkerParameters params) {
         super(context, params);
@@ -71,7 +71,7 @@ public class UploadThreadsWorker extends Worker {
         data.putString(Content.URI, uri.toString());
         data.putLong(Content.IDX, parent);
 
-        return new OneTimeWorkRequest.Builder(UploadThreadsWorker.class)
+        return new OneTimeWorkRequest.Builder(UploadFilesWorker.class)
                 .addTag(TAG)
                 .setInputData(data.build())
                 .build();
