@@ -400,6 +400,7 @@ public class ThreadsFragment extends Fragment implements
         Drawable drawable = AppCompatResources.getDrawable(mContext, R.drawable.sort_variant);
         // todo remove stuff
         actionSorting.setImageDrawable(drawable);
+        actionSorting.setBackgroundResource(android.R.color.transparent);
 
         actionSorting.setOnClickListener(v -> {
 
