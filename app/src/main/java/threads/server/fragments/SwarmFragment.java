@@ -1,15 +1,11 @@
 package threads.server.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -64,34 +60,6 @@ public class SwarmFragment extends Fragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater);
-        menuInflater.inflate(R.menu.menu_swarm_fragment, menu);
-    }
-
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_documentation) {
-            try {
-                String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
-
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-
     }
 
     @Override

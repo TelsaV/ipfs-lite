@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -27,6 +28,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -35,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.ActionMode;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -43,7 +46,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import threads.LogUtils;
 import threads.server.InitApplication;
@@ -128,7 +130,6 @@ public class BrowserFragment extends Fragment {
     private ProgressBar mProgressBar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private long mLastClickTime = 0;
-    private MenuItem mActionBookmark;
     private DOCS docs;
     private CustomWebChromeClient mCustomWebChromeClient;
 
@@ -163,8 +164,6 @@ public class BrowserFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
         super.onCreateOptionsMenu(menu, menuInflater);
         menuInflater.inflate(R.menu.menu_browser_fragment, menu);
-
-        mActionBookmark = menu.findItem(R.id.action_bookmark);
     }
 
     @Override
@@ -229,55 +228,6 @@ public class BrowserFragment extends Fragment {
             }
 
             return true;
-        } else if (itemId == R.id.action_bookmark) {
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            try {
-                String url = mWebView.getUrl();
-                Uri uri = docs.getOriginalUri(Uri.parse(url));
-
-                BOOKS books = BOOKS.getInstance(mContext);
-
-                Bookmark bookmark = books.getBookmark(uri.toString());
-                if (bookmark != null) {
-                    String name = bookmark.getTitle();
-                    books.removeBookmark(bookmark);
-                    if (mActionBookmark != null) {
-                        mActionBookmark.setIcon(R.drawable.star_outline);
-                    }
-                    EVENTS.getInstance(mContext).warning(
-                            getString(R.string.bookmark_removed, name));
-                } else {
-                    Bitmap bitmap = mCustomWebChromeClient.getFavicon(url);
-
-                    String title = mCustomWebChromeClient.getTitle(url);
-                    if (title == null) {
-                        title = "" + mWebView.getTitle();
-                    }
-
-                    bookmark = books.createBookmark(uri.toString(), title);
-                    if (bitmap != null) {
-                        bookmark.setBitmapIcon(bitmap);
-                    }
-
-                    books.storeBookmark(bookmark);
-
-                    if (mActionBookmark != null) {
-                        mActionBookmark.setIcon(R.drawable.star);
-                    }
-                    EVENTS.getInstance(mContext).warning(
-                            getString(R.string.bookmark_added, title));
-                }
-
-
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-            return true;
         } else if (itemId == R.id.action_clear_cache) {
 
             try {
@@ -293,19 +243,6 @@ public class BrowserFragment extends Fragment {
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }
-            return true;
-        } else if (itemId == R.id.action_bookmarks) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            BookmarksDialogFragment dialogFragment = new BookmarksDialogFragment();
-
-            dialogFragment.show(getChildFragmentManager(), BookmarksDialogFragment.TAG);
-
             return true;
         } else if (itemId == R.id.action_find_page) {
 
@@ -384,7 +321,8 @@ public class BrowserFragment extends Fragment {
 
                 mWebView.stopLoading();
 
-                checkBookmark(uri);
+                mListener.checkBookmark(uri);
+
                 mListener.updateTitle(uri);
 
                 mWebView.loadUrl(uri.toString());
@@ -450,7 +388,7 @@ public class BrowserFragment extends Fragment {
 
 
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
-                checkBookmark(uri);
+                mListener.checkBookmark(uri);
                 mListener.updateTitle(uri);
             }
 
@@ -459,7 +397,7 @@ public class BrowserFragment extends Fragment {
                 LogUtils.error(TAG, "onPageStarted : " + url);
 
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
-                checkBookmark(uri);
+                mListener.checkBookmark(uri);
                 mListener.updateTitle(uri);
             }
 
@@ -664,28 +602,7 @@ public class BrowserFragment extends Fragment {
     }
 
 
-    private void checkBookmark(@Nullable Uri uri) {
-        try {
-            if (uri != null) {
-                BOOKS books = BOOKS.getInstance(mContext);
-                if (books.hasBookmark(uri.toString())) {
-                    if (mActionBookmark != null) {
-                        mActionBookmark.setIcon(R.drawable.star);
-                    }
-                } else {
-                    if (mActionBookmark != null) {
-                        mActionBookmark.setIcon(R.drawable.star_outline);
-                    }
-                }
-            } else {
-                if (mActionBookmark != null) {
-                    mActionBookmark.setVisible(false);
-                }
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
+
 
 
     private void fileDownloader(@NonNull Uri uri, @NonNull String filename, @NonNull String mimeType,
@@ -849,10 +766,55 @@ public class BrowserFragment extends Fragment {
 
     }
 
+    public void bookmark(@NonNull Context context, @NonNull ImageButton mActionBookmark) {
+        try {
+            String url = mWebView.getUrl();
+            Uri uri = docs.getOriginalUri(Uri.parse(url));
+
+            BOOKS books = BOOKS.getInstance(context);
+
+            Bookmark bookmark = books.getBookmark(uri.toString());
+            if (bookmark != null) {
+                String name = bookmark.getTitle();
+                books.removeBookmark(bookmark);
+                Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star_outline);
+                mActionBookmark.setImageDrawable(drawable);
+
+                EVENTS.getInstance(mContext).warning(
+                        getString(R.string.bookmark_removed, name));
+            } else {
+                Bitmap bitmap = mCustomWebChromeClient.getFavicon(url);
+
+                String title = mCustomWebChromeClient.getTitle(url);
+                if (title == null) {
+                    title = "" + mWebView.getTitle();
+                }
+
+                bookmark = books.createBookmark(uri.toString(), title);
+                if (bitmap != null) {
+                    bookmark.setBitmapIcon(bitmap);
+                }
+
+                books.storeBookmark(bookmark);
+
+                Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star);
+                mActionBookmark.setImageDrawable(drawable);
+
+                EVENTS.getInstance(mContext).warning(
+                        getString(R.string.bookmark_added, title));
+            }
+
+
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
 
     public interface ActionListener {
 
         void updateTitle(@Nullable Uri uri);
 
+        void checkBookmark(@NonNull Uri uri);
     }
 }

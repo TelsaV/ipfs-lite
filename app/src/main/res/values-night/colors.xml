@@ -5,4 +5,6 @@
     <color name="colorBackground">#1a1a1a</color>
     <color name="colorSelectedItem">#696969</color>
     <color name="colorChips">#696969</color>
+    <color name="colorPopupBackground">#696969</color>
+    <color name="colorPopupTitle">#696969</color>
 </resources>

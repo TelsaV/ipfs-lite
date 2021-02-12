@@ -2,25 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
-    <item
-        android:id="@+id/action_edit_cid"
-        android:icon="@drawable/qrcode_edit"
-        android:orderInCategory="30"
-        android:title="@string/action_edit_cid"
-        app:iconTint="?android:textColorSecondary"
-        app:showAsAction="ifRoom" />
-
-
-    <item
-        android:id="@+id/action_sorting"
-        android:orderInCategory="35"
-        android:title="@string/sort"
-        app:actionViewClass="android.widget.ImageButton"
-        app:iconTint="?android:textColorSecondary"
-        app:showAsAction="ifRoom" />
-
-
     <group>
 
         <item

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.nsd.NsdManager;
@@ -13,10 +14,16 @@ import android.net.nsd.NsdServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,9 +31,10 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.ActionMode;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
@@ -54,10 +62,14 @@ import threads.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;
+import threads.server.core.books.BOOKS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.core.peers.PEERS;
+import threads.server.core.threads.SortOrder;
 import threads.server.core.threads.THREADS;
+import threads.server.fragments.AccountDialogFragment;
+import threads.server.fragments.BookmarksDialogFragment;
 import threads.server.fragments.BrowserFragment;
 import threads.server.fragments.EditContentDialogFragment;
 import threads.server.fragments.EditPeerDialogFragment;
@@ -69,6 +81,7 @@ import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.services.DiscoveryService;
+import threads.server.services.QRCodeService;
 import threads.server.services.RegistrationService;
 import threads.server.services.UploadService;
 import threads.server.services.UserService;
@@ -209,20 +222,97 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    private ImageButton mActionBookmark;
+    private SortOrder sortOrder = SortOrder.DATE;
+
+    @Override
+    public void checkBookmark(@Nullable Uri uri) {
+        try {
+            if (uri != null) {
+                BOOKS books = BOOKS.getInstance(getApplicationContext());
+                if (books.hasBookmark(uri.toString())) {
+                    Drawable drawable = AppCompatResources.getDrawable(getApplicationContext(),
+                            R.drawable.star);
+                    mActionBookmark.setImageDrawable(drawable);
+                } else {
+                    Drawable drawable = AppCompatResources.getDrawable(getApplicationContext(),
+                            R.drawable.star_outline);
+                    mActionBookmark.setImageDrawable(drawable);
+                }
+            } else {
+                mActionBookmark.setEnabled(false);
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+    private void setSortOrder(long idx) {
+
+        if (idx == 0L) {
+            sortOrder = InitApplication.getSortOrder(getApplicationContext());
+        } else {
+            THREADS threads = THREADS.getInstance(getApplicationContext());
+            SortOrder order = threads.getThreadSortOrder(idx);
+            if (order != null) {
+                sortOrder = order;
+            } else {
+                sortOrder = InitApplication.getSortOrder(getApplicationContext());
+            }
+        }
+    }
+
+    private void setSortOrder(@NonNull SortOrder sortOrder) {
+        this.sortOrder = sortOrder;
+
+        long parent = 0L;
+        Long thread = mSelectionViewModel.getParentThread().getValue();
+        if (thread != null) {
+            parent = thread;
+        }
+        if (parent == 0L) {
+            InitApplication.setSortOrder(getApplicationContext(), sortOrder);
+        } else {
+            final long idx = parent;
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.submit(() -> {
+                try {
+                    THREADS threads = THREADS.getInstance(getApplicationContext());
+                    threads.setThreadSortOrder(idx, sortOrder);
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
+            });
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.ThreadsTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        setTitle(null);
-        Toolbar mToolbar = findViewById(R.id.toolbar);
 
-        setSupportActionBar(mToolbar);
-
+        sortOrder = InitApplication.getSortOrder(getApplicationContext());
         DOCS docs = DOCS.getInstance(getApplicationContext());
 
-        ImageButton mActionHome = findViewById(R.id.action_home);
+        mActionBookmark = findViewById(R.id.action_bookmark);
+        mActionBookmark.setOnClickListener(v -> {
+            try {
+                Fragment fragment = getSupportFragmentManager().findFragmentById(
+                        R.id.fragment_container);
+                if (fragment instanceof BrowserFragment) {
+                    BrowserFragment brow = (BrowserFragment) fragment;
+                    if (brow.isResumed()) {
+                        brow.bookmark(getApplicationContext(), mActionBookmark);
+                    }
+                }
 
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+        });
+
+        ImageButton mActionHome = findViewById(R.id.action_home);
         if (docs.isPrivateNetwork(getApplicationContext())) {
             mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
                     android.R.color.holo_orange_dark), android.graphics.PorterDuff.Mode.SRC_IN);
@@ -231,6 +321,251 @@ public class MainActivity extends AppCompatActivity implements
                     R.color.colorAccent), android.graphics.PorterDuff.Mode.SRC_IN);
         }
 
+        ImageView mActionBookmarks = findViewById(R.id.action_bookmarks);
+        mActionBookmarks.setOnClickListener(v -> {
+            try {
+                BookmarksDialogFragment dialogFragment = new BookmarksDialogFragment();
+                dialogFragment.show(getSupportFragmentManager(), BookmarksDialogFragment.TAG);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+        });
+
+        ImageView mActionEditCid = findViewById(R.id.action_edit_cid);
+        mActionEditCid.setOnClickListener(v -> {
+            try {
+                EditContentDialogFragment.newInstance(null, false).show(
+                        getSupportFragmentManager(), EditContentDialogFragment.TAG);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+        });
+
+        ImageView mActionSorting = findViewById(R.id.action_sorting);
+        mActionSorting.setOnClickListener(v -> {
+            try {
+                PopupMenu popup = new PopupMenu(MainActivity.this, v);
+                popup.inflate(R.menu.popup_sorting);
+
+                popup.getMenu().getItem(0).setChecked(sortOrder == SortOrder.NAME);
+                popup.getMenu().getItem(1).setChecked(sortOrder == SortOrder.NAME_INVERSE);
+                popup.getMenu().getItem(2).setChecked(sortOrder == SortOrder.DATE);
+                popup.getMenu().getItem(3).setChecked(sortOrder == SortOrder.DATE_INVERSE);
+                popup.getMenu().getItem(4).setChecked(sortOrder == SortOrder.SIZE);
+                popup.getMenu().getItem(5).setChecked(sortOrder == SortOrder.SIZE_INVERSE);
+
+                popup.setOnMenuItemClickListener(item -> {
+                    try {
+                        int itemId = item.getItemId();
+                        if (itemId == R.id.sort_date) {
+
+                            setSortOrder(SortOrder.DATE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), SortOrder.DATE);
+                            return true;
+                        } else if (itemId == R.id.sort_date_inverse) {
+
+                            setSortOrder(SortOrder.DATE_INVERSE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), SortOrder.DATE_INVERSE);
+                            return true;
+                        } else if (itemId == R.id.sort_name) {
+
+                            setSortOrder(SortOrder.NAME);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), SortOrder.NAME);
+                            return true;
+                        } else if (itemId == R.id.sort_name_inverse) {
+
+                            setSortOrder(SortOrder.NAME_INVERSE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), SortOrder.NAME_INVERSE);
+                            return true;
+                        } else if (itemId == R.id.sort_size) {
+
+                            setSortOrder(SortOrder.SIZE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), SortOrder.SIZE);
+                            return true;
+                        } else if (itemId == R.id.sort_size_inverse) {
+
+                            setSortOrder(SortOrder.SIZE_INVERSE);
+
+                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(), SortOrder.SIZE_INVERSE);
+                            return true;
+                        }
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    }
+                    return false;
+                });
+                popup.show();
+
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+        });
+
+        ImageView mActionId = findViewById(R.id.action_id);
+        mActionId.setOnClickListener(v -> {
+            try {
+
+                String peerID = IPFS.getPeerID(getApplicationContext());
+                Objects.requireNonNull(peerID);
+
+                Uri uri = QRCodeService.getImage(getApplicationContext(), peerID);
+
+                AccountDialogFragment.newInstance(uri).show(
+                        getSupportFragmentManager(), AccountDialogFragment.TAG);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+        });
+
+
+        ImageView mActionOverflow = findViewById(R.id.action_overflow);
+        mActionOverflow.setOnClickListener(v -> {
+
+            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+
+
+            View menuOverflow = inflater.inflate(R.layout.menu_overflow, null);
+
+
+            PopupWindow mPopupWindow = new PopupWindow(menuOverflow);
+            mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+            mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+            mPopupWindow.setOutsideTouchable(true);
+            mPopupWindow.setFocusable(true);
+            mPopupWindow.setElevation(12);
+            mPopupWindow.showAsDropDown(mActionOverflow, 0, -dpToPx(48), Gravity.TOP);
+
+
+            ImageButton actionNextPage = menuOverflow.findViewById(R.id.action_next_page);
+            if (/*!mWebView.canGoForward()*/true) {
+                actionNextPage.setEnabled(false);
+
+                actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
+            } else {
+                actionNextPage.setEnabled(true);
+
+                actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+            }
+            actionNextPage.setOnClickListener(v1 -> {
+                try {
+                    // goForward();
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            ImageButton actionFindPage = menuOverflow.findViewById(R.id.action_find_page);
+            actionFindPage.setOnClickListener(v12 -> {
+                try {
+                            /*startSupportActionMode(
+                                    createFindActionModeCallback());*/
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            ImageButton actionDownload = menuOverflow.findViewById(R.id.action_download);
+
+            if (/*downloadActive()*/ false) {
+                actionDownload.setEnabled(true);
+
+                actionDownload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+            } else {
+                actionDownload.setEnabled(false);
+
+                actionDownload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
+            }
+
+            actionDownload.setOnClickListener(v13 -> {
+                try {
+                    //download();
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            ImageButton actionShare = menuOverflow.findViewById(R.id.action_share);
+            actionShare.setOnClickListener(v14 -> {
+                try {
+                            /*
+                            String url = mWebView.getUrl();
+                            Uri uri = docs.getOriginalUri(Uri.parse(url));
+
+                            ComponentName[] names = {new ComponentName(getApplicationContext(), MainActivity.class)};
+
+                            Intent intent = new Intent(Intent.ACTION_SEND);
+                            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
+                            intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
+                            intent.setType(MimeType.PLAIN_MIME_TYPE);
+                            intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+
+                            Intent chooser = Intent.createChooser(intent, getText(R.string.share));
+                            chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, names);
+                            startActivity(chooser);*/
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            ImageButton actionReload = menuOverflow.findViewById(R.id.action_reload);
+            actionReload.setOnClickListener(v15 -> {
+                try {
+                    //reload();
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            TextView actionDocumentation = menuOverflow.findViewById(R.id.action_documentation);
+            actionDocumentation.setOnClickListener(v19 -> {
+                try {
+                    String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri),
+                            getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+
+        });
 
         mBrowserText = findViewById(R.id.action_browser);
 
@@ -253,6 +588,22 @@ public class MainActivity extends AppCompatActivity implements
         mSelectionViewModel = new ViewModelProvider(this).get(SelectionViewModel.class);
 
 
+        mSelectionViewModel.getParentThread().observe(this, (threadIdx) -> {
+
+            if (threadIdx != null) {
+                setSortOrder(threadIdx);
+                if (threadIdx > 0L) {
+                    mActionEditCid.setVisibility(View.GONE);
+                } else {
+                    if (currentFragment.get() == R.id.navigation_files) {
+                        mActionEditCid.setVisibility(View.VISIBLE);
+                    } else {
+                        mActionEditCid.setVisibility(View.GONE);
+                    }
+                }
+            }
+
+        });
         Uri uri = docs.getPinsPageUri();
         mSelectionViewModel.setUri(uri.toString());
         updateTitle(uri);
@@ -287,6 +638,11 @@ public class MainActivity extends AppCompatActivity implements
                 loadFragment(new ThreadsFragment(), R.id.navigation_files);
                 showFab(true);
                 mSelectionViewModel.setParentThread(0L);
+                mActionBookmark.setVisibility(View.GONE);
+                mActionBookmarks.setVisibility(View.GONE);
+                mActionId.setVisibility(View.GONE);
+                mActionEditCid.setVisibility(View.VISIBLE);
+                mActionSorting.setVisibility(View.VISIBLE);
                 setFabImage(R.drawable.plus_thick);
                 return true;
             } else if (itemId == R.id.navigation_peers) {
@@ -294,6 +650,11 @@ public class MainActivity extends AppCompatActivity implements
                 loadFragment(new PeersFragment(), R.id.navigation_peers);
                 showFab(true);
                 mSelectionViewModel.setParentThread(0L);
+                mActionBookmark.setVisibility(View.GONE);
+                mActionBookmarks.setVisibility(View.GONE);
+                mActionId.setVisibility(View.VISIBLE);
+                mActionEditCid.setVisibility(View.GONE);
+                mActionSorting.setVisibility(View.GONE);
                 setFabImage(R.drawable.account_plus);
                 return true;
             } else if (itemId == R.id.navigation_browser) {
@@ -301,18 +662,33 @@ public class MainActivity extends AppCompatActivity implements
                 loadFragment(new BrowserFragment(), R.id.navigation_browser);
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
+                mActionBookmark.setVisibility(View.VISIBLE);
+                mActionBookmarks.setVisibility(View.VISIBLE);
+                mActionId.setVisibility(View.GONE);
+                mActionEditCid.setVisibility(View.GONE);
+                mActionSorting.setVisibility(View.GONE);
                 return true;
             } else if (itemId == R.id.navigation_swarm) {
 
                 loadFragment(new SwarmFragment(), R.id.navigation_swarm);
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
+                mActionBookmark.setVisibility(View.GONE);
+                mActionBookmarks.setVisibility(View.GONE);
+                mActionId.setVisibility(View.GONE);
+                mActionEditCid.setVisibility(View.GONE);
+                mActionSorting.setVisibility(View.GONE);
                 return true;
             } else if (itemId == R.id.navigation_settings) {
 
                 loadFragment(new SettingsFragment(), R.id.navigation_settings);
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
+                mActionBookmark.setVisibility(View.GONE);
+                mActionBookmarks.setVisibility(View.GONE);
+                mActionId.setVisibility(View.GONE);
+                mActionEditCid.setVisibility(View.GONE);
+                mActionSorting.setVisibility(View.GONE);
                 return true;
             }
             return false;
@@ -596,6 +972,18 @@ public class MainActivity extends AppCompatActivity implements
         Intent intent = getIntent();
         handleIntents(intent);
 
+    }
+
+    private void updateDirectory(@Nullable Long parent, String query, @NonNull SortOrder sortOrder) {
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                R.id.fragment_container);
+        if (fragment instanceof ThreadsFragment) {
+            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
+            if (threadsFragment.isResumed()) {
+                threadsFragment.updateDirectory(parent, query, sortOrder, true);
+            }
+        }
     }
 
     private void clickFilesAdd() {
@@ -927,6 +1315,12 @@ public class MainActivity extends AppCompatActivity implements
             }
         };
 
+    }
+
+    private int dpToPx(int dp) {
+        float density = getApplicationContext().getResources()
+                .getDisplayMetrics().density;
+        return Math.round((float) dp * density);
     }
 
 }

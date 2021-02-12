@@ -11,7 +11,6 @@ import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +31,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -134,52 +132,6 @@ public class PeersFragment extends Fragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater);
-        menuInflater.inflate(R.menu.menu_peers_fragment, menu);
-    }
-
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_id) {
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-
-            String peerID = IPFS.getPeerID(mContext);
-            Objects.requireNonNull(peerID);
-
-            Uri uri = QRCodeService.getImage(mContext, peerID);
-
-            AccountDialogFragment.newInstance(uri).show(
-                    getChildFragmentManager(), AccountDialogFragment.TAG);
-
-
-            return true;
-        } else if (itemId == R.id.action_documentation) {
-            try {
-                String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
-
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

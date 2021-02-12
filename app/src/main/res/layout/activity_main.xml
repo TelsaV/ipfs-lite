@@ -9,47 +9,104 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
         <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_gravity="top">
 
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/colorBackground">
+                android:layout_height="?attr/actionBarSize"
+                android:background="@color/colorBackground"
+                android:orientation="horizontal"
+                app:layout_scrollFlags="scroll|enterAlways|snap">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+
+                <ImageButton
+                    android:id="@+id/action_home"
+                    android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:weightSum="10">
+                    android:layout_gravity="center"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@null"
+                    android:padding="8dp"
+                    android:src="@drawable/home_outline">
+
+                </ImageButton>
+
+                <TextView
+                    android:id="@+id/action_browser"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:textColor="?android:textColorPrimary" />
+
+                <ImageButton
+                    android:id="@+id/action_edit_cid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/action_edit_cid"
+                    android:padding="8dp"
+                    android:src="@drawable/qrcode_edit"
+                    app:tint="?android:textColorPrimary" />
 
 
-                    <ImageButton
-                        android:id="@+id/action_home"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:clickable="true"
-                        android:contentDescription="@null"
-                        android:focusable="true"
-                        android:src="@drawable/home_outline">
+                <ImageButton
+                    android:id="@+id/action_sorting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/sort"
+                    android:padding="8dp"
+                    android:src="@drawable/sort_variant"
+                    app:tint="?android:textColorPrimary" />
 
-                    </ImageButton>
+                <ImageButton
+                    android:id="@+id/action_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/identification"
+                    android:padding="8dp"
+                    android:src="@drawable/qrcode"
+                    app:tint="?android:textColorPrimary" />
 
-                    <TextView
-                        android:id="@+id/action_browser"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="start"
-                        android:layout_marginStart="8dp"
-                        android:singleLine="true"
-                        android:textColor="?android:textColorPrimary" />
-                </LinearLayout>
-            </androidx.appcompat.widget.Toolbar>
+                <ImageButton
+                    android:id="@+id/action_bookmark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/bookmark"
+                    android:padding="8dp"
+                    android:src="@drawable/star_outline"
+                    app:tint="?android:textColorPrimary" />
+
+                <ImageButton
+                    android:id="@+id/action_bookmarks"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/bookmarks"
+                    android:padding="8dp"
+                    android:src="@drawable/bookmark_multiple_outline"
+                    app:tint="?android:textColorPrimary" />
+
+                <ImageButton
+                    android:id="@+id/action_overflow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@null"
+                    android:padding="8dp"
+                    android:src="@drawable/dots_vertical"
+                    app:tint="?android:textColorPrimary" />
+
+            </LinearLayout>
 
         </com.google.android.material.appbar.AppBarLayout>
 

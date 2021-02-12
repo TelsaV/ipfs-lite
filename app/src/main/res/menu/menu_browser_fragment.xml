@@ -5,28 +5,6 @@
     <group>
 
         <item
-            android:id="@+id/action_bookmark"
-            android:icon="@drawable/star_outline"
-            android:orderInCategory="20"
-            android:title="@string/bookmark"
-            app:iconTint="?android:textColorSecondary"
-            app:showAsAction="ifRoom" />
-
-
-        <item
-            android:id="@+id/action_bookmarks"
-            android:orderInCategory="25"
-            android:title="@string/bookmarks"
-            android:icon="@drawable/bookmark_multiple_outline"
-            app:iconTint="?android:textColorSecondary"
-            app:showAsAction="ifRoom" />
-
-
-    </group>
-
-    <group>
-
-        <item
             android:id="@+id/action_find_page"
             android:orderInCategory="35"
             android:title="@string/find_page"

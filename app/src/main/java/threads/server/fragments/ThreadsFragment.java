@@ -7,7 +7,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,7 +22,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.activity.result.ActivityResult;
@@ -33,7 +31,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.ActionMode;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
@@ -306,7 +303,7 @@ public class ThreadsFragment extends Fragment implements
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ThreadItemDetailsLookup mThreadItemDetailsLookup;
 
-    private SortOrder sortOrder = SortOrder.DATE;
+
 
     private static long getThread(@NonNull Context context) {
 
@@ -344,7 +341,6 @@ public class ThreadsFragment extends Fragment implements
         mContext = context;
         mActivity = getActivity();
         mListener = (ThreadsFragment.ActionListener) getActivity();
-        sortOrder = InitApplication.getSortOrder(context);
     }
 
     @Override
@@ -380,9 +376,6 @@ public class ThreadsFragment extends Fragment implements
         boolean topLevel = Objects.equals(0L, value);
 
 
-        MenuItem actionEditCode = menu.findItem(R.id.action_edit_cid);
-        actionEditCode.setVisible(topLevel);
-
         MenuItem actionAddDir = menu.findItem(R.id.action_add_folder);
         actionAddDir.setVisible(true);
 
@@ -396,108 +389,8 @@ public class ThreadsFragment extends Fragment implements
         MenuItem actionBackup = menu.findItem(R.id.action_backup);
         actionBackup.setVisible(topLevel);
 
-        ImageButton actionSorting = (ImageButton) menu.findItem(R.id.action_sorting).getActionView();
-        Drawable drawable = AppCompatResources.getDrawable(mContext, R.drawable.sort_variant);
-        // todo remove stuff
-        actionSorting.setImageDrawable(drawable);
-        actionSorting.setBackgroundResource(android.R.color.transparent);
-
-        actionSorting.setOnClickListener(v -> {
-
-            PopupMenu popup = new PopupMenu(mContext, v);
-            MenuInflater inflater = popup.getMenuInflater();
-            inflater.inflate(R.menu.popup_sorting, popup.getMenu());
-
-            popup.getMenu().getItem(0).setChecked(sortOrder == SortOrder.NAME);
-            popup.getMenu().getItem(1).setChecked(sortOrder == SortOrder.NAME_INVERSE);
-            popup.getMenu().getItem(2).setChecked(sortOrder == SortOrder.DATE);
-            popup.getMenu().getItem(3).setChecked(sortOrder == SortOrder.DATE_INVERSE);
-            popup.getMenu().getItem(4).setChecked(sortOrder == SortOrder.SIZE);
-            popup.getMenu().getItem(5).setChecked(sortOrder == SortOrder.SIZE_INVERSE);
-
-            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    try {
-                        int itemId = item.getItemId();
-                        if (itemId == R.id.sort_date) {
-
-                            setSortOrder(SortOrder.DATE);
-
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), true);
-                            return true;
-                        } else if (itemId == R.id.sort_date_inverse) {
-
-                            setSortOrder(SortOrder.DATE_INVERSE);
-
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), true);
-                            return true;
-                        } else if (itemId == R.id.sort_name) {
-
-                            setSortOrder(SortOrder.NAME);
-
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), true);
-                            return true;
-                        } else if (itemId == R.id.sort_name_inverse) {
-
-                            setSortOrder(SortOrder.NAME_INVERSE);
-
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), true);
-                            return true;
-                        } else if (itemId == R.id.sort_size) {
-
-                            setSortOrder(SortOrder.SIZE);
-
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), true);
-                            return true;
-                        } else if (itemId == R.id.sort_size_inverse) {
-
-                            setSortOrder(SortOrder.SIZE_INVERSE);
-
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), true);
-                            return true;
-                        }
-                    } catch (Throwable throwable) {
-                        LogUtils.error(TAG, throwable);
-                    }
-                    return false;
-                }
-            });
-            popup.show();
-        });
-
-
     }
 
-    private void setSortOrder(@NonNull SortOrder sortOrder) {
-        this.sortOrder = sortOrder;
-
-        long parent = 0L;
-        Long thread = mSelectionViewModel.getParentThread().getValue();
-        if (thread != null) {
-            parent = thread;
-        }
-        if (parent == 0L) {
-            InitApplication.setSortOrder(mContext, sortOrder);
-        } else {
-            final long idx = parent;
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                try {
-                    THREADS threads = THREADS.getInstance(mContext);
-                    threads.setThreadSortOrder(idx, sortOrder);
-                } catch (Throwable throwable) {
-                    LogUtils.error(TAG, throwable);
-                }
-            });
-        }
-    }
 
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -589,28 +482,6 @@ public class ThreadsFragment extends Fragment implements
                 EVENTS.getInstance(mContext).warning(
                         getString(R.string.no_activity_found_to_handle_uri));
             }
-
-            return true;
-
-        } else if (itemId == R.id.action_edit_cid) {
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            clickEditContent();
-            return true;
-
-        } else if (itemId == R.id.action_sorting) {
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
 
             return true;
 
@@ -764,7 +635,7 @@ public class ThreadsFragment extends Fragment implements
 
         mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
 
-
+        THREADS threads = THREADS.getInstance(mContext);
         mSelectionViewModel.getParentThread().observe(getViewLifecycleOwner(), (threadIdx) -> {
 
             if (threadIdx != null) {
@@ -776,10 +647,22 @@ public class ThreadsFragment extends Fragment implements
                 } else {
                     scrollView.setVisibility(View.VISIBLE);
                 }
-                setSortOrder(threadIdx);
+
+                // TODO optimize here
+                SortOrder sortOrder;
+                if (threadIdx == 0L) {
+                    sortOrder = InitApplication.getSortOrder(mContext);
+                } else {
+                    sortOrder = threads.getThreadSortOrder(threadIdx);
+                }
+
+                if (sortOrder == null) {
+                    sortOrder = SortOrder.DATE;
+                }
+
 
                 updateDirectory(threadIdx,
-                        mSelectionViewModel.getQuery().getValue(), false);
+                        mSelectionViewModel.getQuery().getValue(), sortOrder, false);
 
 
                 scrollView.post(() -> scrollView.scrollTo(chipGroup.getRight(), chipGroup.getTop()));
@@ -790,8 +673,20 @@ public class ThreadsFragment extends Fragment implements
         mSelectionViewModel.getQuery().observe(getViewLifecycleOwner(), (query) -> {
 
             if (query != null) {
+                // TODO optimize here
                 Long parent = mSelectionViewModel.getParentThread().getValue();
-                updateDirectory(parent, query, false);
+                SortOrder sortOrder = SortOrder.DATE;
+                if (parent != null) {
+                    if (parent == 0L) {
+                        sortOrder = InitApplication.getSortOrder(mContext);
+                    } else {
+                        sortOrder = threads.getThreadSortOrder(parent);
+                    }
+                }
+                if (sortOrder == null) {
+                    sortOrder = SortOrder.DATE;
+                }
+                updateDirectory(parent, query, sortOrder, false);
             }
 
         });
@@ -895,22 +790,8 @@ public class ThreadsFragment extends Fragment implements
     }
 
 
-    private void setSortOrder(long idx) {
-
-        if (idx == 0L) {
-            sortOrder = InitApplication.getSortOrder(mContext);
-        } else {
-            THREADS threads = THREADS.getInstance(mContext);
-            SortOrder order = threads.getThreadSortOrder(idx);
-            if (order != null) {
-                sortOrder = order;
-            } else {
-                sortOrder = InitApplication.getSortOrder(mContext);
-            }
-        }
-    }
-
-    private void updateDirectory(@Nullable Long parent, String query, boolean forceScrollToTop) {
+    public void updateDirectory(@Nullable Long parent, String query,
+                                @NonNull SortOrder sortOrder, boolean forceScrollToTop) {
         try {
 
             LiveData<List<Thread>> obs = observer.get();
@@ -1423,14 +1304,6 @@ public class ThreadsFragment extends Fragment implements
     }
 
 
-    private void clickEditContent() {
-        try {
-            EditContentDialogFragment.newInstance(null, false).show(
-                    getChildFragmentManager(), EditContentDialogFragment.TAG);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
 
 
     private void clickImportFiles(long idx) {
