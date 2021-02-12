@@ -390,7 +390,6 @@ public class UploadThreadWorker extends Worker {
             String filename = thread.getName();
             Objects.requireNonNull(filename);
 
-
             reportProgress(filename, 0);
 
             String cid = thread.getContent();

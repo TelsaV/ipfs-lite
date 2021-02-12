@@ -706,7 +706,6 @@ public class BrowserFragment extends Fragment {
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mFileForResult.launch(intent);
             mProgressBar.setVisibility(View.GONE);
-            EVENTS.getInstance(mContext).warning(filename);
 
         });
         builder.setNeutralButton(getString(android.R.string.cancel), (dialog, which) -> {
@@ -722,7 +721,7 @@ public class BrowserFragment extends Fragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.download_title);
-        String filename = LiteService.getFileName(uri);
+        String filename = docs.getFileName(uri);
         builder.setMessage(filename);
 
         builder.setPositiveButton(getString(android.R.string.yes), (dialog, which) -> {
@@ -736,9 +735,6 @@ public class BrowserFragment extends Fragment {
             mContentForResult.launch(intent);
 
             mProgressBar.setVisibility(View.GONE);
-
-            EVENTS.getInstance(mContext).warning(filename);
-
         });
         builder.setNeutralButton(getString(android.R.string.cancel), (dialog, which) -> {
             mProgressBar.setVisibility(View.GONE);

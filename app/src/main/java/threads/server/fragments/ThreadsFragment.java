@@ -678,7 +678,7 @@ public class ThreadsFragment extends Fragment implements
             if (mChip == null) {
 
                 mChip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_folder,
-                        null, false);
+                        group, false);
                 group.addView(mChip);
             }
 

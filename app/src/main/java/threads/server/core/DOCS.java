@@ -801,9 +801,39 @@ public class DOCS {
 
 
     @NonNull
-    private String getMimeType(@NonNull Uri uri,
-                               @NonNull String element,
-                               @NonNull Closeable closeable) {
+    public String getFileName(@NonNull Uri uri) {
+
+        List<String> paths = uri.getPathSegments();
+        if (!paths.isEmpty()) {
+            return paths.get(paths.size() - 1);
+        } else {
+            return "" + uri.getHost();
+        }
+
+    }
+
+    @NonNull
+    public String getContent(@NonNull Uri uri, @NonNull Closeable closeable)
+            throws InvalidNameException, ResolveNameException {
+
+        String host = uri.getHost();
+        Objects.requireNonNull(host);
+
+        String root = getRoot(uri, closeable);
+        Objects.requireNonNull(root);
+
+        List<String> paths = uri.getPathSegments();
+        if (paths.isEmpty()) {
+            return root;
+        }
+
+        return ipfs.resolve(root, paths, closeable);
+    }
+
+    @NonNull
+    public String getMimeType(@NonNull Uri uri,
+                              @NonNull String cid,
+                              @NonNull Closeable closeable) {
 
         List<String> paths = uri.getPathSegments();
         if (!paths.isEmpty()) {
@@ -812,14 +842,13 @@ public class DOCS {
             if (!mimeType.equals(MimeType.OCTET_MIME_TYPE)) {
                 return mimeType;
             } else {
-                return getMimeType(element, closeable);
+                return getMimeType(cid, closeable);
             }
         } else {
-            return getMimeType(element, closeable);
+            return getMimeType(cid, closeable);
         }
 
     }
-
 
     @NonNull
     public FileInfo getFileInfo(@NonNull Uri uri, @NonNull Closeable closeable)

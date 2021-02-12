@@ -110,17 +110,6 @@ public class LiteService {
 
     }
 
-    @NonNull
-    public static String getFileName(@NonNull Uri uri) {
-
-        List<String> paths = uri.getPathSegments();
-        if (!paths.isEmpty()) {
-            return paths.get(paths.size() - 1);
-        } else {
-            return "" + uri.getHost();
-        }
-
-    }
 
     @Nullable
     public static Uri getContentUri(@NonNull Context context) {
