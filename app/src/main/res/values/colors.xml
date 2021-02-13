@@ -5,6 +5,4 @@
     <color name="colorBackground">@android:color/white</color>
     <color name="colorSelectedItem">#DCDCDC</color>
     <color name="colorChips">#696969</color>
-    <color name="colorPopupBackground">@android:color/white</color>
-    <color name="colorPopupTitle">#F5F5F5</color>
 </resources>
