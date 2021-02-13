@@ -230,18 +230,7 @@ public class BrowserFragment extends Fragment {
             if (url != null) {
 
                 Uri uri = Uri.parse(url);
-
-                docs.cleanupResolver(uri);
-
-                docs.releaseThreads();
-
-                mWebView.stopLoading();
-
-                mProgressBar.setVisibility(View.VISIBLE);
-
-                mListener.updateUri(uri, mWebView.canGoForward());
-
-                mWebView.loadUrl(uri.toString());
+                openUri(uri);
 
             }
         });
@@ -760,6 +749,24 @@ public class BrowserFragment extends Fragment {
                     contentDownloader(uri);
                 }
             }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+    public void openUri(@NonNull Uri uri) {
+        try {
+            docs.cleanupResolver(uri);
+
+            docs.releaseThreads();
+
+            mWebView.stopLoading();
+
+            mProgressBar.setVisibility(View.VISIBLE);
+
+            mListener.updateUri(uri, mWebView.canGoForward());
+
+            mWebView.loadUrl(uri.toString());
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
