@@ -590,6 +590,7 @@ public class BrowserFragment extends Fragment {
                 mFindText.setMinWidth(200);
                 mFindText.setMaxWidth(400);
                 mFindText.setSingleLine();
+                mFindText.setTextSize(14);
                 mFindText.setBackgroundResource(android.R.color.transparent);
                 mFindText.setHint(R.string.find_page);
                 mFindText.setFocusable(true);
