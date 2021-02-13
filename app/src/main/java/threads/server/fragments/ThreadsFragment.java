@@ -17,7 +17,6 @@ import android.provider.DocumentsContract;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,12 +82,10 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.utils.ThreadItemDetailsLookup;
 import threads.server.utils.ThreadsItemKeyProvider;
 import threads.server.utils.ThreadsViewAdapter;
-import threads.server.work.BackupWorker;
 import threads.server.work.PageWorker;
 import threads.server.work.UploadContentWorker;
 import threads.server.work.UploadDirectoryWorker;
 import threads.server.work.UploadFileWorker;
-import threads.server.work.UploadFolderWorker;
 
 
 public class ThreadsFragment extends Fragment implements
@@ -137,65 +134,6 @@ public class ThreadsFragment extends Fragment implements
                     });
 
 
-    private final ActivityResultLauncher<Intent> mFolderImportForResult =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                Intent data = result.getData();
-                                try {
-                                    Objects.requireNonNull(data);
-                                    long parent = getThread(mContext);
-                                    if (data.getClipData() != null) {
-                                        ClipData mClipData = data.getClipData();
-                                        int items = mClipData.getItemCount();
-                                        if (items > 0) {
-                                            for (int i = 0; i < items; i++) {
-                                                ClipData.Item item = mClipData.getItemAt(i);
-                                                Uri uri = item.getUri();
-
-                                                if (!FileDocumentsProvider.hasReadPermission(mContext, uri)) {
-                                                    EVENTS.getInstance(mContext).error(
-                                                            getString(R.string.file_has_no_read_permission));
-                                                    return;
-                                                }
-
-                                                if (FileDocumentsProvider.isPartial(mContext, uri)) {
-                                                    EVENTS.getInstance(mContext).error(
-                                                            getString(R.string.file_not_valid));
-                                                    return;
-                                                }
-
-                                                UploadFolderWorker.load(mContext, parent, uri);
-                                            }
-                                        }
-                                    } else {
-                                        Uri uri = data.getData();
-                                        if (uri != null) {
-                                            if (!FileDocumentsProvider.hasReadPermission(mContext, uri)) {
-                                                EVENTS.getInstance(mContext).error(
-                                                        getString(R.string.file_has_no_read_permission));
-                                                return;
-                                            }
-
-                                            if (FileDocumentsProvider.isPartial(mContext, uri)) {
-                                                EVENTS.getInstance(mContext).error(
-                                                        getString(R.string.file_not_valid));
-                                                return;
-                                            }
-
-                                            UploadFolderWorker.load(mContext, parent, uri);
-                                        }
-                                    }
-                                } catch (Throwable throwable) {
-                                    LogUtils.error(TAG, throwable);
-                                }
-                            }
-                        }
-                    });
-
-
     private final ActivityResultLauncher<Intent> mFilesImportForResult =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     new ActivityResultCallback<ActivityResult>() {
@@ -231,34 +169,6 @@ public class ThreadsFragment extends Fragment implements
 
                                         UploadService.uploadFile(mContext, parent, uri);
                                     }
-
-                                } catch (Throwable throwable) {
-                                    LogUtils.error(TAG, throwable);
-                                }
-                            }
-                        }
-                    });
-
-
-    private final ActivityResultLauncher<Intent> mBackupForResult =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                Intent data = result.getData();
-                                try {
-                                    Objects.requireNonNull(data);
-                                    Uri uri = data.getData();
-                                    Objects.requireNonNull(uri);
-
-
-                                    if (!FileDocumentsProvider.hasWritePermission(mContext, uri)) {
-                                        EVENTS.getInstance(mContext).error(
-                                                getString(R.string.file_has_no_write_permission));
-                                        return;
-                                    }
-                                    BackupWorker.backup(mContext, uri);
 
                                 } catch (Throwable throwable) {
                                     LogUtils.error(TAG, throwable);
@@ -364,202 +274,20 @@ public class ThreadsFragment extends Fragment implements
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater);
-        menuInflater.inflate(R.menu.menu_threads_fragment, menu);
-
-        Long value = mSelectionViewModel.getParentThread().getValue();
-        boolean topLevel = Objects.equals(0L, value);
-
-
-        MenuItem actionAddDir = menu.findItem(R.id.action_add_folder);
-        actionAddDir.setVisible(true);
-
-        MenuItem actionNewFolder = menu.findItem(R.id.action_new_folder);
-        actionNewFolder.setVisible(true);
-
-        MenuItem actionNewText = menu.findItem(R.id.action_text);
-        actionNewText.setVisible(true);
-
-
-        MenuItem actionBackup = menu.findItem(R.id.action_backup);
-        actionBackup.setVisible(topLevel);
-
     }
 
 
-
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_threads_search) {
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            try {
-                mSearchActionMode = ((AppCompatActivity)
-                        mActivity).startSupportActionMode(
-                        createSearchActionModeCallback());
-
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-            return true;
-        } else if (itemId == R.id.action_share) {
-
-            try {
-
-                if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                    return true;
-                }
-                mLastClickTime = SystemClock.elapsedRealtime();
-
-                DOCS docs = DOCS.getInstance(mContext);
-                Uri uri = docs.getPinsPageUri();
-
-
-                ComponentName[] names = {new ComponentName(mContext, MainActivity.class)};
-
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
-                intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
-                intent.setType(MimeType.PLAIN_MIME_TYPE);
-                intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-
-                Intent chooser = Intent.createChooser(intent, getText(R.string.share));
-                chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, names);
-                chooser.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(chooser);
-
-            } catch (Throwable ignore) {
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.no_activity_found_to_handle_uri));
-            }
-
-            return true;
-
-        } else if (itemId == R.id.action_backup) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            clickBackup();
-
-            return true;
-
-        } else if (itemId == R.id.action_text) {
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            try {
-                long parent = 0L;
-                Long thread = mSelectionViewModel.getParentThread().getValue();
-                if (thread != null) {
-                    parent = thread;
-                }
-
-                TextDialogFragment.newInstance(parent).
-                        show(getChildFragmentManager(), TextDialogFragment.TAG);
-            } catch (Throwable e) {
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.no_activity_found_to_handle_uri));
-            }
-
-            return true;
-
-        } else if (itemId == R.id.action_add_folder) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            Long idx = mSelectionViewModel.getParentThread().getValue();
-            Objects.requireNonNull(idx);
-
-            clickImportFolder(idx);
-            return true;
-
-        } else if (itemId == R.id.action_new_folder) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            clickNewFolder();
-            return true;
-
-
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void clickImportFolder(long idx) {
+    public void findInPage() {
         try {
-            setThread(mContext, idx);
+            mSearchActionMode = ((AppCompatActivity)
+                    mActivity).startSupportActionMode(
+                    createSearchActionModeCallback());
 
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-            intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
-            mFolderImportForResult.launch(intent);
-        } catch (Throwable e) {
-            EVENTS.getInstance(mContext).warning(
-                    getString(R.string.no_activity_found_to_handle_uri));
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
     }
 
-
-    private void clickNewFolder() {
-        try {
-            long parent = 0L;
-            Long thread = mSelectionViewModel.getParentThread().getValue();
-            if (thread != null) {
-                parent = thread;
-            }
-
-            NewFolderDialogFragment.newInstance(parent).
-                    show(getChildFragmentManager(), NewFolderDialogFragment.TAG);
-        } catch (Throwable e) {
-            EVENTS.getInstance(mContext).warning(
-                    getString(R.string.no_activity_found_to_handle_uri));
-        }
-    }
-
-    private void clickBackup() {
-        try {
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
-            mBackupForResult.launch(intent);
-        } catch (Throwable e) {
-            EVENTS.getInstance(mContext).warning(
-                    getString(R.string.no_activity_found_to_handle_uri));
-        }
-    }
 
     private void createFolderChips(@NonNull ChipGroup group, @NonNull List<Folder> folders) {
 

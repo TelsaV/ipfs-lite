@@ -14,12 +14,9 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Pair;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.webkit.HttpAuthHandler;
 import android.webkit.URLUtil;
 import android.webkit.WebResourceError;
@@ -145,7 +142,6 @@ public class BrowserFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.setHasOptionsMenu(true);
     }
 
     private void goBack() {
@@ -154,30 +150,17 @@ public class BrowserFragment extends Fragment {
         mWebView.goBack();
     }
 
-    private void goForward() {
+    public void goForward() {
         mWebView.stopLoading();
         docs.releaseThreads();
         mWebView.goForward();
     }
 
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater menuInflater) {
-        super.onCreateOptionsMenu(menu, menuInflater);
-        menuInflater.inflate(R.menu.menu_browser_fragment, menu);
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.browser_view, container, false);
-    }
-
     public boolean onBackPressed() {
-
         if (mWebView.canGoBack()) {
             goBack();
             return true;
         }
-
         return false;
     }
 
@@ -232,32 +215,10 @@ public class BrowserFragment extends Fragment {
 
             try {
 
-                mWebView.clearHistory();
-                mWebView.clearCache(true);
 
-                ClearCacheWorker.clearCache(mContext);
-
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.clear_cache));
 
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
-            }
-            return true;
-        } else if (itemId == R.id.action_find_page) {
-
-
-            if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                return true;
-            }
-            mLastClickTime = SystemClock.elapsedRealtime();
-
-            try {
-                ((AppCompatActivity)
-                        mActivity).startSupportActionMode(
-                        createFindActionModeCallback());
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
             }
             return true;
         }
@@ -808,6 +769,34 @@ public class BrowserFragment extends Fragment {
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
+    }
+
+    public void clearCache() {
+        try {
+            mWebView.clearHistory();
+            mWebView.clearCache(true);
+
+            ClearCacheWorker.clearCache(mContext);
+
+            EVENTS.getInstance(mContext).warning(
+                    getString(R.string.clear_cache));
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+    public void findInPage() {
+        try {
+            ((AppCompatActivity)
+                    mActivity).startSupportActionMode(
+                    createFindActionModeCallback());
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+    public void download() {
+        // TODO
     }
 
 

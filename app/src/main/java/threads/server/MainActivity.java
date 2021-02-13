@@ -1,10 +1,14 @@
 package threads.server;
 
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -14,6 +18,7 @@ import android.net.nsd.NsdServiceInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.DocumentsContract;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,6 +32,10 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -73,9 +82,11 @@ import threads.server.fragments.BookmarksDialogFragment;
 import threads.server.fragments.BrowserFragment;
 import threads.server.fragments.EditContentDialogFragment;
 import threads.server.fragments.EditPeerDialogFragment;
+import threads.server.fragments.NewFolderDialogFragment;
 import threads.server.fragments.PeersFragment;
 import threads.server.fragments.SettingsFragment;
 import threads.server.fragments.SwarmFragment;
+import threads.server.fragments.TextDialogFragment;
 import threads.server.fragments.ThreadsFragment;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
@@ -89,10 +100,12 @@ import threads.server.utils.CodecDecider;
 import threads.server.utils.MimeType;
 import threads.server.utils.PermissionAction;
 import threads.server.utils.SelectionViewModel;
+import threads.server.work.BackupWorker;
 import threads.server.work.DeleteThreadsWorker;
 import threads.server.work.LocalConnectWorker;
 import threads.server.work.SwarmConnectWorker;
 import threads.server.work.UploadFilesWorker;
+import threads.server.work.UploadFolderWorker;
 
 
 public class MainActivity extends AppCompatActivity implements
@@ -119,6 +132,107 @@ public class MainActivity extends AppCompatActivity implements
     private SelectionViewModel mSelectionViewModel;
     private TextView mBrowserText;
     private ActionMode mActionMode;
+
+
+    private final ActivityResultLauncher<Intent> mFolderImportForResult =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                Intent data = result.getData();
+                                try {
+                                    Objects.requireNonNull(data);
+                                    long parent = getThread(getApplicationContext());
+                                    if (data.getClipData() != null) {
+                                        ClipData mClipData = data.getClipData();
+                                        int items = mClipData.getItemCount();
+                                        if (items > 0) {
+                                            for (int i = 0; i < items; i++) {
+                                                ClipData.Item item = mClipData.getItemAt(i);
+                                                Uri uri = item.getUri();
+
+                                                if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
+                                                    EVENTS.getInstance(getApplicationContext()).error(
+                                                            getString(R.string.file_has_no_read_permission));
+                                                    return;
+                                                }
+
+                                                if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
+                                                    EVENTS.getInstance(getApplicationContext()).error(
+                                                            getString(R.string.file_not_valid));
+                                                    return;
+                                                }
+
+                                                UploadFolderWorker.load(getApplicationContext(), parent, uri);
+                                            }
+                                        }
+                                    } else {
+                                        Uri uri = data.getData();
+                                        if (uri != null) {
+                                            if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
+                                                EVENTS.getInstance(getApplicationContext()).error(
+                                                        getString(R.string.file_has_no_read_permission));
+                                                return;
+                                            }
+
+                                            if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
+                                                EVENTS.getInstance(getApplicationContext()).error(
+                                                        getString(R.string.file_not_valid));
+                                                return;
+                                            }
+
+                                            UploadFolderWorker.load(getApplicationContext(), parent, uri);
+                                        }
+                                    }
+                                } catch (Throwable throwable) {
+                                    LogUtils.error(TAG, throwable);
+                                }
+                            }
+                        }
+                    });
+    private final ActivityResultLauncher<Intent> mBackupForResult =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                Intent data = result.getData();
+                                try {
+                                    Objects.requireNonNull(data);
+                                    Uri uri = data.getData();
+                                    Objects.requireNonNull(uri);
+
+
+                                    if (!FileDocumentsProvider.hasWritePermission(getApplicationContext(), uri)) {
+                                        EVENTS.getInstance(getApplicationContext()).error(
+                                                getString(R.string.file_has_no_write_permission));
+                                        return;
+                                    }
+                                    BackupWorker.backup(getApplicationContext(), uri);
+
+                                } catch (Throwable throwable) {
+                                    LogUtils.error(TAG, throwable);
+                                }
+                            }
+                        }
+                    });
+
+    private static long getThread(@NonNull Context context) {
+
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                TAG, Context.MODE_PRIVATE);
+        return sharedPref.getLong(Content.IDX, -1);
+    }
+
+    private static void setThread(@NonNull Context context, long idx) {
+
+        SharedPreferences sharedPref = context.getSharedPreferences(
+                TAG, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putLong(Content.IDX, idx);
+        editor.apply();
+    }
 
     @Override
     public void onDestroy() {
@@ -447,8 +561,10 @@ public class MainActivity extends AppCompatActivity implements
             mPopupWindow.showAsDropDown(mActionOverflow, 0, -dpToPx(48), Gravity.TOP);
 
 
+            int frag = currentFragment.get();
             ImageButton actionNextPage = menuOverflow.findViewById(R.id.action_next_page);
-            if (/*!mWebView.canGoForward()*/true) {
+            // todo only when forward is possible
+            if (/*!mWebView.canGoForward()*/frag != R.id.navigation_browser) {
                 actionNextPage.setEnabled(false);
 
                 actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
@@ -461,7 +577,14 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionNextPage.setOnClickListener(v1 -> {
                 try {
-                    // goForward();
+                    Fragment fragment = getSupportFragmentManager().findFragmentById(
+                            R.id.fragment_container);
+                    if (fragment instanceof BrowserFragment) {
+                        BrowserFragment browserFragment = (BrowserFragment) fragment;
+                        if (browserFragment.isResumed()) {
+                            browserFragment.goForward();
+                        }
+                    }
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -470,11 +593,41 @@ public class MainActivity extends AppCompatActivity implements
 
             });
 
+
             ImageButton actionFindPage = menuOverflow.findViewById(R.id.action_find_page);
+            if (frag == R.id.navigation_browser || frag == R.id.navigation_files) {
+                actionFindPage.setEnabled(true);
+
+                actionFindPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+            } else {
+                actionFindPage.setEnabled(false);
+
+                actionFindPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
+            }
             actionFindPage.setOnClickListener(v12 -> {
                 try {
-                            /*startSupportActionMode(
-                                    createFindActionModeCallback());*/
+                    if (frag == R.id.navigation_browser) {
+                        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                                R.id.fragment_container);
+                        if (fragment instanceof BrowserFragment) {
+                            BrowserFragment browserFragment = (BrowserFragment) fragment;
+                            if (browserFragment.isResumed()) {
+                                browserFragment.findInPage();
+                            }
+                        }
+                    } else if (frag == R.id.navigation_files) {
+                        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                                R.id.fragment_container);
+                        if (fragment instanceof ThreadsFragment) {
+                            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
+                            if (threadsFragment.isResumed()) {
+                                threadsFragment.findInPage();
+                            }
+                        }
+                    }
+
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -499,7 +652,16 @@ public class MainActivity extends AppCompatActivity implements
 
             actionDownload.setOnClickListener(v13 -> {
                 try {
-                    //download();
+                    if (frag == R.id.navigation_browser) {
+                        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                                R.id.fragment_container);
+                        if (fragment instanceof BrowserFragment) {
+                            BrowserFragment browserFragment = (BrowserFragment) fragment;
+                            if (browserFragment.isResumed()) {
+                                browserFragment.download(); // TODO implement
+                            }
+                        }
+                    }
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -511,23 +673,23 @@ public class MainActivity extends AppCompatActivity implements
             ImageButton actionShare = menuOverflow.findViewById(R.id.action_share);
             actionShare.setOnClickListener(v14 -> {
                 try {
-                            /*
-                            String url = mWebView.getUrl();
-                            Uri uri = docs.getOriginalUri(Uri.parse(url));
+                    String url = mBrowserText.getText().toString(); // TODO optimize
 
-                            ComponentName[] names = {new ComponentName(getApplicationContext(), MainActivity.class)};
+                    Uri uri = docs.getOriginalUri(Uri.parse(url));
 
-                            Intent intent = new Intent(Intent.ACTION_SEND);
-                            intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
-                            intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
-                            intent.setType(MimeType.PLAIN_MIME_TYPE);
-                            intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
-                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    ComponentName[] names = {new ComponentName(getApplicationContext(), MainActivity.class)};
+
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
+                    intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
+                    intent.setType(MimeType.PLAIN_MIME_TYPE);
+                    intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
 
-                            Intent chooser = Intent.createChooser(intent, getText(R.string.share));
-                            chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, names);
-                            startActivity(chooser);*/
+                    Intent chooser = Intent.createChooser(intent, getText(R.string.share));
+                    chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, names);
+                    startActivity(chooser);
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -537,9 +699,148 @@ public class MainActivity extends AppCompatActivity implements
             });
 
             ImageButton actionReload = menuOverflow.findViewById(R.id.action_reload);
+            if (frag == R.id.navigation_browser) {
+                actionReload.setEnabled(true);
+
+                actionReload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+            } else {
+                actionReload.setEnabled(false);
+
+                actionReload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
+            }
             actionReload.setOnClickListener(v15 -> {
                 try {
-                    //reload();
+                    if (frag == R.id.navigation_browser) {
+                        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                                R.id.fragment_container);
+                        if (fragment instanceof BrowserFragment) {
+                            BrowserFragment browserFragment = (BrowserFragment) fragment;
+                            if (browserFragment.isResumed()) {
+                                browserFragment.reload();
+                            }
+                        }
+                    }
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            TextView actionClearCache = menuOverflow.findViewById(R.id.action_clear_cache);
+            actionClearCache.setVisibility(View.GONE);
+            actionClearCache.setOnClickListener(v19 -> {
+                try {
+                    Fragment fragment = getSupportFragmentManager().findFragmentById(
+                            R.id.fragment_container);
+                    if (fragment instanceof BrowserFragment) {
+                        BrowserFragment browserFragment = (BrowserFragment) fragment;
+                        if (browserFragment.isResumed()) {
+                            browserFragment.clearCache();
+                        }
+                    }
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            TextView actionNewFolder = menuOverflow.findViewById(R.id.action_new_folder);
+            if (frag == R.id.navigation_files) {
+                actionNewFolder.setVisibility(View.VISIBLE);
+            } else {
+                actionNewFolder.setVisibility(View.GONE);
+            }
+            actionNewFolder.setOnClickListener(v19 -> {
+                try {
+
+                    long parent = 0L;
+                    Long thread = mSelectionViewModel.getParentThread().getValue();
+                    if (thread != null) {
+                        parent = thread;
+                    }
+
+                    NewFolderDialogFragment.newInstance(parent).
+                            show(getSupportFragmentManager(), NewFolderDialogFragment.TAG);
+
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+
+            TextView actionImportFolder = menuOverflow.findViewById(R.id.action_import_folder);
+            if (frag == R.id.navigation_files) {
+                actionImportFolder.setVisibility(View.VISIBLE);
+            } else {
+                actionImportFolder.setVisibility(View.GONE);
+            }
+            actionImportFolder.setOnClickListener(v19 -> {
+                try {
+                    long parent = 0L;
+                    Long thread = mSelectionViewModel.getParentThread().getValue();
+                    if (thread != null) {
+                        parent = thread;
+                    }
+                    setThread(getApplicationContext(), parent);
+
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                    intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
+                    mFolderImportForResult.launch(intent);
+
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+
+            TextView actionNewText = menuOverflow.findViewById(R.id.action_new_text);
+            if (frag == R.id.navigation_files) {
+                actionNewText.setVisibility(View.VISIBLE);
+            } else {
+                actionNewText.setVisibility(View.GONE);
+            }
+            actionNewText.setOnClickListener(v19 -> {
+                try {
+
+                    long parent = 0L;
+                    Long thread = mSelectionViewModel.getParentThread().getValue();
+                    if (thread != null) {
+                        parent = thread;
+                    }
+
+                    TextDialogFragment.newInstance(parent).
+                            show(getSupportFragmentManager(), TextDialogFragment.TAG);
+
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+            TextView actionBackup = menuOverflow.findViewById(R.id.action_backup);
+            actionBackup.setOnClickListener(v19 -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                    intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
+                    mBackupForResult.launch(intent);
+
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
