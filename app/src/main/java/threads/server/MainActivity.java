@@ -124,16 +124,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
     private final AtomicInteger currentFragment = new AtomicInteger();
-    private long mLastClickTime = 0;
-    private CoordinatorLayout mDrawerLayout;
-    private BottomNavigationView mNavigation;
-    private NsdManager mNsdManager;
-    private FloatingActionButton mFloatingActionButton;
-    private SelectionViewModel mSelectionViewModel;
-    private TextView mBrowserText;
-    private ActionMode mActionMode;
-
-
     private final ActivityResultLauncher<Intent> mFolderImportForResult =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     new ActivityResultCallback<ActivityResult>() {
@@ -217,6 +207,16 @@ public class MainActivity extends AppCompatActivity implements
                             }
                         }
                     });
+    private long mLastClickTime = 0;
+    private CoordinatorLayout mDrawerLayout;
+    private BottomNavigationView mNavigation;
+    private NsdManager mNsdManager;
+    private FloatingActionButton mFloatingActionButton;
+    private SelectionViewModel mSelectionViewModel;
+    private TextView mBrowserText;
+    private ActionMode mActionMode;
+    private ImageButton mActionBookmark;
+    private SortOrder sortOrder = SortOrder.DATE;
 
     private static long getThread(@NonNull Context context) {
 
@@ -336,9 +336,6 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private ImageButton mActionBookmark;
-    private SortOrder sortOrder = SortOrder.DATE;
-
     @Override
     public void checkBookmark(@Nullable Uri uri) {
         try {
@@ -412,6 +409,7 @@ public class MainActivity extends AppCompatActivity implements
         mActionBookmark = findViewById(R.id.action_bookmark);
         mActionBookmark.setOnClickListener(v -> {
             try {
+
                 Fragment fragment = getSupportFragmentManager().findFragmentById(
                         R.id.fragment_container);
                 if (fragment instanceof BrowserFragment) {
@@ -551,13 +549,13 @@ public class MainActivity extends AppCompatActivity implements
 
             View menuOverflow = inflater.inflate(R.layout.menu_overflow, null);
 
-
-            PopupWindow mPopupWindow = new PopupWindow(menuOverflow);
+            PopupWindow mPopupWindow = new PopupWindow(
+                    MainActivity.this, null, R.attr.popupMenuStyle);
+            mPopupWindow.setContentView(menuOverflow);
             mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
             mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
             mPopupWindow.setOutsideTouchable(true);
             mPopupWindow.setFocusable(true);
-            mPopupWindow.setElevation(12);
             mPopupWindow.showAsDropDown(mActionOverflow, 0, -dpToPx(48), Gravity.TOP);
 
 
@@ -1623,5 +1621,4 @@ public class MainActivity extends AppCompatActivity implements
                 .getDisplayMetrics().density;
         return Math.round((float) dp * density);
     }
-
 }

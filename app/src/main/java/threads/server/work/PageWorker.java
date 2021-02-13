@@ -60,7 +60,7 @@ public class PageWorker extends Worker {
 
     public static void publish(@NonNull Context context) {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                    TAG, ExistingPeriodicWorkPolicy.REPLACE, getWork(context));
+                TAG, ExistingPeriodicWorkPolicy.REPLACE, getWork(context));
     }
 
 

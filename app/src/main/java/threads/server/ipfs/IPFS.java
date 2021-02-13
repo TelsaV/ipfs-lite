@@ -46,6 +46,8 @@ import threads.server.core.blocks.Block;
 import threads.server.core.events.EVENTS;
 
 public class IPFS implements Listener {
+    public static final int TIMEOUT_BOOTSTRAP = 5;
+    public static final int MIN_PEERS = 10;
     private static final String EMPTY_DIR_58 = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
     private static final String EMPTY_DIR_32 = "bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354";
     private static final String PREF_KEY = "prefKey";
@@ -63,9 +65,6 @@ public class IPFS implements Listener {
     private static final String PRIVATE_KEY = "privateKey";
     private static final String TAG = IPFS.class.getSimpleName();
     private static IPFS INSTANCE = null;
-
-    public static final int TIMEOUT_BOOTSTRAP = 5;
-    public static final int MIN_PEERS = 10;
     private final EVENTS events;
     private final Node node;
     private final Object locker = new Object();
@@ -650,7 +649,7 @@ public class IPFS implements Listener {
 
                     List<String> second = result.second;
                     tasks.clear();
-                    if(!second.isEmpty()) {
+                    if (!second.isEmpty()) {
                         executor = Executors.newFixedThreadPool(second.size());
                         for (String address : second) {
                             tasks.add(() -> swarmConnect(address, null, TIMEOUT_BOOTSTRAP));

@@ -353,7 +353,7 @@ public class BrowserFragment extends Fragment {
                     } else if (Objects.equals(uri.getScheme(), Content.HTTP) ||
                             Objects.equals(uri.getScheme(), Content.HTTPS)) {
                         Uri newUri = docs.redirectHttp(uri);
-                        if(!Objects.equals(newUri, uri)){
+                        if (!Objects.equals(newUri, uri)) {
                             Intent intent = new Intent(Intent.ACTION_VIEW, newUri,
                                     mContext, MainActivity.class);
                             startActivity(intent);
@@ -516,9 +516,6 @@ public class BrowserFragment extends Fragment {
         }
 
     }
-
-
-
 
 
     private void fileDownloader(@NonNull Uri uri, @NonNull String filename, @NonNull String mimeType,

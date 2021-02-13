@@ -60,7 +60,7 @@ public class ConnectService {
         Objects.requireNonNull(user);
         String address = user.getAddress();
         if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-            if (ipfs.swarmConnect(Content.P2P_PATH + pid, null,5)) {
+            if (ipfs.swarmConnect(Content.P2P_PATH + pid, null, 5)) {
                 return true;
             }
         }

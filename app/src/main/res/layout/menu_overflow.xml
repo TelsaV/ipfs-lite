@@ -4,13 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="16dp"
-    android:background="@color/colorPopupBackground"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPopupTitle"
         android:orientation="horizontal">
 
         <ImageButton
@@ -69,6 +67,13 @@
             app:iconTint="?android:textColorPrimary" />
     </LinearLayout>
 
+    <TextView
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        android:gravity="center_horizontal"
+        android:paddingTop="5dip" />
 
     <LinearLayout
         android:layout_width="match_parent"

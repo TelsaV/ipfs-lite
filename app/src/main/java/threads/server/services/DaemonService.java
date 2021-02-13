@@ -71,8 +71,8 @@ public class DaemonService extends Service {
             }
 
         } catch (Throwable e) {
-                LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
-            }
+            LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+        }
 
     }
 

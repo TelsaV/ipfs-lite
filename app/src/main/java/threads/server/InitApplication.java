@@ -185,7 +185,6 @@ public class InitApplication extends Application {
         syncData(getApplicationContext());
 
 
-
         if (LogUtils.isDebug()) {
             IPFS.logCacheDir(getApplicationContext());
             IPFS.logBaseDir(getApplicationContext());

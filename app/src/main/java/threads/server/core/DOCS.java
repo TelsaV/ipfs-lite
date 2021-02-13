@@ -48,6 +48,8 @@ public class DOCS {
 
     private static final String TAG = DOCS.class.getSimpleName();
     private static final String INDEX_HTML = "index.html";
+    private static final HashSet<Long> runs = new HashSet<>();
+    private static final HashSet<Uri> uris = new HashSet<>();
     private static DOCS INSTANCE = null;
     private final IPFS ipfs;
     private final THREADS threads;
@@ -56,8 +58,7 @@ public class DOCS {
     private final ContentInfoUtil util;
     private final Hashtable<String, String> resolves = new Hashtable<>();
     private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
-    private static final HashSet<Long> runs = new HashSet<>();
-    private static final HashSet<Uri> uris = new HashSet<>();
+
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
         threads = THREADS.getInstance(context);
@@ -305,7 +306,7 @@ public class DOCS {
             Objects.requireNonNull(dirCid);
             if (!oldName.isEmpty()) {
                 String dir = ipfs.rmLinkFromDir(dirCid, oldName);
-                if(dir != null){
+                if (dir != null) {
                     dirCid = dir;
                 }
             }
@@ -319,7 +320,7 @@ public class DOCS {
             Objects.requireNonNull(dirCid);
             if (!oldName.isEmpty()) {
                 String dir = ipfs.rmLinkFromDir(dirCid, oldName);
-                if(dir != null){
+                if (dir != null) {
                     dirCid = dir;
                 }
             }
@@ -334,7 +335,7 @@ public class DOCS {
     private void removeFromParentDocument(long idx) {
 
         Thread child = threads.getThreadByIdx(idx);
-        if(child != null) {
+        if (child != null) {
             String name = child.getName();
             long parent = child.getParent();
             if (parent > 0) {
@@ -507,7 +508,7 @@ public class DOCS {
 
     @NonNull
     public Uri getPath(@NonNull Thread thread, boolean ipns) {
-        if(ipns) {
+        if (ipns) {
             Uri.Builder builder = new Uri.Builder();
             builder.scheme(Content.IPNS)
                     .authority(getHost());

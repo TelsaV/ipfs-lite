@@ -213,7 +213,6 @@ public class ThreadsFragment extends Fragment implements
     private ThreadItemDetailsLookup mThreadItemDetailsLookup;
 
 
-
     private static long getThread(@NonNull Context context) {
 
         SharedPreferences sharedPref = context.getSharedPreferences(
@@ -1033,8 +1032,6 @@ public class ThreadsFragment extends Fragment implements
     private void clickThreadDelete(long idx) {
         ThreadsService.removeThreads(mContext, idx);
     }
-
-
 
 
     private void clickImportFiles(long idx) {
