@@ -251,7 +251,6 @@ public class MainActivity extends AppCompatActivity implements
     private TextView mBrowserText;
     private ActionMode mActionMode;
     private ImageButton mActionBookmark;
-    private SortOrder sortOrder = SortOrder.DATE;
 
     private static long getThread(@NonNull Context context) {
 
@@ -374,43 +373,9 @@ public class MainActivity extends AppCompatActivity implements
     private final AtomicBoolean forwardActive = new AtomicBoolean(false);
     private final AtomicBoolean downloadActive = new AtomicBoolean(false);
 
-    private void setSortOrder(long idx) {
-
-        if (idx == 0L) {
-            sortOrder = InitApplication.getSortOrder(getApplicationContext());
-        } else {
-            THREADS threads = THREADS.getInstance(getApplicationContext());
-            SortOrder order = threads.getThreadSortOrder(idx);
-            if (order != null) {
-                sortOrder = order;
-            } else {
-                sortOrder = InitApplication.getSortOrder(getApplicationContext());
-            }
-        }
-    }
 
     private void setSortOrder(@NonNull SortOrder sortOrder) {
-        this.sortOrder = sortOrder;
-
-        long parent = 0L;
-        Long thread = mSelectionViewModel.getParentThread().getValue();
-        if (thread != null) {
-            parent = thread;
-        }
-        if (parent == 0L) {
-            InitApplication.setSortOrder(getApplicationContext(), sortOrder);
-        } else {
-            final long idx = parent;
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                try {
-                    THREADS threads = THREADS.getInstance(getApplicationContext());
-                    threads.setThreadSortOrder(idx, sortOrder);
-                } catch (Throwable throwable) {
-                    LogUtils.error(TAG, throwable);
-                }
-            });
-        }
+        InitApplication.setSortOrder(getApplicationContext(), sortOrder);
     }
 
     private final AtomicReference<Uri> uriAtomicReference = new AtomicReference<>(null);
@@ -776,7 +741,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sortOrder = InitApplication.getSortOrder(getApplicationContext());
         DOCS docs = DOCS.getInstance(getApplicationContext());
 
         mActionBookmark = findViewById(R.id.action_bookmark);
@@ -826,9 +790,11 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
+
         ImageView mActionSorting = findViewById(R.id.action_sorting);
         mActionSorting.setOnClickListener(v -> {
             try {
+                SortOrder sortOrder = InitApplication.getSortOrder(getApplicationContext());
                 PopupMenu popup = new PopupMenu(MainActivity.this, v);
                 popup.inflate(R.menu.popup_sorting);
 
@@ -1267,7 +1233,6 @@ public class MainActivity extends AppCompatActivity implements
         mSelectionViewModel.getParentThread().observe(this, (threadIdx) -> {
 
             if (threadIdx != null) {
-                setSortOrder(threadIdx);
                 if (threadIdx > 0L) {
                     mActionEditCid.setVisibility(View.GONE);
                 } else {

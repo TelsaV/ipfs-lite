@@ -60,7 +60,7 @@ public class InitApplication extends Application {
     public static SortOrder getSortOrder(@NonNull Context context) {
 
         SharedPreferences sharedPref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
-        return SortOrder.toSort(sharedPref.getInt(SORT_KEY, 0));
+        return SortOrder.toSort(sharedPref.getInt(SORT_KEY, SortOrder.DATE.ordinal()));
     }
 
     public static void setSortOrder(@NonNull Context context, @NonNull SortOrder sort) {

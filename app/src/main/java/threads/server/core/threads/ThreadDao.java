@@ -6,7 +6,6 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.TypeConverters;
 
 import java.util.List;
 
@@ -135,12 +134,4 @@ public interface ThreadDao {
 
     @Query("SELECT work FROM Thread WHERE idx = :idx")
     String getWork(long idx);
-
-    @Query("UPDATE Thread SET sortOrder =:sortOrder WHERE idx = :idx")
-    @TypeConverters({SortOrder.class})
-    void setSortOrder(long idx, SortOrder sortOrder);
-
-    @Query("SELECT sortOrder FROM Thread WHERE idx = :idx")
-    @TypeConverters({SortOrder.class})
-    SortOrder getSortOrder(long idx);
 }

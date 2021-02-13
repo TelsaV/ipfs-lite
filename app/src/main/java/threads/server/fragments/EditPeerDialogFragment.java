@@ -41,7 +41,6 @@ import threads.server.services.LiteService;
 
 public class EditPeerDialogFragment extends BottomSheetDialogFragment {
     public static final String TAG = EditPeerDialogFragment.class.getSimpleName();
-    private static final String P2P_PROTO = "p2p://"; // todo remove in the future
     private final AtomicBoolean issueMessage = new AtomicBoolean(false);
     private long mLastClickTime = 0;
     private TextInputLayout mEditAccountLayout;
@@ -111,10 +110,6 @@ public class EditPeerDialogFragment extends BottomSheetDialogFragment {
             try {
 
                 multi = multi.trim();
-
-                if (multi.startsWith(P2P_PROTO)) {
-                    multi = multi.replaceFirst(P2P_PROTO, "");
-                }
 
                 String style = "/p2p/";
                 if (multi.contains(style)) {

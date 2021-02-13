@@ -97,7 +97,7 @@
     <string name="uploading">Hochladen…</string>
     <string name="server_mode">Server Mode</string>
     <string name="browser">Browser</string>
-    <string name="download_title">Download Datei</string>
+    <string name="download_title">Download Daten</string>
     <string name="bookmarks">Lesezeichen</string>
     <string name="bookmark">Lesezeichen</string>
     <string name="bookmark_added">Lesezeichen \"%1$s\" hinzugefügt</string>

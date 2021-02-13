@@ -54,6 +54,7 @@ public class Thread {
     private boolean init;
     @ColumnInfo(name = "position")
     private long position;
+    @Deprecated
     @NonNull
     @TypeConverters(SortOrder.class)
     @ColumnInfo(name = "sortOrder")
@@ -80,11 +81,11 @@ public class Thread {
     }
 
     @NonNull
-    public SortOrder getSortOrder() {
+    SortOrder getSortOrder() {
         return sortOrder;
     }
 
-    public void setSortOrder(@NonNull SortOrder sortOrder) {
+    void setSortOrder(@NonNull SortOrder sortOrder) {
         this.sortOrder = sortOrder;
     }
 

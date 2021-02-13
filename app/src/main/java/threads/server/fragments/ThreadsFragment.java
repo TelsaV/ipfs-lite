@@ -319,7 +319,6 @@ public class ThreadsFragment extends Fragment implements
 
         mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
 
-        THREADS threads = THREADS.getInstance(mContext);
         mSelectionViewModel.getParentThread().observe(getViewLifecycleOwner(), (threadIdx) -> {
 
             if (threadIdx != null) {
@@ -332,18 +331,7 @@ public class ThreadsFragment extends Fragment implements
                     scrollView.setVisibility(View.VISIBLE);
                 }
 
-                // TODO optimize here
-                SortOrder sortOrder;
-                if (threadIdx == 0L) {
-                    sortOrder = InitApplication.getSortOrder(mContext);
-                } else {
-                    sortOrder = threads.getThreadSortOrder(threadIdx);
-                }
-
-                if (sortOrder == null) {
-                    sortOrder = SortOrder.DATE;
-                }
-
+                SortOrder sortOrder = InitApplication.getSortOrder(mContext);
 
                 updateDirectory(threadIdx,
                         mSelectionViewModel.getQuery().getValue(), sortOrder, false);
@@ -357,19 +345,8 @@ public class ThreadsFragment extends Fragment implements
         mSelectionViewModel.getQuery().observe(getViewLifecycleOwner(), (query) -> {
 
             if (query != null) {
-                // TODO optimize here
                 Long parent = mSelectionViewModel.getParentThread().getValue();
-                SortOrder sortOrder = SortOrder.DATE;
-                if (parent != null) {
-                    if (parent == 0L) {
-                        sortOrder = InitApplication.getSortOrder(mContext);
-                    } else {
-                        sortOrder = threads.getThreadSortOrder(parent);
-                    }
-                }
-                if (sortOrder == null) {
-                    sortOrder = SortOrder.DATE;
-                }
+                SortOrder sortOrder = InitApplication.getSortOrder(mContext);
                 updateDirectory(parent, query, sortOrder, false);
             }
 

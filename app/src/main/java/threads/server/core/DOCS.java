@@ -453,8 +453,7 @@ public class DOCS {
                 page.setContent(dir);
                 pages.storePage(page);
             }
-
-            // TODO optimize in the future (just remove)
+            // just for backup, in case something happen before
             page = getPinsPage();
             Objects.requireNonNull(page);
             String dir = ipfs.createEmptyDir();

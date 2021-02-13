@@ -259,15 +259,6 @@ public class THREADS {
         return null;
     }
 
-    public void setThreadSortOrder(long idx, @NonNull SortOrder sortOrder) {
-        getThreadsDatabase().threadDao().setSortOrder(idx, sortOrder);
-    }
-
-    @Nullable
-    public SortOrder getThreadSortOrder(long idx) {
-        return getThreadsDatabase().threadDao().getSortOrder(idx);
-    }
-
     static class Builder {
 
         ThreadsDatabase threadsDatabase = null;
