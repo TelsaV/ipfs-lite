@@ -2,18 +2,23 @@ package threads.server.fragments;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.Window;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.appbar.AppBarLayout;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -55,13 +60,18 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        Dialog dialog = new Dialog(mContext, R.style.ThreadsThemeDialog);
+        Dialog dialog = new Dialog(mContext, R.style.ThreadsTheme);
         dialog.setContentView(R.layout.booksmark_view);
 
         Toolbar mToolbar = dialog.findViewById(R.id.toolbar);
         Objects.requireNonNull(mToolbar);
+
         mToolbar.setTitle(R.string.bookmarks);
-        mToolbar.setNavigationIcon(R.drawable.arrow_left);
+        Drawable drawable = AppCompatResources.getDrawable(mContext, R.drawable.arrow_left);
+        Objects.requireNonNull(drawable);
+        drawable.setColorFilter(ContextCompat.getColor(mContext,
+                R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+        mToolbar.setNavigationIcon(drawable);
         mToolbar.setNavigationOnClickListener(v -> {
             if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
                 return;
