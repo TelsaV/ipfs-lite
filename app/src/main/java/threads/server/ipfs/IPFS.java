@@ -945,7 +945,7 @@ public class IPFS implements Listener {
         try {
             return node.removeLinkFromDir(dir, name);
         } catch (Throwable throwable) {
-            // TODO activate again LogUtils.error(TAG, throwable);
+            LogUtils.error(TAG, throwable);
         }
         return null;
     }

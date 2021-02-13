@@ -455,7 +455,6 @@ public class DOCS {
             }
 
             // TODO optimize in the future (just remove)
-
             page = getPinsPage();
             Objects.requireNonNull(page);
             String dir = ipfs.createEmptyDir();

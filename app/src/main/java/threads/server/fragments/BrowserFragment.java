@@ -751,7 +751,18 @@ public class BrowserFragment extends Fragment {
     }
 
     public void download() {
-        // TODO
+        try {
+            String url = mWebView.getUrl();
+            if (url != null && !url.isEmpty()) {
+                Uri uri = Uri.parse(url);
+                if (Objects.equals(uri.getScheme(), Content.IPFS) ||
+                        Objects.equals(uri.getScheme(), Content.IPNS)) {
+                    contentDownloader(uri);
+                }
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
 

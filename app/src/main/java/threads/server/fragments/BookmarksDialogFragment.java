@@ -18,8 +18,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.appbar.AppBarLayout;
-
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -70,7 +68,7 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
         Drawable drawable = AppCompatResources.getDrawable(mContext, R.drawable.arrow_left);
         Objects.requireNonNull(drawable);
         drawable.setColorFilter(ContextCompat.getColor(mContext,
-                R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
         mToolbar.setNavigationIcon(drawable);
         mToolbar.setNavigationOnClickListener(v -> {
             if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {

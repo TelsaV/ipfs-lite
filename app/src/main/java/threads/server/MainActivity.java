@@ -32,8 +32,6 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.DrawableRes;
@@ -130,82 +128,59 @@ public class MainActivity extends AppCompatActivity implements
 
     private final ActivityResultLauncher<Intent> mFilesImportForResult =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                Intent data = result.getData();
-                                try {
-                                    Objects.requireNonNull(data);
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent data = result.getData();
+                            try {
+                                Objects.requireNonNull(data);
 
 
-                                    if (data.getClipData() != null) {
-                                        ClipData mClipData = data.getClipData();
-                                        long parent = getThread(getApplicationContext());
-                                        LiteService.files(getApplicationContext(), mClipData, parent);
+                                if (data.getClipData() != null) {
+                                    ClipData mClipData = data.getClipData();
+                                    long parent = getThread(getApplicationContext());
+                                    LiteService.files(getApplicationContext(), mClipData, parent);
 
-                                    } else if (data.getData() != null) {
-                                        Uri uri = data.getData();
-                                        Objects.requireNonNull(uri);
-                                        if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
-                                            EVENTS.getInstance(getApplicationContext()).error(
-                                                    getString(R.string.file_has_no_read_permission));
-                                            return;
-                                        }
-
-                                        if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
-                                            EVENTS.getInstance(getApplicationContext()).error(
-                                                    getString(R.string.file_not_valid));
-                                            return;
-                                        }
-
-                                        long parent = getThread(getApplicationContext());
-
-                                        UploadService.uploadFile(getApplicationContext(), parent, uri);
+                                } else if (data.getData() != null) {
+                                    Uri uri = data.getData();
+                                    Objects.requireNonNull(uri);
+                                    if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
+                                        EVENTS.getInstance(getApplicationContext()).error(
+                                                getString(R.string.file_has_no_read_permission));
+                                        return;
                                     }
 
-                                } catch (Throwable throwable) {
-                                    LogUtils.error(TAG, throwable);
+                                    if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
+                                        EVENTS.getInstance(getApplicationContext()).error(
+                                                getString(R.string.file_not_valid));
+                                        return;
+                                    }
+
+                                    long parent = getThread(getApplicationContext());
+
+                                    UploadService.uploadFile(getApplicationContext(), parent, uri);
                                 }
+
+                            } catch (Throwable throwable) {
+                                LogUtils.error(TAG, throwable);
                             }
                         }
                     });
     private final ActivityResultLauncher<Intent> mFolderImportForResult =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                Intent data = result.getData();
-                                try {
-                                    Objects.requireNonNull(data);
-                                    long parent = getThread(getApplicationContext());
-                                    if (data.getClipData() != null) {
-                                        ClipData mClipData = data.getClipData();
-                                        int items = mClipData.getItemCount();
-                                        if (items > 0) {
-                                            for (int i = 0; i < items; i++) {
-                                                ClipData.Item item = mClipData.getItemAt(i);
-                                                Uri uri = item.getUri();
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent data = result.getData();
+                            try {
+                                Objects.requireNonNull(data);
+                                long parent = getThread(getApplicationContext());
+                                if (data.getClipData() != null) {
+                                    ClipData mClipData = data.getClipData();
+                                    int items = mClipData.getItemCount();
+                                    if (items > 0) {
+                                        for (int i = 0; i < items; i++) {
+                                            ClipData.Item item = mClipData.getItemAt(i);
+                                            Uri uri = item.getUri();
 
-                                                if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
-                                                    EVENTS.getInstance(getApplicationContext()).error(
-                                                            getString(R.string.file_has_no_read_permission));
-                                                    return;
-                                                }
-
-                                                if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
-                                                    EVENTS.getInstance(getApplicationContext()).error(
-                                                            getString(R.string.file_not_valid));
-                                                    return;
-                                                }
-
-                                                UploadFolderWorker.load(getApplicationContext(), parent, uri);
-                                            }
-                                        }
-                                    } else {
-                                        Uri uri = data.getData();
-                                        if (uri != null) {
                                             if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
                                                 EVENTS.getInstance(getApplicationContext()).error(
                                                         getString(R.string.file_has_no_read_permission));
@@ -221,35 +196,49 @@ public class MainActivity extends AppCompatActivity implements
                                             UploadFolderWorker.load(getApplicationContext(), parent, uri);
                                         }
                                     }
-                                } catch (Throwable throwable) {
-                                    LogUtils.error(TAG, throwable);
+                                } else {
+                                    Uri uri = data.getData();
+                                    if (uri != null) {
+                                        if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
+                                            EVENTS.getInstance(getApplicationContext()).error(
+                                                    getString(R.string.file_has_no_read_permission));
+                                            return;
+                                        }
+
+                                        if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
+                                            EVENTS.getInstance(getApplicationContext()).error(
+                                                    getString(R.string.file_not_valid));
+                                            return;
+                                        }
+
+                                        UploadFolderWorker.load(getApplicationContext(), parent, uri);
+                                    }
                                 }
+                            } catch (Throwable throwable) {
+                                LogUtils.error(TAG, throwable);
                             }
                         }
                     });
     private final ActivityResultLauncher<Intent> mBackupForResult =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                Intent data = result.getData();
-                                try {
-                                    Objects.requireNonNull(data);
-                                    Uri uri = data.getData();
-                                    Objects.requireNonNull(uri);
+                    result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent data = result.getData();
+                            try {
+                                Objects.requireNonNull(data);
+                                Uri uri = data.getData();
+                                Objects.requireNonNull(uri);
 
 
-                                    if (!FileDocumentsProvider.hasWritePermission(getApplicationContext(), uri)) {
-                                        EVENTS.getInstance(getApplicationContext()).error(
-                                                getString(R.string.file_has_no_write_permission));
-                                        return;
-                                    }
-                                    BackupWorker.backup(getApplicationContext(), uri);
-
-                                } catch (Throwable throwable) {
-                                    LogUtils.error(TAG, throwable);
+                                if (!FileDocumentsProvider.hasWritePermission(getApplicationContext(), uri)) {
+                                    EVENTS.getInstance(getApplicationContext()).error(
+                                            getString(R.string.file_has_no_write_permission));
+                                    return;
                                 }
+                                BackupWorker.backup(getApplicationContext(), uri);
+
+                            } catch (Throwable throwable) {
+                                LogUtils.error(TAG, throwable);
                             }
                         }
                     });
@@ -382,7 +371,8 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private final AtomicBoolean forwardEnabled = new AtomicBoolean(false);
+    private final AtomicBoolean forwardActive = new AtomicBoolean(false);
+    private final AtomicBoolean downloadActive = new AtomicBoolean(false);
 
     private void setSortOrder(long idx) {
 
@@ -748,8 +738,6 @@ public class MainActivity extends AppCompatActivity implements
 
                     @Override
                     public boolean onQueryTextChange(String newText) {
-
-
                         return false;
                     }
                 });
@@ -932,7 +920,8 @@ public class MainActivity extends AppCompatActivity implements
             LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 
 
-            View menuOverflow = inflater.inflate(R.layout.menu_overflow, null);
+            View menuOverflow = inflater.inflate(
+                    R.layout.menu_overflow, mDrawerLayout, false);
 
             PopupWindow mPopupWindow = new PopupWindow(
                     MainActivity.this, null, R.attr.popupMenuStyle);
@@ -941,19 +930,21 @@ public class MainActivity extends AppCompatActivity implements
             mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
             mPopupWindow.setOutsideTouchable(true);
             mPopupWindow.setFocusable(true);
-            mPopupWindow.showAsDropDown(mActionOverflow, 0, -dpToPx(48), Gravity.TOP);
+
+            mPopupWindow.showAsDropDown(mActionOverflow, 0, -dpToPx(48),
+                    Gravity.TOP | Gravity.END);
 
 
             int frag = currentFragment.get();
             ImageButton actionNextPage = menuOverflow.findViewById(R.id.action_next_page);
-            if (frag == R.id.navigation_browser && forwardEnabled.get()) {
+            if (frag == R.id.navigation_browser && forwardActive.get()) {
                 actionNextPage.setEnabled(true);
                 actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionNextPage.setEnabled(false);
                 actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             }
             actionNextPage.setOnClickListener(v1 -> {
                 try {
@@ -978,11 +969,11 @@ public class MainActivity extends AppCompatActivity implements
             if (frag == R.id.navigation_browser || frag == R.id.navigation_files) {
                 actionFindPage.setEnabled(true);
                 actionFindPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionFindPage.setEnabled(false);
                 actionFindPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             }
             actionFindPage.setOnClickListener(v12 -> {
                 try {
@@ -1016,14 +1007,14 @@ public class MainActivity extends AppCompatActivity implements
 
             ImageButton actionDownload = menuOverflow.findViewById(R.id.action_download);
 
-            if (/*downloadActive()*/ false) {
+            if (downloadActive.get()) {
                 actionDownload.setEnabled(true);
                 actionDownload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionDownload.setEnabled(false);
                 actionDownload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             }
 
             actionDownload.setOnClickListener(v13 -> {
@@ -1034,7 +1025,7 @@ public class MainActivity extends AppCompatActivity implements
                         if (fragment instanceof BrowserFragment) {
                             BrowserFragment browserFragment = (BrowserFragment) fragment;
                             if (browserFragment.isResumed()) {
-                                browserFragment.download(); // TODO implement
+                                browserFragment.download();
                             }
                         }
                     }
@@ -1050,11 +1041,11 @@ public class MainActivity extends AppCompatActivity implements
             if (uriAtomicReference.get() != null) {
                 actionShare.setEnabled(true);
                 actionShare.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionShare.setEnabled(false);
                 actionShare.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             }
             actionShare.setOnClickListener(v14 -> {
                 try {
@@ -1088,11 +1079,11 @@ public class MainActivity extends AppCompatActivity implements
             if (frag == R.id.navigation_browser) {
                 actionReload.setEnabled(true);
                 actionReload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionReload.setEnabled(false);
                 actionReload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
             }
             actionReload.setOnClickListener(v15 -> {
                 try {
@@ -1291,7 +1282,7 @@ public class MainActivity extends AppCompatActivity implements
         });
         Uri uri = docs.getPinsPageUri();
         mSelectionViewModel.setUri(uri.toString());
-        updateTitle(uri);
+        updateUri(uri, false);
 
 
         mFloatingActionButton = findViewById(R.id.floating_action_button);
@@ -1371,7 +1362,7 @@ public class MainActivity extends AppCompatActivity implements
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
                 mActionBookmarks.setVisibility(View.GONE);
-                mActionId.setVisibility(View.GONE);
+                mActionId.setVisibility(View.VISIBLE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
                 return true;
@@ -1683,12 +1674,18 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+
+    private void updateDownload(@NonNull Uri uri) {
+        downloadActive.set(Objects.equals(uri.getScheme(), Content.IPFS) ||
+                Objects.equals(uri.getScheme(), Content.IPNS));
+    }
+
     @Override
     public void updateUri(@NonNull Uri uri, boolean forward) {
-        forwardEnabled.set(forward);
+        forwardActive.set(forward);
         uriAtomicReference.set(uri);
         updateTitle(uri);
         updateBookmark(uri);
-
+        updateDownload(uri);
     }
 }

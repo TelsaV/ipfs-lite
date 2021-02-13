@@ -53,6 +53,7 @@ public class PageWorker extends Worker {
 
         return new PeriodicWorkRequest.Builder(PageWorker.class, time, TimeUnit.HOURS)
                 .addTag(TAG)
+                .setInitialDelay(5, TimeUnit.SECONDS)
                 .setConstraints(builder.build())
                 .build();
 
