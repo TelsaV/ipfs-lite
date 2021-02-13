@@ -1197,6 +1197,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri),
                             getApplicationContext(), MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                     startActivity(intent);
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);

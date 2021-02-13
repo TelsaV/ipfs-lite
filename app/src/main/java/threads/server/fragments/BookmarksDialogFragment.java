@@ -2,7 +2,9 @@ package threads.server.fragments;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.Window;
@@ -12,7 +14,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -22,11 +23,11 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import threads.LogUtils;
+import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.books.Bookmark;
 import threads.server.core.books.BookmarkViewModel;
 import threads.server.utils.BookmarksViewAdapter;
-import threads.server.utils.SelectionViewModel;
 import threads.server.utils.SwipeToDeleteCallback;
 
 public class BookmarksDialogFragment extends DialogFragment implements BookmarksViewAdapter.BookmarkListener {
@@ -36,21 +37,17 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
     private long mLastClickTime = 0;
     private BookmarksViewAdapter mBookmarksViewAdapter;
     private Context mContext;
-    private FragmentActivity mActivity;
-    private SelectionViewModel mSelectionViewModel;
 
     @Override
     public void onDetach() {
         super.onDetach();
         mContext = null;
-        mActivity = null;
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mContext = context;
-        mActivity = getActivity();
     }
 
 
@@ -78,10 +75,6 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
 
             dismiss();
         });
-
-
-        mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
-
 
         RecyclerView bookmarks = dialog.findViewById(R.id.bookmarks);
         Objects.requireNonNull(bookmarks);
@@ -126,7 +119,10 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
 
         try {
 
-            mSelectionViewModel.setUri(bookmark.getUri());
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(bookmark.getUri()),
+                    mContext, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            startActivity(intent);
 
             dismiss();
         } catch (Throwable throwable) {
