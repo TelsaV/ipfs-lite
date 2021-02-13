@@ -2,7 +2,6 @@ package threads.server.fragments;
 
 
 import android.app.Activity;
-import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -71,20 +70,18 @@ import threads.server.core.threads.Thread;
 import threads.server.core.threads.ThreadViewModel;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
-import threads.server.services.LiteService;
 import threads.server.services.QRCodeService;
 import threads.server.services.ThreadsService;
-import threads.server.services.UploadService;
 import threads.server.utils.Folder;
 import threads.server.utils.MimeType;
 import threads.server.utils.SelectionViewModel;
 import threads.server.utils.ThreadItemDetailsLookup;
 import threads.server.utils.ThreadsItemKeyProvider;
 import threads.server.utils.ThreadsViewAdapter;
+import threads.server.work.CopyDirectoryWorker;
+import threads.server.work.CopyFileWorker;
 import threads.server.work.PageWorker;
 import threads.server.work.UploadContentWorker;
-import threads.server.work.UploadDirectoryWorker;
-import threads.server.work.UploadFileWorker;
 
 
 public class ThreadsFragment extends Fragment implements
@@ -122,8 +119,8 @@ public class ThreadsFragment extends Fragment implements
                                                 getString(R.string.file_has_no_write_permission));
                                         return;
                                     }
-                                    long parent = getThread(mContext);
-                                    UploadDirectoryWorker.load(mContext, uri, parent);
+                                    long threadIdx = getThread(mContext);
+                                    CopyDirectoryWorker.copyTo(mContext, uri, threadIdx);
 
                                 } catch (Throwable throwable) {
                                     LogUtils.error(TAG, throwable);
@@ -132,49 +129,6 @@ public class ThreadsFragment extends Fragment implements
                         }
                     });
 
-
-    private final ActivityResultLauncher<Intent> mFilesImportForResult =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    new ActivityResultCallback<ActivityResult>() {
-                        @Override
-                        public void onActivityResult(ActivityResult result) {
-                            if (result.getResultCode() == Activity.RESULT_OK) {
-                                Intent data = result.getData();
-                                try {
-                                    Objects.requireNonNull(data);
-
-
-                                    if (data.getClipData() != null) {
-                                        ClipData mClipData = data.getClipData();
-                                        long parent = getThread(mContext);
-                                        LiteService.files(mContext, mClipData, parent);
-
-                                    } else if (data.getData() != null) {
-                                        Uri uri = data.getData();
-                                        Objects.requireNonNull(uri);
-                                        if (!FileDocumentsProvider.hasReadPermission(mContext, uri)) {
-                                            EVENTS.getInstance(mContext).error(
-                                                    getString(R.string.file_has_no_read_permission));
-                                            return;
-                                        }
-
-                                        if (FileDocumentsProvider.isPartial(mContext, uri)) {
-                                            EVENTS.getInstance(mContext).error(
-                                                    getString(R.string.file_not_valid));
-                                            return;
-                                        }
-
-                                        long parent = getThread(mContext);
-
-                                        UploadService.uploadFile(mContext, parent, uri);
-                                    }
-
-                                } catch (Throwable throwable) {
-                                    LogUtils.error(TAG, throwable);
-                                }
-                            }
-                        }
-                    });
 
 
     private final ActivityResultLauncher<Intent> mFileExportForResult =
@@ -194,7 +148,7 @@ public class ThreadsFragment extends Fragment implements
                                         return;
                                     }
                                     long threadIdx = getThread(mContext);
-                                    UploadFileWorker.load(mContext, uri, threadIdx);
+                                    CopyFileWorker.copyTo(mContext, uri, threadIdx);
 
                                 } catch (Throwable throwable) {
                                     LogUtils.error(TAG, throwable);
@@ -1031,37 +985,6 @@ public class ThreadsFragment extends Fragment implements
 
     private void clickThreadDelete(long idx) {
         ThreadsService.removeThreads(mContext, idx);
-    }
-
-
-    private void clickImportFiles(long idx) {
-
-        try {
-
-            setThread(mContext, idx);
-
-            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-            intent.setType(MimeType.ALL);
-            String[] mimeTypes = {MimeType.ALL};
-            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
-            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-            intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-
-            mFilesImportForResult.launch(intent);
-
-        } catch (Throwable e) {
-            EVENTS.getInstance(mContext).warning(
-                    getString(R.string.no_activity_found_to_handle_uri));
-            LogUtils.error(TAG, e);
-        }
-    }
-
-
-    public void clickFilesAdd() {
-        Long idx = mSelectionViewModel.getParentThread().getValue();
-        Objects.requireNonNull(idx);
-        clickImportFiles(idx);
     }
 
 

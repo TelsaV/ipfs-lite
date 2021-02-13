@@ -93,6 +93,7 @@ import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.services.DiscoveryService;
+import threads.server.services.LiteService;
 import threads.server.services.QRCodeService;
 import threads.server.services.RegistrationService;
 import threads.server.services.UploadService;
@@ -125,6 +126,50 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
     private final AtomicInteger currentFragment = new AtomicInteger();
+
+
+    private final ActivityResultLauncher<Intent> mFilesImportForResult =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    new ActivityResultCallback<ActivityResult>() {
+                        @Override
+                        public void onActivityResult(ActivityResult result) {
+                            if (result.getResultCode() == Activity.RESULT_OK) {
+                                Intent data = result.getData();
+                                try {
+                                    Objects.requireNonNull(data);
+
+
+                                    if (data.getClipData() != null) {
+                                        ClipData mClipData = data.getClipData();
+                                        long parent = getThread(getApplicationContext());
+                                        LiteService.files(getApplicationContext(), mClipData, parent);
+
+                                    } else if (data.getData() != null) {
+                                        Uri uri = data.getData();
+                                        Objects.requireNonNull(uri);
+                                        if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
+                                            EVENTS.getInstance(getApplicationContext()).error(
+                                                    getString(R.string.file_has_no_read_permission));
+                                            return;
+                                        }
+
+                                        if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
+                                            EVENTS.getInstance(getApplicationContext()).error(
+                                                    getString(R.string.file_not_valid));
+                                            return;
+                                        }
+
+                                        long parent = getThread(getApplicationContext());
+
+                                        UploadService.uploadFile(getApplicationContext(), parent, uri);
+                                    }
+
+                                } catch (Throwable throwable) {
+                                    LogUtils.error(TAG, throwable);
+                                }
+                            }
+                        }
+                    });
     private final ActivityResultLauncher<Intent> mFolderImportForResult =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     new ActivityResultCallback<ActivityResult>() {
@@ -394,13 +439,26 @@ public class MainActivity extends AppCompatActivity implements
 
     private void clickFilesAdd() {
 
-        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                R.id.fragment_container);
-        if (fragment instanceof ThreadsFragment) {
-            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
-            if (threadsFragment.isResumed()) {
-                threadsFragment.clickFilesAdd();
-            }
+        try {
+            Long idx = mSelectionViewModel.getParentThread().getValue();
+            Objects.requireNonNull(idx);
+
+            setThread(getApplicationContext(), idx);
+
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.setType(MimeType.ALL);
+            String[] mimeTypes = {MimeType.ALL};
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+            intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+            mFilesImportForResult.launch(intent);
+
+        } catch (Throwable e) {
+            EVENTS.getInstance(getApplicationContext()).warning(
+                    getString(R.string.no_activity_found_to_handle_uri));
+            LogUtils.error(TAG, e);
         }
     }
 

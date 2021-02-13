@@ -39,16 +39,16 @@ import threads.server.core.threads.Thread;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.Progress;
 
-public class UploadDirectoryWorker extends Worker {
+public class CopyDirectoryWorker extends Worker {
     private static final String WID = "UDW";
-    private static final String TAG = UploadDirectoryWorker.class.getSimpleName();
+    private static final String TAG = CopyDirectoryWorker.class.getSimpleName();
     private final NotificationManager mNotificationManager;
     private final AtomicReference<Notification> mLastNotification = new AtomicReference<>(null);
     private int mNote;
 
     @SuppressWarnings("WeakerAccess")
-    public UploadDirectoryWorker(@NonNull Context context,
-                                 @NonNull WorkerParameters params) {
+    public CopyDirectoryWorker(@NonNull Context context,
+                               @NonNull WorkerParameters params) {
         super(context, params);
         mNotificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -61,14 +61,14 @@ public class UploadDirectoryWorker extends Worker {
         data.putLong(Content.IDX, idx);
         data.putString(Content.URI, uri.toString());
 
-        return new OneTimeWorkRequest.Builder(UploadDirectoryWorker.class)
+        return new OneTimeWorkRequest.Builder(CopyDirectoryWorker.class)
                 .addTag(TAG)
                 .setInputData(data.build())
                 .setInitialDelay(1, TimeUnit.MILLISECONDS)
                 .build();
     }
 
-    public static void load(@NonNull Context context, @NonNull Uri uri, long idx) {
+    public static void copyTo(@NonNull Context context, @NonNull Uri uri, long idx) {
         WorkManager.getInstance(context).enqueueUniqueWork(
                 WID + idx, ExistingWorkPolicy.KEEP, getWork(uri, idx));
 
@@ -216,7 +216,6 @@ public class UploadDirectoryWorker extends Worker {
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         } finally {
-            PageWorker.publish(getApplicationContext());
             closeNotification();
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }

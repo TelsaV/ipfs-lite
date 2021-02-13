@@ -31,15 +31,15 @@ import threads.server.core.threads.Thread;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.Progress;
 
-public class UploadFileWorker extends Worker {
+public class CopyFileWorker extends Worker {
     private static final String WID = "UFW";
-    private static final String TAG = UploadFileWorker.class.getSimpleName();
+    private static final String TAG = CopyFileWorker.class.getSimpleName();
     private final NotificationManager mNotificationManager;
     private final AtomicReference<Notification> mLastNotification = new AtomicReference<>(null);
 
     @SuppressWarnings("WeakerAccess")
-    public UploadFileWorker(@NonNull Context context,
-                            @NonNull WorkerParameters params) {
+    public CopyFileWorker(@NonNull Context context,
+                          @NonNull WorkerParameters params) {
         super(context, params);
         mNotificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -52,14 +52,14 @@ public class UploadFileWorker extends Worker {
         data.putLong(Content.IDX, idx);
         data.putString(Content.URI, uri.toString());
 
-        return new OneTimeWorkRequest.Builder(UploadFileWorker.class)
+        return new OneTimeWorkRequest.Builder(CopyFileWorker.class)
                 .addTag(TAG)
                 .setInputData(data.build())
                 .setInitialDelay(1, TimeUnit.MILLISECONDS)
                 .build();
     }
 
-    public static void load(@NonNull Context context, @NonNull Uri uri, long idx) {
+    public static void copyTo(@NonNull Context context, @NonNull Uri uri, long idx) {
         WorkManager.getInstance(context).enqueueUniqueWork(
                 WID + idx, ExistingWorkPolicy.KEEP, getWork(uri, idx));
 
