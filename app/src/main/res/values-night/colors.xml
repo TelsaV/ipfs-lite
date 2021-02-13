@@ -5,4 +5,6 @@
     <color name="colorBackground">#1a1a1a</color>
     <color name="colorSelectedItem">#696969</color>
     <color name="colorChips">#696969</color>
+    <color name="colorActiveOverflow">@android:color/white</color>
+    <color name="colorPassiveOverflow">@android:color/darker_gray</color>
 </resources>

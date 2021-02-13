@@ -19,8 +19,7 @@
             android:clickable="true"
             android:contentDescription="@null"
             android:padding="12dp"
-            android:src="@drawable/arrow_right"
-            app:iconTint="?android:textColorPrimary" />
+            android:src="@drawable/arrow_right"/>
 
         <ImageButton
             android:id="@+id/action_find_page"
@@ -30,8 +29,7 @@
             android:clickable="true"
             android:contentDescription="@string/find_page"
             android:padding="12dp"
-            android:src="@drawable/search"
-            app:iconTint="?android:textColorPrimary" />
+            android:src="@drawable/search"/>
 
         <ImageButton
             android:id="@+id/action_download"
@@ -41,8 +39,7 @@
             android:clickable="true"
             android:contentDescription="@null"
             android:padding="12dp"
-            android:src="@drawable/download"
-            app:iconTint="?android:textColorPrimary" />
+            android:src="@drawable/download" />
 
         <ImageButton
             android:id="@+id/action_share"
@@ -52,8 +49,7 @@
             android:clickable="true"
             android:contentDescription="@string/share"
             android:padding="12dp"
-            android:src="@drawable/share"
-            app:iconTint="?android:textColorPrimary" />
+            android:src="@drawable/share"/>
 
         <ImageButton
             android:id="@+id/action_reload"
@@ -63,8 +59,7 @@
             android:clickable="true"
             android:contentDescription="@null"
             android:padding="12dp"
-            android:src="@drawable/reload"
-            app:iconTint="?android:textColorPrimary" />
+            android:src="@drawable/reload"/>
     </LinearLayout>
 
     <TextView

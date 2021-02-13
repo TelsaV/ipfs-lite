@@ -237,13 +237,12 @@ public class BrowserFragment extends Fragment {
 
                 mWebView.stopLoading();
 
-                mListener.checkBookmark(uri);
+                mProgressBar.setVisibility(View.VISIBLE);
 
-                mListener.updateTitle(uri);
+                mListener.updateUri(uri, mWebView.canGoForward());
 
                 mWebView.loadUrl(uri.toString());
 
-                mProgressBar.setVisibility(View.VISIBLE);
             }
         });
 
@@ -304,8 +303,7 @@ public class BrowserFragment extends Fragment {
 
 
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
-                mListener.checkBookmark(uri);
-                mListener.updateTitle(uri);
+                mListener.updateUri(uri, mWebView.canGoForward());
             }
 
             @Override
@@ -313,8 +311,7 @@ public class BrowserFragment extends Fragment {
                 LogUtils.error(TAG, "onPageStarted : " + url);
 
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
-                mListener.checkBookmark(uri);
-                mListener.updateTitle(uri);
+                mListener.updateUri(uri, mWebView.canGoForward());
             }
 
             @Override
@@ -760,8 +757,6 @@ public class BrowserFragment extends Fragment {
 
     public interface ActionListener {
 
-        void updateTitle(@Nullable Uri uri);
-
-        void checkBookmark(@NonNull Uri uri);
+        void updateUri(@NonNull Uri uri, boolean forward);
     }
 }

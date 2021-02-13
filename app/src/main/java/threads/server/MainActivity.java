@@ -66,6 +66,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import threads.LogUtils;
 import threads.server.core.Content;
@@ -336,27 +337,7 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    @Override
-    public void checkBookmark(@Nullable Uri uri) {
-        try {
-            if (uri != null) {
-                BOOKS books = BOOKS.getInstance(getApplicationContext());
-                if (books.hasBookmark(uri.toString())) {
-                    Drawable drawable = AppCompatResources.getDrawable(getApplicationContext(),
-                            R.drawable.star);
-                    mActionBookmark.setImageDrawable(drawable);
-                } else {
-                    Drawable drawable = AppCompatResources.getDrawable(getApplicationContext(),
-                            R.drawable.star_outline);
-                    mActionBookmark.setImageDrawable(drawable);
-                }
-            } else {
-                mActionBookmark.setEnabled(false);
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
+    private final AtomicBoolean forwardEnabled = new AtomicBoolean(false);
 
     private void setSortOrder(long idx) {
 
@@ -396,6 +377,352 @@ public class MainActivity extends AppCompatActivity implements
             });
         }
     }
+
+    private final AtomicReference<Uri> uriAtomicReference = new AtomicReference<>(null);
+
+    private void updateDirectory(@Nullable Long parent, String query, @NonNull SortOrder sortOrder) {
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                R.id.fragment_container);
+        if (fragment instanceof ThreadsFragment) {
+            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
+            if (threadsFragment.isResumed()) {
+                threadsFragment.updateDirectory(parent, query, sortOrder, true);
+            }
+        }
+    }
+
+    private void clickFilesAdd() {
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                R.id.fragment_container);
+        if (fragment instanceof ThreadsFragment) {
+            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
+            if (threadsFragment.isResumed()) {
+                threadsFragment.clickFilesAdd();
+            }
+        }
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntents(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(
+                R.id.fragment_container);
+        if (fragment instanceof BrowserFragment) {
+            BrowserFragment tabsFragment = (BrowserFragment) fragment;
+            if (tabsFragment.isResumed()) {
+                boolean result = tabsFragment.onBackPressed();
+                if (result) {
+                    return;
+                }
+            }
+        }
+        super.onBackPressed();
+    }
+
+    private void handleIntents(Intent intent) {
+
+        final String action = intent.getAction();
+        try {
+            ShareCompat.IntentReader intentReader = new ShareCompat.IntentReader(this);
+            if (Intent.ACTION_SEND.equals(action) ||
+                    Intent.ACTION_SEND_MULTIPLE.equals(action)) {
+                handleSend(intentReader);
+            } else if (Intent.ACTION_VIEW.equals(action)) {
+                Uri uri = intent.getData();
+                if (uri != null) {
+                    String scheme = uri.getScheme();
+                    if (Objects.equals(scheme, Content.IPNS) ||
+                            Objects.equals(scheme, Content.IPFS) ||
+                            Objects.equals(scheme, Content.HTTP) ||
+                            Objects.equals(scheme, Content.HTTPS)) {
+                        openBrowserView(uri);
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            LogUtils.error(TAG, "" + e.getLocalizedMessage());
+        }
+    }
+
+    @Override
+    public void openBrowserView(@NonNull Uri uri) {
+        try {
+            mSelectionViewModel.setUri(uri.toString());
+            mNavigation.setSelectedItemId(R.id.navigation_browser);
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
+
+    }
+
+    private void handleSend(ShareCompat.IntentReader intentReader) {
+
+        try {
+            Objects.requireNonNull(intentReader);
+            if (intentReader.isMultipleShare()) {
+                int items = intentReader.getStreamCount();
+
+                if (items > 0) {
+                    FileProvider fileProvider =
+                            FileProvider.getInstance(getApplicationContext());
+                    File file = fileProvider.createTempDataFile();
+
+                    try (PrintStream out = new PrintStream(file)) {
+                        for (int i = 0; i < items; i++) {
+                            Uri uri = intentReader.getStream(i);
+                            if (uri != null) {
+                                out.println(uri.toString());
+                            }
+                        }
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    }
+
+                    Uri uri = androidx.core.content.FileProvider.getUriForFile(
+                            getApplicationContext(), BuildConfig.APPLICATION_ID, file);
+                    Objects.requireNonNull(uri);
+                    UploadFilesWorker.load(getApplicationContext(), 0L, uri);
+                }
+            } else {
+                String type = intentReader.getType();
+                if (Objects.equals(type, MimeType.PLAIN_MIME_TYPE)) {
+                    CharSequence textObject = intentReader.getText();
+                    Objects.requireNonNull(textObject);
+                    String text = textObject.toString();
+                    if (!text.isEmpty()) {
+
+                        Uri uri = Uri.parse(text);
+                        if (uri != null) {
+                            if (Objects.equals(uri.getScheme(), Content.IPFS) ||
+                                    Objects.equals(uri.getScheme(), Content.IPNS) ||
+                                    Objects.equals(uri.getScheme(), Content.HTTP) ||
+                                    Objects.equals(uri.getScheme(), Content.HTTPS)) {
+                                openBrowserView(uri);
+                                return;
+                            }
+                        }
+
+                        CodecDecider result = CodecDecider.evaluate(getApplicationContext(), text);
+
+                        if (result.getCodex() == CodecDecider.Codec.P2P_URI) {
+                            EditPeerDialogFragment.newInstance(result.getMultihash(), null).
+                                    show(getSupportFragmentManager(), EditPeerDialogFragment.TAG);
+
+                        } else if (result.getCodex() == CodecDecider.Codec.MULTIHASH) {
+
+                            EditContentDialogFragment.newInstance(result.getMultihash(),
+                                    false).show(
+                                    getSupportFragmentManager(), EditContentDialogFragment.TAG);
+
+                        } else if (result.getCodex() == CodecDecider.Codec.IPFS_URI) {
+
+                            EditContentDialogFragment.newInstance(result.getMultihash(),
+                                    false).show(
+                                    getSupportFragmentManager(), EditContentDialogFragment.TAG);
+
+                        } else if (result.getCodex() == CodecDecider.Codec.IPNS_URI) {
+                            openBrowserView(Uri.parse(text));
+                        } else if (result.getCodex() == CodecDecider.Codec.MULTIADDRESS) {
+
+                            String user = result.getPeerID();
+                            String address = result.getPeerAddress();
+                            String peerID = IPFS.getPeerID(getApplicationContext());
+                            if (user.equals(peerID)) {
+                                EVENTS.getInstance(getApplicationContext()).
+                                        warning(getString(R.string.same_pid_like_host));
+                                return;
+                            }
+
+                            if (address != null && address.contains(Content.CIRCUIT)) {
+                                address = null;
+                            }
+
+                            EditPeerDialogFragment.newInstance(user, address).show(
+                                    getSupportFragmentManager(), EditPeerDialogFragment.TAG);
+
+                        } else {
+                            if (URLUtil.isValidUrl(text)) {
+                                openBrowserView(Uri.parse(text));
+                            } else {
+                                UploadService.storeText(
+                                        getApplicationContext(), 0L, text, false);
+                            }
+                        }
+                    }
+                } else if (Objects.equals(type, MimeType.HTML_MIME_TYPE)) {
+                    String html = intentReader.getHtmlText();
+                    Objects.requireNonNull(html);
+                    if (!html.isEmpty()) {
+                        UploadService.storeText(
+                                getApplicationContext(), 0L, html, false);
+                    }
+                } else {
+                    Uri uri = intentReader.getStream();
+                    Objects.requireNonNull(uri);
+
+                    if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
+                        EVENTS.getInstance(getApplicationContext()).error(
+                                getString(R.string.file_has_no_read_permission));
+                        return;
+                    }
+
+                    if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
+
+                        EVENTS.getInstance(getApplicationContext()).error(
+                                getString(R.string.file_not_found));
+
+                        return;
+                    }
+
+                    UploadService.uploadFile(getApplicationContext(), 0L, uri);
+
+                }
+            }
+
+
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
+
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putInt(FRAG, currentFragment.intValue());
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        currentFragment.set(savedInstanceState.getInt(FRAG));
+    }
+
+    public void updateBookmark(@NonNull Uri uri) {
+        try {
+
+            BOOKS books = BOOKS.getInstance(getApplicationContext());
+            if (books.hasBookmark(uri.toString())) {
+                Drawable drawable = AppCompatResources.getDrawable(getApplicationContext(),
+                        R.drawable.star);
+                mActionBookmark.setImageDrawable(drawable);
+            } else {
+                Drawable drawable = AppCompatResources.getDrawable(getApplicationContext(),
+                        R.drawable.star_outline);
+                mActionBookmark.setImageDrawable(drawable);
+            }
+
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+
+    private ActionMode.Callback createSearchActionModeCallback(@NonNull String hint) {
+        return new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                mode.getMenuInflater().inflate(R.menu.menu_search_action_mode, menu);
+
+
+                MenuItem searchMenuItem = menu.findItem(R.id.search_view);
+
+                SearchView mSearchView = (SearchView) searchMenuItem.getActionView();
+
+                mSearchView.setQueryHint(hint);
+                mSearchView.setIconifiedByDefault(false);
+                mSearchView.setFocusable(true);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    mSearchView.setFocusedByDefault(true);
+                }
+
+                mSearchView.setQuery("", true);
+                mSearchView.setIconified(false);
+                mSearchView.requestFocus();
+
+
+                mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+
+                        try {
+                            if (mActionMode != null) {
+                                mActionMode.finish();
+                            }
+                            if (query != null && !query.isEmpty()) {
+                                Uri uri = Uri.parse(query);
+                                String scheme = uri.getScheme();
+                                if (Objects.equals(scheme, Content.IPNS) ||
+                                        Objects.equals(scheme, Content.IPFS) ||
+                                        Objects.equals(scheme, Content.HTTP) ||
+                                        Objects.equals(scheme, Content.HTTPS)) {
+                                    openBrowserView(uri);
+                                } else {
+
+                                    IPFS ipfs = IPFS.getInstance(getApplicationContext());
+                                    if (ipfs.isValidCID(query)) {
+                                        openBrowserView(Uri.parse(Content.IPFS + "://" + query));
+                                    } else {
+                                        EVENTS.getInstance(getApplicationContext()).error(
+                                                getString(R.string.cid_not_valid)
+                                        );
+                                    }
+                                }
+                            }
+                        } catch (Throwable throwable) {
+                            LogUtils.error(TAG, throwable);
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+
+
+                        return false;
+                    }
+                });
+
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return true;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                return false;
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                mActionMode = null;
+            }
+        };
+
+    }
+
+    private int dpToPx(int dp) {
+        float density = getApplicationContext().getResources()
+                .getDisplayMetrics().density;
+        return Math.round((float) dp * density);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -561,17 +888,14 @@ public class MainActivity extends AppCompatActivity implements
 
             int frag = currentFragment.get();
             ImageButton actionNextPage = menuOverflow.findViewById(R.id.action_next_page);
-            // todo only when forward is possible
-            if (/*!mWebView.canGoForward()*/frag != R.id.navigation_browser) {
-                actionNextPage.setEnabled(false);
-
-                actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
-            } else {
+            if (frag == R.id.navigation_browser && forwardEnabled.get()) {
                 actionNextPage.setEnabled(true);
-
                 actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+            } else {
+                actionNextPage.setEnabled(false);
+                actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
             }
             actionNextPage.setOnClickListener(v1 -> {
                 try {
@@ -595,14 +919,12 @@ public class MainActivity extends AppCompatActivity implements
             ImageButton actionFindPage = menuOverflow.findViewById(R.id.action_find_page);
             if (frag == R.id.navigation_browser || frag == R.id.navigation_files) {
                 actionFindPage.setEnabled(true);
-
                 actionFindPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionFindPage.setEnabled(false);
-
                 actionFindPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
             }
             actionFindPage.setOnClickListener(v12 -> {
                 try {
@@ -638,14 +960,12 @@ public class MainActivity extends AppCompatActivity implements
 
             if (/*downloadActive()*/ false) {
                 actionDownload.setEnabled(true);
-
                 actionDownload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionDownload.setEnabled(false);
-
                 actionDownload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
             }
 
             actionDownload.setOnClickListener(v13 -> {
@@ -669,11 +989,20 @@ public class MainActivity extends AppCompatActivity implements
             });
 
             ImageButton actionShare = menuOverflow.findViewById(R.id.action_share);
+            if (uriAtomicReference.get() != null) {
+                actionShare.setEnabled(true);
+                actionShare.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+            } else {
+                actionShare.setEnabled(false);
+                actionShare.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
+            }
             actionShare.setOnClickListener(v14 -> {
                 try {
-                    String url = mBrowserText.getText().toString(); // TODO optimize
 
-                    Uri uri = docs.getOriginalUri(Uri.parse(url));
+                    Uri uri = uriAtomicReference.get();
+                    Objects.requireNonNull(uri);
 
                     ComponentName[] names = {new ComponentName(getApplicationContext(), MainActivity.class)};
 
@@ -697,16 +1026,15 @@ public class MainActivity extends AppCompatActivity implements
             });
 
             ImageButton actionReload = menuOverflow.findViewById(R.id.action_reload);
+
             if (frag == R.id.navigation_browser) {
                 actionReload.setEnabled(true);
-
                 actionReload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.black), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorActiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 actionReload.setEnabled(false);
-
                 actionReload.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                        android.R.color.darker_gray), android.graphics.PorterDuff.Mode.SRC_IN);
+                        R.color.colorPassiveOverflow), android.graphics.PorterDuff.Mode.SRC_IN);
             }
             actionReload.setOnClickListener(v15 -> {
                 try {
@@ -1273,352 +1601,36 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private void updateDirectory(@Nullable Long parent, String query, @NonNull SortOrder sortOrder) {
+    public void updateTitle(@NonNull Uri uri) {
 
-        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                R.id.fragment_container);
-        if (fragment instanceof ThreadsFragment) {
-            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
-            if (threadsFragment.isResumed()) {
-                threadsFragment.updateDirectory(parent, query, sortOrder, true);
-            }
+
+        boolean http = Objects.equals(uri.getScheme(), Content.HTTP);
+
+        mBrowserText.setTextAppearance(R.style.TextAppearance_AppCompat_Small);
+        mBrowserText.setClickable(true);
+        if (!http) {
+            mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    R.drawable.lock, 0, 0, 0
+            );
+        } else {
+            mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    R.drawable.lock_open, 0, 0, 0
+            );
         }
-    }
+        mBrowserText.setCompoundDrawablePadding(8);
+        mBrowserText.setBackgroundResource(R.drawable.browser);
+        mBrowserText.getBackground().setAlpha(30);
 
-    private void clickFilesAdd() {
-
-        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                R.id.fragment_container);
-        if (fragment instanceof ThreadsFragment) {
-            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
-            if (threadsFragment.isResumed()) {
-                threadsFragment.clickFilesAdd();
-            }
-        }
-    }
-
-    @Override
-    public void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        handleIntents(intent);
-    }
-
-    @Override
-    public void onBackPressed() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                R.id.fragment_container);
-        if (fragment instanceof BrowserFragment) {
-            BrowserFragment tabsFragment = (BrowserFragment) fragment;
-            if (tabsFragment.isResumed()) {
-                boolean result = tabsFragment.onBackPressed();
-                if (result) {
-                    return;
-                }
-            }
-        }
-        super.onBackPressed();
-    }
-
-    private void handleIntents(Intent intent) {
-
-        final String action = intent.getAction();
-        try {
-            ShareCompat.IntentReader intentReader = new ShareCompat.IntentReader(this);
-            if (Intent.ACTION_SEND.equals(action) ||
-                    Intent.ACTION_SEND_MULTIPLE.equals(action)) {
-                handleSend(intentReader);
-            } else if (Intent.ACTION_VIEW.equals(action)) {
-                Uri uri = intent.getData();
-                if (uri != null) {
-                    String scheme = uri.getScheme();
-                    if (Objects.equals(scheme, Content.IPNS) ||
-                            Objects.equals(scheme, Content.IPFS) ||
-                            Objects.equals(scheme, Content.HTTP) ||
-                            Objects.equals(scheme, Content.HTTPS)) {
-                        openBrowserView(uri);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, "" + e.getLocalizedMessage());
-        }
-    }
-
-    @Override
-    public void openBrowserView(@NonNull Uri uri) {
-        try {
-            mSelectionViewModel.setUri(uri.toString());
-            mNavigation.setSelectedItemId(R.id.navigation_browser);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-
-    }
-
-    private void handleSend(ShareCompat.IntentReader intentReader) {
-
-        try {
-            Objects.requireNonNull(intentReader);
-            if (intentReader.isMultipleShare()) {
-                int items = intentReader.getStreamCount();
-
-                if (items > 0) {
-                    FileProvider fileProvider =
-                            FileProvider.getInstance(getApplicationContext());
-                    File file = fileProvider.createTempDataFile();
-
-                    try (PrintStream out = new PrintStream(file)) {
-                        for (int i = 0; i < items; i++) {
-                            Uri uri = intentReader.getStream(i);
-                            if (uri != null) {
-                                out.println(uri.toString());
-                            }
-                        }
-                    } catch (Throwable throwable) {
-                        LogUtils.error(TAG, throwable);
-                    }
-
-                    Uri uri = androidx.core.content.FileProvider.getUriForFile(
-                            getApplicationContext(), BuildConfig.APPLICATION_ID, file);
-                    Objects.requireNonNull(uri);
-                    UploadFilesWorker.load(getApplicationContext(), 0L, uri);
-                }
-            } else {
-                String type = intentReader.getType();
-                if (Objects.equals(type, MimeType.PLAIN_MIME_TYPE)) {
-                    CharSequence textObject = intentReader.getText();
-                    Objects.requireNonNull(textObject);
-                    String text = textObject.toString();
-                    if (!text.isEmpty()) {
-
-                        Uri uri = Uri.parse(text);
-                        if (uri != null) {
-                            if (Objects.equals(uri.getScheme(), Content.IPFS) ||
-                                    Objects.equals(uri.getScheme(), Content.IPNS) ||
-                                    Objects.equals(uri.getScheme(), Content.HTTP) ||
-                                    Objects.equals(uri.getScheme(), Content.HTTPS)) {
-                                openBrowserView(uri);
-                                return;
-                            }
-                        }
-
-                        CodecDecider result = CodecDecider.evaluate(getApplicationContext(), text);
-
-                        if (result.getCodex() == CodecDecider.Codec.P2P_URI) {
-                            EditPeerDialogFragment.newInstance(result.getMultihash(), null).
-                                    show(getSupportFragmentManager(), EditPeerDialogFragment.TAG);
-
-                        } else if (result.getCodex() == CodecDecider.Codec.MULTIHASH) {
-
-                            EditContentDialogFragment.newInstance(result.getMultihash(),
-                                    false).show(
-                                    getSupportFragmentManager(), EditContentDialogFragment.TAG);
-
-                        } else if (result.getCodex() == CodecDecider.Codec.IPFS_URI) {
-
-                            EditContentDialogFragment.newInstance(result.getMultihash(),
-                                    false).show(
-                                    getSupportFragmentManager(), EditContentDialogFragment.TAG);
-
-                        } else if (result.getCodex() == CodecDecider.Codec.IPNS_URI) {
-                            openBrowserView(Uri.parse(text));
-                        } else if (result.getCodex() == CodecDecider.Codec.MULTIADDRESS) {
-
-                            String user = result.getPeerID();
-                            String address = result.getPeerAddress();
-                            String peerID = IPFS.getPeerID(getApplicationContext());
-                            if (user.equals(peerID)) {
-                                EVENTS.getInstance(getApplicationContext()).
-                                        warning(getString(R.string.same_pid_like_host));
-                                return;
-                            }
-
-                            if (address != null && address.contains(Content.CIRCUIT)) {
-                                address = null;
-                            }
-
-                            EditPeerDialogFragment.newInstance(user, address).show(
-                                    getSupportFragmentManager(), EditPeerDialogFragment.TAG);
-
-                        } else {
-                            if (URLUtil.isValidUrl(text)) {
-                                openBrowserView(Uri.parse(text));
-                            } else {
-                                UploadService.storeText(
-                                        getApplicationContext(), 0L, text, false);
-                            }
-                        }
-                    }
-                } else if (Objects.equals(type, MimeType.HTML_MIME_TYPE)) {
-                    String html = intentReader.getHtmlText();
-                    Objects.requireNonNull(html);
-                    if (!html.isEmpty()) {
-                        UploadService.storeText(
-                                getApplicationContext(), 0L, html, false);
-                    }
-                } else {
-                    Uri uri = intentReader.getStream();
-                    Objects.requireNonNull(uri);
-
-                    if (!FileDocumentsProvider.hasReadPermission(getApplicationContext(), uri)) {
-                        EVENTS.getInstance(getApplicationContext()).error(
-                                getString(R.string.file_has_no_read_permission));
-                        return;
-                    }
-
-                    if (FileDocumentsProvider.isPartial(getApplicationContext(), uri)) {
-
-                        EVENTS.getInstance(getApplicationContext()).error(
-                                getString(R.string.file_not_found));
-
-                        return;
-                    }
-
-                    UploadService.uploadFile(getApplicationContext(), 0L, uri);
-
-                }
-            }
-
-
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
+        mBrowserText.setText(uri.toString());
 
     }
 
     @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-    }
+    public void updateUri(@NonNull Uri uri, boolean forward) {
+        forwardEnabled.set(forward);
+        uriAtomicReference.set(uri);
+        updateTitle(uri);
+        updateBookmark(uri);
 
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putInt(FRAG, currentFragment.intValue());
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        currentFragment.set(savedInstanceState.getInt(FRAG));
-    }
-
-    @Override
-    public void updateTitle(@Nullable Uri uri) {
-
-        if (uri != null) {
-            boolean http = Objects.equals(uri.getScheme(), Content.HTTP);
-
-            mBrowserText.setTextAppearance(R.style.TextAppearance_AppCompat_Small);
-            mBrowserText.setClickable(true);
-            if (!http) {
-                mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        R.drawable.lock, 0, 0, 0
-                );
-            } else {
-                mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        R.drawable.lock_open, 0, 0, 0
-                );
-            }
-            mBrowserText.setCompoundDrawablePadding(8);
-            mBrowserText.setBackgroundResource(R.drawable.browser);
-            mBrowserText.getBackground().setAlpha(30);
-
-            mBrowserText.setText(uri.toString());
-        }
-    }
-
-
-    private ActionMode.Callback createSearchActionModeCallback(@NonNull String hint) {
-        return new ActionMode.Callback() {
-            @Override
-            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                mode.getMenuInflater().inflate(R.menu.menu_search_action_mode, menu);
-
-
-                MenuItem searchMenuItem = menu.findItem(R.id.search_view);
-
-                SearchView mSearchView = (SearchView) searchMenuItem.getActionView();
-
-                mSearchView.setQueryHint(hint);
-                mSearchView.setIconifiedByDefault(false);
-                mSearchView.setFocusable(true);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    mSearchView.setFocusedByDefault(true);
-                }
-
-                mSearchView.setQuery("", true);
-                mSearchView.setIconified(false);
-                mSearchView.requestFocus();
-
-
-                mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-
-                        try {
-                            if (mActionMode != null) {
-                                mActionMode.finish();
-                            }
-                            if (query != null && !query.isEmpty()) {
-                                Uri uri = Uri.parse(query);
-                                String scheme = uri.getScheme();
-                                if (Objects.equals(scheme, Content.IPNS) ||
-                                        Objects.equals(scheme, Content.IPFS) ||
-                                        Objects.equals(scheme, Content.HTTP) ||
-                                        Objects.equals(scheme, Content.HTTPS)) {
-                                    openBrowserView(uri);
-                                } else {
-
-                                    IPFS ipfs = IPFS.getInstance(getApplicationContext());
-                                    if (ipfs.isValidCID(query)) {
-                                        openBrowserView(Uri.parse(Content.IPFS + "://" + query));
-                                    } else {
-                                        EVENTS.getInstance(getApplicationContext()).error(
-                                                getString(R.string.cid_not_valid)
-                                        );
-                                    }
-                                }
-                            }
-                        } catch (Throwable throwable) {
-                            LogUtils.error(TAG, throwable);
-                        }
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onQueryTextChange(String newText) {
-
-
-                        return false;
-                    }
-                });
-
-                return true;
-            }
-
-            @Override
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                return true;
-            }
-
-            @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                return false;
-            }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                mActionMode = null;
-            }
-        };
-
-    }
-
-    private int dpToPx(int dp) {
-        float density = getApplicationContext().getResources()
-                .getDisplayMetrics().density;
-        return Math.round((float) dp * density);
     }
 }
