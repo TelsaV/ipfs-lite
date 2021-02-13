@@ -259,6 +259,10 @@ public class ThreadsFragment extends Fragment implements
         mContext = null;
         mActivity = null;
         mListener = null;
+        if (mSearchActionMode != null) {
+            mSearchActionMode.finish();
+            mSearchActionMode = null;
+        }
     }
 
 

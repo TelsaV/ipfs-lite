@@ -1,7 +1,6 @@
 package threads.server.fragments;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,9 +13,11 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.DisplayMetrics;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.HttpAuthHandler;
 import android.webkit.URLUtil;
 import android.webkit.WebResourceError;
@@ -130,13 +131,7 @@ public class BrowserFragment extends Fragment {
     private DOCS docs;
     private CustomWebChromeClient mCustomWebChromeClient;
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mContext = null;
-        mActivity = null;
-
-    }
+    private ActionMode mSearchActionMode;
 
 
     @Override
@@ -174,55 +169,15 @@ public class BrowserFragment extends Fragment {
         mListener = (BrowserFragment.ActionListener) getActivity();
     }
 
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        int itemId = item.getItemId();
-        if (itemId == R.id.action_share) {
-
-            try {
-                if (SystemClock.elapsedRealtime() - mLastClickTime < CLICK_OFFSET) {
-                    return true;
-                }
-                mLastClickTime = SystemClock.elapsedRealtime();
-
-                String url = mWebView.getUrl();
-                Uri uri = docs.getOriginalUri(Uri.parse(url));
-
-
-                ComponentName[] names = {new ComponentName(mContext, MainActivity.class)};
-
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
-                intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
-                intent.setType(MimeType.PLAIN_MIME_TYPE);
-                intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-
-                Intent chooser = Intent.createChooser(intent, getText(R.string.share));
-                chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, names);
-                chooser.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(chooser);
-
-            } catch (Throwable ignore) {
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.no_activity_found_to_handle_uri));
-            }
-
-            return true;
-        } else if (itemId == R.id.action_clear_cache) {
-
-            try {
-
-
-
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-            return true;
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mContext = null;
+        mActivity = null;
+        if (mSearchActionMode != null) {
+            mSearchActionMode.finish();
+            mSearchActionMode = null;
         }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -785,9 +740,14 @@ public class BrowserFragment extends Fragment {
         }
     }
 
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.browser_view, container, false);
+    }
+
     public void findInPage() {
         try {
-            ((AppCompatActivity)
+            mSearchActionMode = ((AppCompatActivity)
                     mActivity).startSupportActionMode(
                     createFindActionModeCallback());
         } catch (Throwable throwable) {
