@@ -179,12 +179,12 @@ public class CopyFileWorker extends Worker {
                         if (doProgress) {
                             refresh.set(time);
                         }
-                        return !isStopped() && doProgress;
+                        return doProgress;
                     }
 
                     @Override
                     public boolean isClosed() {
-                        return false;
+                        return isStopped();
                     }
 
 
@@ -195,7 +195,6 @@ public class CopyFileWorker extends Worker {
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         } finally {
-            PageWorker.publish(getApplicationContext());
             closeNotification(idx);
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }

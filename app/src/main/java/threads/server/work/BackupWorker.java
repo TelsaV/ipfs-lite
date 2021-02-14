@@ -318,7 +318,7 @@ public class BackupWorker extends Worker {
                         if (doProgress) {
                             refresh.set(time);
                         }
-                        return !isStopped() && doProgress;
+                        return doProgress;
                     }
 
                     @Override

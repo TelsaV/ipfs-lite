@@ -1091,7 +1091,7 @@ public class IPFS implements Listener {
 
 
     @Nullable
-    public List<Link> lss(@NonNull String cid, @NonNull Closeable closeable) {
+    private List<Link> lss(@NonNull String cid, @NonNull Closeable closeable) {
         if (!isDaemonRunning()) {
             return Collections.emptyList();
         }
@@ -1124,7 +1124,7 @@ public class IPFS implements Listener {
 
 
     @Nullable
-    public List<LinkInfo> ls(@NonNull String cid, @NonNull Closeable closeable) {
+    private List<LinkInfo> ls(@NonNull String cid, @NonNull Closeable closeable) {
         if (!isDaemonRunning()) {
             return Collections.emptyList();
         }

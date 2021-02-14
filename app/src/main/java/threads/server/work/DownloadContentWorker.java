@@ -128,6 +128,8 @@ public class DownloadContentWorker extends Worker {
 
                 try {
 
+                    uri = docs.redirect(uri);
+
                     String content = docs.getContent(uri, this::isStopped);
 
                     String mimeType = docs.getMimeType(uri, content, this::isStopped);
@@ -186,16 +188,13 @@ public class DownloadContentWorker extends Worker {
 
         AtomicLong started = new AtomicLong(System.currentTimeMillis());
 
-        long timeout = InitApplication.getConnectionTimeout(getApplicationContext()) * 1000;
+
         if (!ipfs.isEmptyDir(cid)) {
 
             try (InputStream is = ipfs.getLoaderStream(cid, new Progress() {
                 @Override
                 public boolean isClosed() {
-
-                    long diff = System.currentTimeMillis() - started.get();
-                    boolean abort = (diff > (timeout));
-                    return isStopped() || abort;
+                    return isStopped();
                 }
 
                 @Override
@@ -207,7 +206,7 @@ public class DownloadContentWorker extends Worker {
 
                 @Override
                 public boolean doProgress() {
-                    return !isStopped();
+                    return true;
                 }
 
 

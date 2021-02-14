@@ -13,6 +13,7 @@ import androidx.work.WorkManager;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,11 +21,16 @@ import threads.LogUtils;
 import threads.server.BuildConfig;
 import threads.server.R;
 import threads.server.core.Content;
+import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
+import threads.server.core.threads.THREADS;
 import threads.server.ipfs.IPFS;
+import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
+import threads.server.work.UploadContentWorker;
+import threads.server.work.UploadFileWorker;
 import threads.server.work.UploadFilesWorker;
 import threads.server.work.UserConnectWorker;
 
@@ -147,6 +153,38 @@ public class LiteService {
         editor.apply();
     }
 
+
+
+    public static void file(@NonNull Context context, long parent, @NonNull Uri uri) {
+
+        long start = System.currentTimeMillis();
+        LogUtils.info(TAG, " start ... " + uri);
+
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try {
+                DOCS docs = DOCS.getInstance(context);
+                THREADS threads = THREADS.getInstance(context);
+
+                String name = FileDocumentsProvider.getFileName(context, uri);
+                String mimeType = FileDocumentsProvider.getMimeType(context, uri);
+
+                long size = FileDocumentsProvider.getFileSize(context, uri);
+
+                long idx = docs.createDocument(parent, mimeType, null,
+                        uri, name, size, false, true);
+
+                UUID request = UploadFileWorker.load(context, idx);
+                threads.setThreadWork(idx, request);
+
+            } catch (Throwable e) {
+                EVENTS.getInstance(context).error(
+                        context.getString(R.string.file_not_found));
+            } finally {
+                LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
+            }
+
+        });
+    }
 
     public static void files(@NonNull Context context, @NonNull ClipData data, long parent) {
 

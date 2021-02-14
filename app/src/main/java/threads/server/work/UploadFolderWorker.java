@@ -48,7 +48,7 @@ public class UploadFolderWorker extends Worker {
     private final DOCS docs;
     private final IPFS ipfs;
     private final AtomicReference<Notification> mLastNotification = new AtomicReference<>(null);
-    private int mNote;
+
 
 
     @SuppressWarnings("WeakerAccess")
@@ -91,7 +91,7 @@ public class UploadFolderWorker extends Worker {
 
     private void closeNotification() {
         if (mNotificationManager != null) {
-            mNotificationManager.cancel(mNote);
+            mNotificationManager.cancel(getId().hashCode());
         }
     }
 
@@ -107,7 +107,7 @@ public class UploadFolderWorker extends Worker {
             }
 
             if (mNotificationManager != null) {
-                mNotificationManager.notify(mNote, notification);
+                mNotificationManager.notify(getId().hashCode(), notification);
             }
         }
     }
@@ -199,7 +199,7 @@ public class UploadFolderWorker extends Worker {
         long start = System.currentTimeMillis();
         LogUtils.info(TAG, " start ... " + uri);
 
-        mNote = Math.abs(uri.hashCode());
+
         try {
 
             DocumentFile rootDocFile = DocumentFile.fromTreeUri(getApplicationContext(),
@@ -257,7 +257,7 @@ public class UploadFolderWorker extends Worker {
         }
 
         mLastNotification.set(notification);
-        return new ForegroundInfo(mNote, notification);
+        return new ForegroundInfo(getId().hashCode(), notification);
     }
 
     private long createDir(long parent, @NonNull String name, boolean init) {
@@ -332,7 +332,7 @@ public class UploadFolderWorker extends Worker {
                     if (doProgress) {
                         refresh.set(time);
                     }
-                    return !isStopped() && doProgress;
+                    return doProgress;
                 }
 
                 @Override

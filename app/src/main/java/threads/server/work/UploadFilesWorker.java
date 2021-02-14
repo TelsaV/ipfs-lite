@@ -187,7 +187,7 @@ public class UploadFilesWorker extends Worker {
                                 if (doProgress) {
                                     refresh.set(time);
                                 }
-                                return !isStopped() && doProgress;
+                                return doProgress;
                             }
 
                             @Override

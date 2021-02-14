@@ -44,7 +44,7 @@ public class CopyDirectoryWorker extends Worker {
     private static final String TAG = CopyDirectoryWorker.class.getSimpleName();
     private final NotificationManager mNotificationManager;
     private final AtomicReference<Notification> mLastNotification = new AtomicReference<>(null);
-    private int mNote;
+
 
     @SuppressWarnings("WeakerAccess")
     public CopyDirectoryWorker(@NonNull Context context,
@@ -76,7 +76,7 @@ public class CopyDirectoryWorker extends Worker {
 
     private void closeNotification() {
         if (mNotificationManager != null) {
-            mNotificationManager.cancel(mNote);
+            mNotificationManager.cancel(getId().hashCode());
         }
     }
 
@@ -90,7 +90,7 @@ public class CopyDirectoryWorker extends Worker {
         }
 
         if (mNotificationManager != null) {
-            mNotificationManager.notify(mNote, notification);
+            mNotificationManager.notify(getId().hashCode(), notification);
         }
 
     }
@@ -191,7 +191,7 @@ public class CopyDirectoryWorker extends Worker {
         String uri = getInputData().getString(Content.URI);
         Objects.requireNonNull(uri);
 
-        mNote = (int) idx;
+
         long start = System.currentTimeMillis();
         LogUtils.info(TAG, " start ... " + idx);
 
@@ -233,7 +233,7 @@ public class CopyDirectoryWorker extends Worker {
             notification = createCompatNotification(title, 0);
         }
         mLastNotification.set(notification);
-        return new ForegroundInfo(mNote, notification);
+        return new ForegroundInfo(getId().hashCode(), notification);
     }
 
     private void copyThreads(@NonNull Thread thread, @NonNull DocumentFile file) {
@@ -292,19 +292,18 @@ public class CopyDirectoryWorker extends Worker {
 
                     @Override
                     public boolean doProgress() {
-                        return !isStopped();
-                    }
-
-                    @Override
-                    public boolean isClosed() {
-
                         long time = System.currentTimeMillis();
                         long diff = time - refresh.get();
                         boolean doProgress = (diff > InitApplication.REFRESH);
                         if (doProgress) {
                             refresh.set(time);
                         }
-                        return !isStopped() && doProgress;
+                        return doProgress;
+                    }
+
+                    @Override
+                    public boolean isClosed() {
+                        return isStopped();
                     }
 
 

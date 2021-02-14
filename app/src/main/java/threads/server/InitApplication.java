@@ -41,6 +41,7 @@ public class InitApplication extends Application {
     private static final String TIMEOUT_KEY = "timeoutKey";
     private static final String AUTO_DISCOVERY_KEY = "autoDiscoveryKey";
     private static final String SORT_KEY = "sortKey";
+    public static final String DOWNLOADS = "content://com.android.externalstorage.documents/document/primary:Download";
     private final Gson gson = new Gson();
 
     public static void setAutoDiscovery(Context context, boolean auto) {

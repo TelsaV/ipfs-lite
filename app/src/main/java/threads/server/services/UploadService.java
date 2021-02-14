@@ -27,7 +27,7 @@ import threads.server.work.UploadContentWorker;
 public class UploadService {
 
     private static final String TAG = UploadService.class.getSimpleName();
-    private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+
 
 
     public static void storeText(@NonNull Context context, long parent, @NonNull String text,
@@ -79,37 +79,6 @@ public class UploadService {
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }
-        });
-    }
-
-    public static void uploadFile(@NonNull Context context, long parent, @NonNull Uri uri) {
-
-        long start = System.currentTimeMillis();
-        LogUtils.info(TAG, " start ... " + uri);
-
-        EXECUTOR.submit(() -> {
-            try {
-                DOCS docs = DOCS.getInstance(context);
-                THREADS threads = THREADS.getInstance(context);
-
-                String name = FileDocumentsProvider.getFileName(context, uri);
-                String mimeType = FileDocumentsProvider.getMimeType(context, uri);
-
-                long size = FileDocumentsProvider.getFileSize(context, uri);
-
-                long idx = docs.createDocument(parent, mimeType, null,
-                        uri, name, size, false, true);
-
-                UUID request = UploadContentWorker.load(context, idx, false);
-                threads.setThreadWork(idx, request);
-
-            } catch (Throwable e) {
-                EVENTS.getInstance(context).error(
-                        context.getString(R.string.file_not_found));
-            } finally {
-                LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
-            }
-
         });
     }
 }

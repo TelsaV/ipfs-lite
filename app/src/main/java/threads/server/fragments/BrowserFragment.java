@@ -70,7 +70,7 @@ public class BrowserFragment extends Fragment {
 
 
     private static final String TAG = BrowserFragment.class.getSimpleName();
-    private static final String DOWNLOADS = "content://com.android.externalstorage.documents/document/primary:Download";
+
     private static final long CLICK_OFFSET = 500;
     private Context mContext;
     private final ActivityResultLauncher<Intent> mFileForResult = registerForActivityResult(
@@ -518,7 +518,8 @@ public class BrowserFragment extends Fragment {
 
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(DOWNLOADS));
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
+                    Uri.parse(InitApplication.DOWNLOADS));
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mFileForResult.launch(intent);
             mProgressBar.setVisibility(View.GONE);
@@ -546,7 +547,8 @@ public class BrowserFragment extends Fragment {
 
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(DOWNLOADS));
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
+                    Uri.parse(InitApplication.DOWNLOADS));
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mContentForResult.launch(intent);
 
@@ -739,20 +741,6 @@ public class BrowserFragment extends Fragment {
         }
     }
 
-    public void download() {
-        try {
-            String url = mWebView.getUrl();
-            if (url != null && !url.isEmpty()) {
-                Uri uri = Uri.parse(url);
-                if (Objects.equals(uri.getScheme(), Content.IPFS) ||
-                        Objects.equals(uri.getScheme(), Content.IPNS)) {
-                    contentDownloader(uri);
-                }
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
 
     public void openUri(@NonNull Uri uri) {
         try {

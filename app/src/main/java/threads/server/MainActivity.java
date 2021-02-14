@@ -37,6 +37,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.ActionMode;
@@ -101,6 +102,7 @@ import threads.server.utils.PermissionAction;
 import threads.server.utils.SelectionViewModel;
 import threads.server.work.BackupWorker;
 import threads.server.work.DeleteThreadsWorker;
+import threads.server.work.DownloadContentWorker;
 import threads.server.work.LocalConnectWorker;
 import threads.server.work.SwarmConnectWorker;
 import threads.server.work.UploadFilesWorker;
@@ -124,7 +126,29 @@ public class MainActivity extends AppCompatActivity implements
     };
     private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_files);
 
+    private final ActivityResultLauncher<Intent> mContentForResult = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Intent data = result.getData();
+                    try {
+                        Objects.requireNonNull(data);
+                        Uri uri = data.getData();
+                        Objects.requireNonNull(uri);
+                        if (!FileDocumentsProvider.hasWritePermission(getApplicationContext(), uri)) {
+                            EVENTS.getInstance(getApplicationContext()).error(
+                                    getString(R.string.file_has_no_write_permission));
+                            return;
+                        }
+                        Uri contentUri = LiteService.getContentUri(getApplicationContext());
+                        Objects.requireNonNull(contentUri);
+                        DownloadContentWorker.download(getApplicationContext(), uri, contentUri);
 
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    }
+                }
+            });
     private final ActivityResultLauncher<Intent> mFilesImportForResult =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     result -> {
@@ -155,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements
 
                                     long parent = getThread(getApplicationContext());
 
-                                    UploadService.uploadFile(getApplicationContext(), parent, uri);
+                                    LiteService.file(getApplicationContext(), parent, uri);
                                 }
 
                             } catch (Throwable throwable) {
@@ -576,7 +600,7 @@ public class MainActivity extends AppCompatActivity implements
                         return;
                     }
 
-                    UploadService.uploadFile(getApplicationContext(), 0L, uri);
+                    LiteService.file(getApplicationContext(), 0L, uri);
 
                 }
             }
@@ -969,16 +993,28 @@ public class MainActivity extends AppCompatActivity implements
 
             actionDownload.setOnClickListener(v13 -> {
                 try {
-                    if (frag == R.id.navigation_browser) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                                BrowserFragment.class.getSimpleName());
-                        if (fragment instanceof BrowserFragment) {
-                            BrowserFragment browserFragment = (BrowserFragment) fragment;
-                            if (browserFragment.isResumed()) {
-                                browserFragment.download();
-                            }
-                        }
-                    }
+                    Uri uri = uriAtomicReference.get();
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle(R.string.download_title);
+                    String filename = docs.getFileName(uri);
+                    builder.setMessage(filename);
+
+                    builder.setPositiveButton(getString(android.R.string.yes), (dialog, which) -> {
+
+                        LiteService.setContentUri(getApplicationContext(), uri);
+
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
+                                Uri.parse(InitApplication.DOWNLOADS));
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        mContentForResult.launch(intent);
+
+                    });
+                    builder.setNeutralButton(getString(android.R.string.cancel),
+                            (dialog, which) -> dialog.cancel());
+                    builder.show();
+
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {

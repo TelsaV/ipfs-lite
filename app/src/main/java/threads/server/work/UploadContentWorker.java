@@ -204,7 +204,7 @@ public class UploadContentWorker extends Worker {
 
                         @Override
                         public boolean doProgress() {
-                            return !isStopped();
+                            return true;
                         }
 
                         @Override
@@ -274,59 +274,6 @@ public class UploadContentWorker extends Worker {
 
                 } catch (Throwable e) {
                     if (!isStopped()) {
-                        buildFailedNotification(thread.getName());
-                    }
-                    throw e;
-                } finally {
-                    if (threads.isThreadLeaching(idx)) {
-                        threads.resetThreadLeaching(idx);
-                    }
-                    threads.resetThreadWork(idx);
-                }
-
-
-            } else {
-                // normal case like content of files
-                final long size = thread.getSize();
-                AtomicLong refresh = new AtomicLong(System.currentTimeMillis());
-                try (InputStream inputStream = getApplicationContext().getContentResolver()
-                        .openInputStream(uri)) {
-                    Objects.requireNonNull(inputStream);
-
-
-                    String cid = ipfs.storeInputStream(inputStream, new Progress() {
-                        @Override
-                        public boolean isClosed() {
-                            return isStopped();
-                        }
-
-
-                        @Override
-                        public boolean doProgress() {
-                            long time = System.currentTimeMillis();
-                            long diff = time - refresh.get();
-                            boolean doProgress = (diff > InitApplication.REFRESH);
-                            if (doProgress) {
-                                refresh.set(time);
-                            }
-                            return !isStopped() && doProgress;
-                        }
-
-                        @Override
-                        public void setProgress(int percent) {
-                            threads.setThreadProgress(idx, percent);
-                        }
-                    }, size);
-                    if (!isStopped()) {
-                        Objects.requireNonNull(cid);
-
-                        threads.setThreadDone(idx, cid);
-                        docs.finishDocument(idx);
-
-                    }
-                } catch (Throwable e) {
-                    if (!isStopped()) {
-                        threads.setThreadError(idx);
                         buildFailedNotification(thread.getName());
                     }
                     throw e;
@@ -433,7 +380,7 @@ public class UploadContentWorker extends Worker {
                                 if (doProgress) {
                                     refresh.set(time);
                                 }
-                                return !isStopped() && doProgress;
+                                return doProgress;
                             }
 
 
