@@ -45,7 +45,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ShareCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.MenuCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.WorkManager;
@@ -123,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements
             SwarmConnectWorker.dialing(getApplicationContext());
         }
     };
-    private final AtomicInteger currentFragment = new AtomicInteger();
+    private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_files);
 
 
     private final ActivityResultLauncher<Intent> mFilesImportForResult =
@@ -284,22 +283,6 @@ public class MainActivity extends AppCompatActivity implements
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
-    }
-
-    private void loadFragment(Fragment fragment, int value) {
-        currentFragment.set(value);
-        if (fragment != null) {
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, fragment)
-                    .commit();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuCompat.setGroupDividerEnabled(menu, true);
-        return super.onCreateOptionsMenu(menu);
     }
 
     private void registerService(int port) {
@@ -743,6 +726,10 @@ public class MainActivity extends AppCompatActivity implements
 
         DOCS docs = DOCS.getInstance(getApplicationContext());
 
+
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mNavigation = findViewById(R.id.navigation);
+        mNavigation.refreshDrawableState();
         mActionBookmark = findViewById(R.id.action_bookmark);
         mActionBookmark.setOnClickListener(v -> {
             try {
@@ -1269,15 +1256,59 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
+        BrowserFragment browserFragment;
+        ThreadsFragment threadsFragment;
+        PeersFragment peersFragment;
+        SwarmFragment swarmFragment;
+        SettingsFragment settingsFragment;
+        if (savedInstanceState != null) {
 
-        mNavigation = findViewById(R.id.navigation);
-        mNavigation.refreshDrawableState();
+            browserFragment = (BrowserFragment) getSupportFragmentManager().
+                    findFragmentByTag(BrowserFragment.class.getSimpleName());
+            threadsFragment = (ThreadsFragment) getSupportFragmentManager().
+                    findFragmentByTag(ThreadsFragment.class.getSimpleName());
+            peersFragment = (PeersFragment) getSupportFragmentManager().
+                    findFragmentByTag(PeersFragment.class.getSimpleName());
+            swarmFragment = (SwarmFragment) getSupportFragmentManager().
+                    findFragmentByTag(SwarmFragment.class.getSimpleName());
+            settingsFragment = (SettingsFragment) getSupportFragmentManager().
+                    findFragmentByTag(SettingsFragment.class.getSimpleName());
+
+        } else {
+            browserFragment = new BrowserFragment();
+            threadsFragment = new ThreadsFragment();
+            peersFragment = new PeersFragment();
+            swarmFragment = new SwarmFragment();
+            settingsFragment = new SettingsFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_container, threadsFragment, ThreadsFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, peersFragment, PeersFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, browserFragment, BrowserFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, swarmFragment, SwarmFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, settingsFragment, SettingsFragment.class.getSimpleName())
+                    .hide(peersFragment)
+                    .hide(browserFragment)
+                    .hide(swarmFragment)
+                    .hide(settingsFragment)
+                    .hide(threadsFragment)
+                    .commit();
+        }
         mNavigation.setOnNavigationItemSelectedListener((item) -> {
 
             int itemId = item.getItemId();
+            currentFragment.set(itemId);
             if (itemId == R.id.navigation_files) {
 
-                loadFragment(new ThreadsFragment(), R.id.navigation_files);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .hide(peersFragment)
+                        .hide(browserFragment)
+                        .hide(swarmFragment)
+                        .hide(settingsFragment)
+                        .show(threadsFragment)
+                        .commit();
+
                 showFab(true);
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
@@ -1288,8 +1319,14 @@ public class MainActivity extends AppCompatActivity implements
                 setFabImage(R.drawable.plus_thick);
                 return true;
             } else if (itemId == R.id.navigation_peers) {
-
-                loadFragment(new PeersFragment(), R.id.navigation_peers);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .show(peersFragment)
+                        .hide(browserFragment)
+                        .hide(swarmFragment)
+                        .hide(settingsFragment)
+                        .hide(threadsFragment)
+                        .commit();
                 showFab(true);
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
@@ -1300,8 +1337,14 @@ public class MainActivity extends AppCompatActivity implements
                 setFabImage(R.drawable.account_plus);
                 return true;
             } else if (itemId == R.id.navigation_browser) {
-
-                loadFragment(new BrowserFragment(), R.id.navigation_browser);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .hide(peersFragment)
+                        .show(browserFragment)
+                        .hide(swarmFragment)
+                        .hide(settingsFragment)
+                        .hide(threadsFragment)
+                        .commit();
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.VISIBLE);
@@ -1311,8 +1354,15 @@ public class MainActivity extends AppCompatActivity implements
                 mActionSorting.setVisibility(View.GONE);
                 return true;
             } else if (itemId == R.id.navigation_swarm) {
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .hide(peersFragment)
+                        .hide(browserFragment)
+                        .show(swarmFragment)
+                        .hide(settingsFragment)
+                        .hide(threadsFragment)
+                        .commit();
 
-                loadFragment(new SwarmFragment(), R.id.navigation_swarm);
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
@@ -1322,8 +1372,14 @@ public class MainActivity extends AppCompatActivity implements
                 mActionSorting.setVisibility(View.GONE);
                 return true;
             } else if (itemId == R.id.navigation_settings) {
-
-                loadFragment(new SettingsFragment(), R.id.navigation_settings);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .hide(peersFragment)
+                        .hide(browserFragment)
+                        .hide(swarmFragment)
+                        .show(settingsFragment)
+                        .hide(threadsFragment)
+                        .commit();
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
@@ -1337,18 +1393,13 @@ public class MainActivity extends AppCompatActivity implements
 
         });
 
-        mActionHome.setOnClickListener(view -> openBrowserView(docs.getPinsPageUri()));
-
-
         if (savedInstanceState != null) {
             mNavigation.setSelectedItemId(savedInstanceState.getInt(FRAG));
         } else {
             mNavigation.setSelectedItemId(R.id.navigation_files);
         }
 
-
-        mDrawerLayout = findViewById(R.id.drawer_layout);
-
+        mActionHome.setOnClickListener(view -> openBrowserView(docs.getPinsPageUri()));
 
         EventViewModel eventViewModel =
                 new ViewModelProvider(this).get(EventViewModel.class);
