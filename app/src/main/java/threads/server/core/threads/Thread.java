@@ -48,6 +48,7 @@ public class Thread {
     private boolean seeding; // checked
     @ColumnInfo(name = "deleting")
     private boolean deleting; // checked
+    @Deprecated
     @ColumnInfo(name = "error")
     private boolean error;
     @ColumnInfo(name = "init")
@@ -106,11 +107,11 @@ public class Thread {
         this.uri = uri;
     }
 
-    public boolean isError() {
+    boolean isError() {
         return error;
     }
 
-    public void setError(boolean error) {
+    void setError(boolean error) {
         this.error = error;
     }
 

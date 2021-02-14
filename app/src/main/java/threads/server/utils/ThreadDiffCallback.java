@@ -47,7 +47,6 @@ public class ThreadDiffCallback extends DiffUtil.Callback {
                 t.isLeaching() == o.isLeaching() &&
                 t.isSeeding() == o.isSeeding() &&
                 t.isDeleting() == o.isDeleting() &&
-                t.isError() == o.isError() &&
                 Objects.equals(t.getSize(), o.getSize()) &&
                 Objects.equals(t.getParent(), o.getParent()) &&
                 Objects.equals(t.getName(), o.getName()) &&

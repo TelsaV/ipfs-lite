@@ -154,11 +154,6 @@ public class ThreadsViewAdapter extends RecyclerView.Adapter<ThreadsViewAdapter.
                 }
             } else if (thread.isInit()) {
                 threadViewHolder.general_action.setVisibility(View.INVISIBLE);
-            } else if (thread.isError()) {
-                threadViewHolder.general_action.setImageResource(R.drawable.delete);
-                threadViewHolder.general_action.setOnClickListener((v) ->
-                        mListener.invokeDeleteAction(thread)
-                );
             } else if (thread.isLeaching()) {
                 threadViewHolder.general_action.setImageResource(R.drawable.pause);
                 threadViewHolder.general_action.setOnClickListener((v) ->
@@ -269,8 +264,6 @@ public class ThreadsViewAdapter extends RecyclerView.Adapter<ThreadsViewAdapter.
         void onClick(@NonNull Thread thread);
 
         void invokePauseAction(@NonNull Thread thread);
-
-        void invokeDeleteAction(@NonNull Thread thread);
 
         void invokeLoadAction(@NonNull Thread thread);
     }

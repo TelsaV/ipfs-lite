@@ -214,10 +214,6 @@ public class THREADS {
         getThreadsDatabase().threadDao().setSize(idx, size);
     }
 
-    public void setThreadError(long idx) {
-        getThreadsDatabase().threadDao().setError(idx);
-    }
-
     public void setThreadWork(long idx, @NonNull UUID id) {
         getThreadsDatabase().threadDao().setWork(idx, id.toString());
     }

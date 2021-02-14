@@ -142,7 +142,7 @@ public class UploadFileWorker extends Worker {
                     }
                 } catch (Throwable e) {
                     if (!isStopped()) {
-                        threads.setThreadError(idx);
+                        threads.setThreadsDeleting(idx);
                         buildFailedNotification(thread.getName());
                     }
                     throw e;

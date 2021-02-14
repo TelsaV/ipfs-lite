@@ -940,11 +940,6 @@ public class ThreadsFragment extends Fragment implements
     }
 
     @Override
-    public void invokeDeleteAction(@NonNull Thread thread) {
-        ThreadsService.removeThreads(mContext, thread.getIdx());
-    }
-
-    @Override
     public void invokeLoadAction(@NonNull Thread thread) {
 
 

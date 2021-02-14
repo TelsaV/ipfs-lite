@@ -15,9 +15,6 @@ public interface ThreadDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     long insertThread(Thread thread);
 
-    @Query("UPDATE Thread SET error = 1 WHERE idx = :idx")
-    void setError(long idx);
-
     @Query("SELECT content FROM Thread WHERE idx = :idx")
     String getContent(long idx);
 

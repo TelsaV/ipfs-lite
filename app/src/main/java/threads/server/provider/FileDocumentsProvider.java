@@ -288,9 +288,8 @@ public class FileDocumentsProvider extends DocumentsProvider {
         row.add(DocumentsContract.Root.COLUMN_TITLE, appName);
         row.add(DocumentsContract.Root.COLUMN_FLAGS,
                 DocumentsContract.Root.FLAG_LOCAL_ONLY |
-                        /* TODO activate again
-                            DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD |
-                             DocumentsContract.Root.FLAG_SUPPORTS_CREATE |*/
+                        DocumentsContract.Root.FLAG_SUPPORTS_IS_CHILD |
+                        DocumentsContract.Root.FLAG_SUPPORTS_CREATE |
                         DocumentsContract.Root.FLAG_SUPPORTS_RECENTS |
                         DocumentsContract.Root.FLAG_SUPPORTS_SEARCH);
         row.add(DocumentsContract.Root.COLUMN_DOCUMENT_ID, getRoot());

@@ -210,7 +210,7 @@ public class UploadFilesWorker extends Worker {
                             threads.setThreadsDeleting(idx);
                         }
                     } catch (Throwable e) {
-                        threads.setThreadError(idx);
+                        threads.setThreadsDeleting(idx);
                     }
                 }
             }

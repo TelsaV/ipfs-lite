@@ -374,7 +374,6 @@ public class DOCS {
         thread.setName(name);
         thread.setContent(source.getContent());
         thread.setLeaching(source.isLeaching());
-        thread.setError(source.isError());
         thread.setDeleting(source.isDeleting());
         thread.setMimeType(source.getMimeType());
         thread.setSize(source.getSize());
