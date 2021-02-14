@@ -1381,6 +1381,7 @@ public class MainActivity extends AppCompatActivity implements
                 mActionId.setVisibility(View.GONE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
+                refreshOwnPage();
                 return true;
             } else if (itemId == R.id.navigation_swarm) {
                 getSupportFragmentManager()
@@ -1399,6 +1400,7 @@ public class MainActivity extends AppCompatActivity implements
                 mActionId.setVisibility(View.GONE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
+                refreshSwarmPage();
                 return true;
             } else if (itemId == R.id.navigation_settings) {
                 getSupportFragmentManager()
@@ -1416,6 +1418,7 @@ public class MainActivity extends AppCompatActivity implements
                 mActionId.setVisibility(View.VISIBLE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
+
                 return true;
             }
             return false;
@@ -1736,6 +1739,32 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
         return false;
+    }
+
+
+    private void refreshSwarmPage() {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                SwarmFragment.class.getSimpleName());
+        if (fragment instanceof SwarmFragment) {
+            SwarmFragment swarmFragment = (SwarmFragment) fragment;
+            if (swarmFragment.isResumed()) {
+                swarmFragment.updateData();
+            }
+        }
+    }
+
+    private void refreshOwnPage() {
+        DOCS docs = DOCS.getInstance(getApplicationContext());
+        if (Objects.equals(docs.getPinsPageUri(), uriAtomicReference.get())) {
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                    BrowserFragment.class.getSimpleName());
+            if (fragment instanceof BrowserFragment) {
+                BrowserFragment browserFragment = (BrowserFragment) fragment;
+                if (browserFragment.isResumed()) {
+                    browserFragment.reload();
+                }
+            }
+        }
     }
 
     @Override

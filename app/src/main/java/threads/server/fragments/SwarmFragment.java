@@ -95,11 +95,10 @@ public class SwarmFragment extends Fragment implements
 
     }
 
-    private void updateData() {
-        IPFS ipfs = IPFS.getInstance(mContext);
-
-        List<String> peers = ipfs.swarmPeers();
+    public void updateData() {
         try {
+            IPFS ipfs = IPFS.getInstance(mContext);
+            List<String> peers = ipfs.swarmPeers();
             peers.sort(String::compareTo);
             mSwarmAdapter.updateData(peers);
         } catch (Throwable e) {

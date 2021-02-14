@@ -211,14 +211,7 @@ public class BrowserFragment extends Fragment {
         mWebView = view.findViewById(R.id.web_view);
 
 
-        mCustomWebChromeClient = new CustomWebChromeClient(mActivity) {
-
-            public void onProgressChanged(WebView view, int newProgress) {
-
-                mProgressBar.setVisibility(View.VISIBLE);
-
-            }
-        };
+        mCustomWebChromeClient = new CustomWebChromeClient(mActivity);
         mWebView.setWebChromeClient(mCustomWebChromeClient);
 
         InitApplication.setWebSettings(mWebView);
