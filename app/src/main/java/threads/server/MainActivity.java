@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements
                             try {
                                 Objects.requireNonNull(data);
 
-
                                 if (data.getClipData() != null) {
                                     ClipData mClipData = data.getClipData();
                                     long parent = getThread(getApplicationContext());
@@ -353,7 +352,6 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private final AtomicBoolean forwardActive = new AtomicBoolean(false);
     private final AtomicBoolean downloadActive = new AtomicBoolean(false);
 
 
@@ -365,8 +363,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private void updateDirectory(@Nullable Long parent, String query, @NonNull SortOrder sortOrder) {
 
-        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                R.id.fragment_container);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                ThreadsFragment.class.getSimpleName());
         if (fragment instanceof ThreadsFragment) {
             ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
             if (threadsFragment.isResumed()) {
@@ -409,12 +407,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                R.id.fragment_container);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                BrowserFragment.class.getSimpleName());
         if (fragment instanceof BrowserFragment) {
-            BrowserFragment tabsFragment = (BrowserFragment) fragment;
-            if (tabsFragment.isResumed()) {
-                boolean result = tabsFragment.onBackPressed();
+            BrowserFragment browserFragment = (BrowserFragment) fragment;
+            if (browserFragment.isResumed()) {
+                boolean result = browserFragment.onBackPressed();
                 if (result) {
                     return;
                 }
@@ -733,9 +731,8 @@ public class MainActivity extends AppCompatActivity implements
         mActionBookmark = findViewById(R.id.action_bookmark);
         mActionBookmark.setOnClickListener(v -> {
             try {
-
-                Fragment fragment = getSupportFragmentManager().findFragmentById(
-                        R.id.fragment_container);
+                Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                        BrowserFragment.class.getSimpleName());
                 if (fragment instanceof BrowserFragment) {
                     BrowserFragment brow = (BrowserFragment) fragment;
                     if (brow.isResumed()) {
@@ -890,7 +887,7 @@ public class MainActivity extends AppCompatActivity implements
 
             int frag = currentFragment.get();
             ImageButton actionNextPage = menuOverflow.findViewById(R.id.action_next_page);
-            if (frag == R.id.navigation_browser && forwardActive.get()) {
+            if (canGoForward()) {
                 actionNextPage.setEnabled(true);
                 actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
                         R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
@@ -901,8 +898,8 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionNextPage.setOnClickListener(v1 -> {
                 try {
-                    Fragment fragment = getSupportFragmentManager().findFragmentById(
-                            R.id.fragment_container);
+                    Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                            BrowserFragment.class.getSimpleName());
                     if (fragment instanceof BrowserFragment) {
                         BrowserFragment browserFragment = (BrowserFragment) fragment;
                         if (browserFragment.isResumed()) {
@@ -931,8 +928,8 @@ public class MainActivity extends AppCompatActivity implements
             actionFindPage.setOnClickListener(v12 -> {
                 try {
                     if (frag == R.id.navigation_browser) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                                R.id.fragment_container);
+                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                                BrowserFragment.class.getSimpleName());
                         if (fragment instanceof BrowserFragment) {
                             BrowserFragment browserFragment = (BrowserFragment) fragment;
                             if (browserFragment.isResumed()) {
@@ -940,8 +937,8 @@ public class MainActivity extends AppCompatActivity implements
                             }
                         }
                     } else if (frag == R.id.navigation_files) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                                R.id.fragment_container);
+                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                                ThreadsFragment.class.getSimpleName());
                         if (fragment instanceof ThreadsFragment) {
                             ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
                             if (threadsFragment.isResumed()) {
@@ -973,8 +970,8 @@ public class MainActivity extends AppCompatActivity implements
             actionDownload.setOnClickListener(v13 -> {
                 try {
                     if (frag == R.id.navigation_browser) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                                R.id.fragment_container);
+                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                                BrowserFragment.class.getSimpleName());
                         if (fragment instanceof BrowserFragment) {
                             BrowserFragment browserFragment = (BrowserFragment) fragment;
                             if (browserFragment.isResumed()) {
@@ -1041,8 +1038,8 @@ public class MainActivity extends AppCompatActivity implements
             actionReload.setOnClickListener(v15 -> {
                 try {
                     if (frag == R.id.navigation_browser) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentById(
-                                R.id.fragment_container);
+                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                                BrowserFragment.class.getSimpleName());
                         if (fragment instanceof BrowserFragment) {
                             BrowserFragment browserFragment = (BrowserFragment) fragment;
                             if (browserFragment.isResumed()) {
@@ -1062,8 +1059,8 @@ public class MainActivity extends AppCompatActivity implements
             actionClearCache.setVisibility(View.GONE);
             actionClearCache.setOnClickListener(v19 -> {
                 try {
-                    Fragment fragment = getSupportFragmentManager().findFragmentById(
-                            R.id.fragment_container);
+                    Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                            BrowserFragment.class.getSimpleName());
                     if (fragment instanceof BrowserFragment) {
                         BrowserFragment browserFragment = (BrowserFragment) fragment;
                         if (browserFragment.isResumed()) {
@@ -1181,11 +1178,7 @@ public class MainActivity extends AppCompatActivity implements
             actionDocumentation.setOnClickListener(v19 -> {
                 try {
                     String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
-
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri),
-                            getApplicationContext(), MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                    startActivity(intent);
+                    openBrowserView(Uri.parse(uri));
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -1235,7 +1228,7 @@ public class MainActivity extends AppCompatActivity implements
         });
         Uri uri = docs.getPinsPageUri();
         mSelectionViewModel.setUri(uri.toString());
-        updateUri(uri, false);
+        updateUri(uri);
 
 
         mFloatingActionButton = findViewById(R.id.floating_action_button);
@@ -1697,9 +1690,20 @@ public class MainActivity extends AppCompatActivity implements
                 Objects.equals(uri.getScheme(), Content.IPNS));
     }
 
+    private boolean canGoForward() {
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
+                BrowserFragment.class.getSimpleName());
+        if (fragment instanceof BrowserFragment) {
+            BrowserFragment browserFragment = (BrowserFragment) fragment;
+            if (browserFragment.isResumed()) {
+                return browserFragment.canGoForward();
+            }
+        }
+        return false;
+    }
+
     @Override
-    public void updateUri(@NonNull Uri uri, boolean forward) {
-        forwardActive.set(forward);
+    public void updateUri(@NonNull Uri uri) {
         uriAtomicReference.set(uri);
         updateTitle(uri);
         updateBookmark(uri);

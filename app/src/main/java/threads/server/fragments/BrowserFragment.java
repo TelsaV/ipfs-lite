@@ -292,7 +292,7 @@ public class BrowserFragment extends Fragment {
 
 
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
-                mListener.updateUri(uri, mWebView.canGoForward());
+                mListener.updateUri(uri);
             }
 
             @Override
@@ -300,7 +300,7 @@ public class BrowserFragment extends Fragment {
                 LogUtils.error(TAG, "onPageStarted : " + url);
 
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
-                mListener.updateUri(uri, mWebView.canGoForward());
+                mListener.updateUri(uri);
             }
 
             @Override
@@ -764,7 +764,7 @@ public class BrowserFragment extends Fragment {
 
             mProgressBar.setVisibility(View.VISIBLE);
 
-            mListener.updateUri(uri, mWebView.canGoForward());
+            mListener.updateUri(uri);
 
             mWebView.loadUrl(uri.toString());
         } catch (Throwable throwable) {
@@ -772,9 +772,13 @@ public class BrowserFragment extends Fragment {
         }
     }
 
+    public boolean canGoForward() {
+        return mWebView.canGoForward();
+    }
+
 
     public interface ActionListener {
 
-        void updateUri(@NonNull Uri uri, boolean forward);
+        void updateUri(@NonNull Uri uri);
     }
 }

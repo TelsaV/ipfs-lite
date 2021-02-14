@@ -2,9 +2,7 @@ package threads.server.fragments;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.Window;
@@ -23,11 +21,11 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import threads.LogUtils;
-import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.books.Bookmark;
 import threads.server.core.books.BookmarkViewModel;
 import threads.server.utils.BookmarksViewAdapter;
+import threads.server.utils.SelectionViewModel;
 import threads.server.utils.SwipeToDeleteCallback;
 
 public class BookmarksDialogFragment extends DialogFragment implements BookmarksViewAdapter.BookmarkListener {
@@ -36,6 +34,7 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
     private static final int CLICK_OFFSET = 500;
     private long mLastClickTime = 0;
     private BookmarksViewAdapter mBookmarksViewAdapter;
+    private SelectionViewModel mSelectionViewModel;
     private Context mContext;
 
     @Override
@@ -75,6 +74,9 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
 
             dismiss();
         });
+
+
+        mSelectionViewModel = new ViewModelProvider(getActivity()).get(SelectionViewModel.class);
 
         RecyclerView bookmarks = dialog.findViewById(R.id.bookmarks);
         Objects.requireNonNull(bookmarks);
@@ -118,15 +120,11 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
         mLastClickTime = SystemClock.elapsedRealtime();
 
         try {
-
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(bookmark.getUri()),
-                    mContext, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            startActivity(intent);
-
-            dismiss();
+            mSelectionViewModel.setUri(bookmark.getUri());
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
+        } finally {
+            dismiss();
         }
     }
 }
