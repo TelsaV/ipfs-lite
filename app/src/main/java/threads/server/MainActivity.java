@@ -50,6 +50,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.work.WorkManager;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
@@ -752,6 +753,28 @@ public class MainActivity extends AppCompatActivity implements
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mNavigation = findViewById(R.id.navigation);
         mNavigation.refreshDrawableState();
+
+        mFloatingActionButton = findViewById(R.id.floating_action_button);
+
+
+        AppBarLayout mAppBar = findViewById(R.id.appbar);
+
+
+        mAppBar.addOnOffsetChangedListener(new AppBarStateChangedListener() {
+            @Override
+            public void onStateChanged(AppBarLayout appBarLayout, State state) {
+               LogUtils.error(TAG,  state.name());
+
+               if(state == State.EXPANDED){
+                  // showFab(true);
+               } else if(state == State.COLLAPSED) {
+                  // showFab(false);
+               }
+
+            }
+        });
+
+
         mActionBookmark = findViewById(R.id.action_bookmark);
         mActionBookmark.setOnClickListener(v -> {
             try {
@@ -1267,7 +1290,6 @@ public class MainActivity extends AppCompatActivity implements
         updateUri(uri);
 
 
-        mFloatingActionButton = findViewById(R.id.floating_action_button);
 
         mFloatingActionButton.setOnClickListener((v) -> {
 
@@ -1773,5 +1795,35 @@ public class MainActivity extends AppCompatActivity implements
         updateTitle(uri);
         updateBookmark(uri);
         updateDownload(uri);
+    }
+    public abstract static class AppBarStateChangedListener implements AppBarLayout.OnOffsetChangedListener {
+
+        public enum State {
+            EXPANDED,
+            COLLAPSED,
+            IDLE
+        }
+
+        private State mCurrentState = State.IDLE;
+
+        @Override
+        public final void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+            if (verticalOffset == 0) {
+                setCurrentStateAndNotify(appBarLayout, State.EXPANDED);
+            } else if (Math.abs(verticalOffset) >= appBarLayout.getTotalScrollRange()) {
+                setCurrentStateAndNotify(appBarLayout, State.COLLAPSED);
+            } else {
+                setCurrentStateAndNotify(appBarLayout, State.IDLE);
+            }
+        }
+
+        private void setCurrentStateAndNotify(AppBarLayout appBarLayout, State state){
+            if (mCurrentState != state) {
+                onStateChanged(appBarLayout, state);
+            }
+            mCurrentState = state;
+        }
+
+        public abstract void onStateChanged(AppBarLayout appBarLayout, State state);
     }
 }
