@@ -20,11 +20,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <WebView
+        <threads.server.utils.NestedWebView
             android:id="@+id/web_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:scrollbars="vertical" />
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>

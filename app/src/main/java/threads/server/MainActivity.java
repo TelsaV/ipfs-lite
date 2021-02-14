@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements
             SwarmConnectWorker.dialing(getApplicationContext());
         }
     };
-    private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_files);
+    private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_browser);
 
     private final ActivityResultLauncher<Intent> mContentForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -1285,7 +1285,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
         });
-        Uri uri = docs.getPinsPageUri();
+        Uri uri = Uri.parse(InitApplication.getDefaultHomepage());
         mSelectionViewModel.setUri(uri.toString());
         updateUri(uri);
 
@@ -1450,7 +1450,7 @@ public class MainActivity extends AppCompatActivity implements
         if (savedInstanceState != null) {
             mNavigation.setSelectedItemId(savedInstanceState.getInt(FRAG));
         } else {
-            mNavigation.setSelectedItemId(R.id.navigation_files);
+            mNavigation.setSelectedItemId(R.id.navigation_browser);
         }
 
         mActionHome.setOnClickListener(view -> openBrowserView(docs.getPinsPageUri()));

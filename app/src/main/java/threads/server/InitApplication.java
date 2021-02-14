@@ -249,4 +249,9 @@ public class InitApplication extends Application {
         }
     }
 
+
+    @NonNull
+    public static String getDefaultHomepage() {
+        return "https://start.duckduckgo.com/";
+    }
 }
