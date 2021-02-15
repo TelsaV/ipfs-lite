@@ -66,7 +66,9 @@ public class PageResolveWorker extends Worker {
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
             ipfs.resolveName(name, this::isStopped);
         } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+            if(!isStopped()) {
+                LogUtils.error(TAG, e);
+            }
         } finally {
             LogUtils.info(TAG, " finish onStart ...");
         }
