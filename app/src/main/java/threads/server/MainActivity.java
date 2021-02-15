@@ -1113,7 +1113,7 @@ public class MainActivity extends AppCompatActivity implements
             });
 
             TextView actionClearData = menuOverflow.findViewById(R.id.action_clear_data);
-            actionClearData.setVisibility(View.VISIBLE);
+            actionClearData.setVisibility(View.GONE);
             actionClearData.setOnClickListener(v19 -> {
                 try {
                     mBrowserFragment.clearBrowserData();
