@@ -1046,6 +1046,10 @@ public class ThreadsFragment extends Fragment implements
 
     }
 
+    public void enableSwipeRefresh(boolean enable) {
+        mSwipeRefreshLayout.setEnabled(enable);
+    }
+
     public interface ActionListener {
 
         void showFab(boolean b);

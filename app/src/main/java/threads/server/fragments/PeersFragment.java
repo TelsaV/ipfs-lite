@@ -498,6 +498,10 @@ public class PeersFragment extends Fragment implements
         });
     }
 
+    public void enableSwipeRefresh(boolean enable) {
+        mSwipeRefreshLayout.setEnabled(enable);
+    }
+
 
     public interface ActionListener {
 

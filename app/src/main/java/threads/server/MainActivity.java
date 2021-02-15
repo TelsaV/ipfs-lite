@@ -36,7 +36,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -274,6 +273,11 @@ public class MainActivity extends AppCompatActivity implements
     private TextView mBrowserText;
     private ActionMode mActionMode;
     private ImageButton mActionBookmark;
+    private BrowserFragment mBrowserFragment;
+    private ThreadsFragment mThreadsFragment;
+    private PeersFragment mPeersFragment;
+    private SwarmFragment mSwarmFragment;
+    private SettingsFragment mSettingsFragment;
 
     private static long getThread(@NonNull Context context) {
 
@@ -386,17 +390,6 @@ public class MainActivity extends AppCompatActivity implements
 
     private final AtomicReference<Uri> uriAtomicReference = new AtomicReference<>(null);
 
-    private void updateDirectory(@Nullable Long parent, String query, @NonNull SortOrder sortOrder) {
-
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                ThreadsFragment.class.getSimpleName());
-        if (fragment instanceof ThreadsFragment) {
-            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
-            if (threadsFragment.isResumed()) {
-                threadsFragment.updateDirectory(parent, query, sortOrder, true);
-            }
-        }
-    }
 
     private void clickFilesAdd() {
 
@@ -762,30 +755,57 @@ public class MainActivity extends AppCompatActivity implements
         mAppBar.addOnOffsetChangedListener(new AppBarStateChangedListener() {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
-               LogUtils.error(TAG,  state.name());
+                LogUtils.error(TAG, state.name());
 
-               if(state == State.EXPANDED){
-                  // showFab(true);
-               } else if(state == State.COLLAPSED) {
-                  // showFab(false);
-               }
+                if (state == State.EXPANDED) {
+                    enableSwipeRefresh(true);
+                } else if (state == State.COLLAPSED) {
+                    enableSwipeRefresh(false);
+                }
 
             }
         });
 
 
+        if (savedInstanceState != null) {
+
+            mBrowserFragment = (BrowserFragment) getSupportFragmentManager().
+                    findFragmentByTag(BrowserFragment.class.getSimpleName());
+            mThreadsFragment = (ThreadsFragment) getSupportFragmentManager().
+                    findFragmentByTag(ThreadsFragment.class.getSimpleName());
+            mPeersFragment = (PeersFragment) getSupportFragmentManager().
+                    findFragmentByTag(PeersFragment.class.getSimpleName());
+            mSwarmFragment = (SwarmFragment) getSupportFragmentManager().
+                    findFragmentByTag(SwarmFragment.class.getSimpleName());
+            mSettingsFragment = (SettingsFragment) getSupportFragmentManager().
+                    findFragmentByTag(SettingsFragment.class.getSimpleName());
+
+        } else {
+            mBrowserFragment = new BrowserFragment();
+            mThreadsFragment = new ThreadsFragment();
+            mPeersFragment = new PeersFragment();
+            mSwarmFragment = new SwarmFragment();
+            mSettingsFragment = new SettingsFragment();
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .add(R.id.fragment_container, mThreadsFragment, ThreadsFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, mPeersFragment, PeersFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, mBrowserFragment, BrowserFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, mSwarmFragment, SwarmFragment.class.getSimpleName())
+                    .add(R.id.fragment_container, mSettingsFragment, SettingsFragment.class.getSimpleName())
+                    .hide(mPeersFragment)
+                    .hide(mBrowserFragment)
+                    .hide(mSwarmFragment)
+                    .hide(mSettingsFragment)
+                    .hide(mThreadsFragment)
+                    .commit();
+        }
+
+
         mActionBookmark = findViewById(R.id.action_bookmark);
         mActionBookmark.setOnClickListener(v -> {
             try {
-                Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                        BrowserFragment.class.getSimpleName());
-                if (fragment instanceof BrowserFragment) {
-                    BrowserFragment brow = (BrowserFragment) fragment;
-                    if (brow.isResumed()) {
-                        brow.bookmark(getApplicationContext(), mActionBookmark);
-                    }
-                }
-
+                mBrowserFragment.bookmark(getApplicationContext(), mActionBookmark);
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
             }
@@ -842,43 +862,55 @@ public class MainActivity extends AppCompatActivity implements
 
                             setSortOrder(SortOrder.DATE);
 
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), SortOrder.DATE);
+                            mThreadsFragment.updateDirectory(
+                                    mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(),
+                                    SortOrder.DATE, true);
                             return true;
                         } else if (itemId == R.id.sort_date_inverse) {
 
                             setSortOrder(SortOrder.DATE_INVERSE);
 
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), SortOrder.DATE_INVERSE);
+                            mThreadsFragment.updateDirectory(
+                                    mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(),
+                                    SortOrder.DATE_INVERSE, true);
                             return true;
                         } else if (itemId == R.id.sort_name) {
 
                             setSortOrder(SortOrder.NAME);
 
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), SortOrder.NAME);
+                            mThreadsFragment.updateDirectory(
+                                    mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(),
+                                    SortOrder.NAME, true);
                             return true;
                         } else if (itemId == R.id.sort_name_inverse) {
 
                             setSortOrder(SortOrder.NAME_INVERSE);
 
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), SortOrder.NAME_INVERSE);
+                            mThreadsFragment.updateDirectory(
+                                    mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(),
+                                    SortOrder.NAME_INVERSE, true);
                             return true;
                         } else if (itemId == R.id.sort_size) {
 
                             setSortOrder(SortOrder.SIZE);
 
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), SortOrder.SIZE);
+                            mThreadsFragment.updateDirectory(
+                                    mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(),
+                                    SortOrder.SIZE, true);
                             return true;
                         } else if (itemId == R.id.sort_size_inverse) {
 
                             setSortOrder(SortOrder.SIZE_INVERSE);
 
-                            updateDirectory(mSelectionViewModel.getParentThread().getValue(),
-                                    mSelectionViewModel.getQuery().getValue(), SortOrder.SIZE_INVERSE);
+                            mThreadsFragment.updateDirectory(
+                                    mSelectionViewModel.getParentThread().getValue(),
+                                    mSelectionViewModel.getQuery().getValue(),
+                                    SortOrder.SIZE_INVERSE, true);
                             return true;
                         }
                     } catch (Throwable throwable) {
@@ -933,7 +965,7 @@ public class MainActivity extends AppCompatActivity implements
 
             int frag = currentFragment.get();
             ImageButton actionNextPage = menuOverflow.findViewById(R.id.action_next_page);
-            if (canGoForward()) {
+            if (mBrowserFragment.canGoForward()) {
                 actionNextPage.setEnabled(true);
                 actionNextPage.setColorFilter(ContextCompat.getColor(getApplicationContext(),
                         R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
@@ -944,14 +976,7 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionNextPage.setOnClickListener(v1 -> {
                 try {
-                    Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                            BrowserFragment.class.getSimpleName());
-                    if (fragment instanceof BrowserFragment) {
-                        BrowserFragment browserFragment = (BrowserFragment) fragment;
-                        if (browserFragment.isResumed()) {
-                            browserFragment.goForward();
-                        }
-                    }
+                    mBrowserFragment.goForward();
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -974,25 +999,10 @@ public class MainActivity extends AppCompatActivity implements
             actionFindPage.setOnClickListener(v12 -> {
                 try {
                     if (frag == R.id.navigation_browser) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                                BrowserFragment.class.getSimpleName());
-                        if (fragment instanceof BrowserFragment) {
-                            BrowserFragment browserFragment = (BrowserFragment) fragment;
-                            if (browserFragment.isResumed()) {
-                                browserFragment.findInPage();
-                            }
-                        }
+                        mBrowserFragment.findInPage();
                     } else if (frag == R.id.navigation_files) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                                ThreadsFragment.class.getSimpleName());
-                        if (fragment instanceof ThreadsFragment) {
-                            ThreadsFragment threadsFragment = (ThreadsFragment) fragment;
-                            if (threadsFragment.isResumed()) {
-                                threadsFragment.findInPage();
-                            }
-                        }
+                        mThreadsFragment.findInPage();
                     }
-
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -1096,14 +1106,7 @@ public class MainActivity extends AppCompatActivity implements
             actionReload.setOnClickListener(v15 -> {
                 try {
                     if (frag == R.id.navigation_browser) {
-                        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                                BrowserFragment.class.getSimpleName());
-                        if (fragment instanceof BrowserFragment) {
-                            BrowserFragment browserFragment = (BrowserFragment) fragment;
-                            if (browserFragment.isResumed()) {
-                                browserFragment.reload();
-                            }
-                        }
+                        mBrowserFragment.reload();
                     }
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
@@ -1117,14 +1120,7 @@ public class MainActivity extends AppCompatActivity implements
             actionClearCache.setVisibility(View.GONE);
             actionClearCache.setOnClickListener(v19 -> {
                 try {
-                    Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                            BrowserFragment.class.getSimpleName());
-                    if (fragment instanceof BrowserFragment) {
-                        BrowserFragment browserFragment = (BrowserFragment) fragment;
-                        if (browserFragment.isResumed()) {
-                            browserFragment.clearCache();
-                        }
-                    }
+                    mBrowserFragment.clearCache();
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -1306,44 +1302,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        BrowserFragment browserFragment;
-        ThreadsFragment threadsFragment;
-        PeersFragment peersFragment;
-        SwarmFragment swarmFragment;
-        SettingsFragment settingsFragment;
-        if (savedInstanceState != null) {
 
-            browserFragment = (BrowserFragment) getSupportFragmentManager().
-                    findFragmentByTag(BrowserFragment.class.getSimpleName());
-            threadsFragment = (ThreadsFragment) getSupportFragmentManager().
-                    findFragmentByTag(ThreadsFragment.class.getSimpleName());
-            peersFragment = (PeersFragment) getSupportFragmentManager().
-                    findFragmentByTag(PeersFragment.class.getSimpleName());
-            swarmFragment = (SwarmFragment) getSupportFragmentManager().
-                    findFragmentByTag(SwarmFragment.class.getSimpleName());
-            settingsFragment = (SettingsFragment) getSupportFragmentManager().
-                    findFragmentByTag(SettingsFragment.class.getSimpleName());
-
-        } else {
-            browserFragment = new BrowserFragment();
-            threadsFragment = new ThreadsFragment();
-            peersFragment = new PeersFragment();
-            swarmFragment = new SwarmFragment();
-            settingsFragment = new SettingsFragment();
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .add(R.id.fragment_container, threadsFragment, ThreadsFragment.class.getSimpleName())
-                    .add(R.id.fragment_container, peersFragment, PeersFragment.class.getSimpleName())
-                    .add(R.id.fragment_container, browserFragment, BrowserFragment.class.getSimpleName())
-                    .add(R.id.fragment_container, swarmFragment, SwarmFragment.class.getSimpleName())
-                    .add(R.id.fragment_container, settingsFragment, SettingsFragment.class.getSimpleName())
-                    .hide(peersFragment)
-                    .hide(browserFragment)
-                    .hide(swarmFragment)
-                    .hide(settingsFragment)
-                    .hide(threadsFragment)
-                    .commit();
-        }
         mNavigation.setOnNavigationItemSelectedListener((item) -> {
 
             int itemId = item.getItemId();
@@ -1352,11 +1311,11 @@ public class MainActivity extends AppCompatActivity implements
 
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .hide(peersFragment)
-                        .hide(browserFragment)
-                        .hide(swarmFragment)
-                        .hide(settingsFragment)
-                        .show(threadsFragment)
+                        .hide(mPeersFragment)
+                        .hide(mBrowserFragment)
+                        .hide(mSwarmFragment)
+                        .hide(mSettingsFragment)
+                        .show(mThreadsFragment)
                         .commit();
 
                 showFab(true);
@@ -1371,11 +1330,11 @@ public class MainActivity extends AppCompatActivity implements
             } else if (itemId == R.id.navigation_peers) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .show(peersFragment)
-                        .hide(browserFragment)
-                        .hide(swarmFragment)
-                        .hide(settingsFragment)
-                        .hide(threadsFragment)
+                        .show(mPeersFragment)
+                        .hide(mBrowserFragment)
+                        .hide(mSwarmFragment)
+                        .hide(mSettingsFragment)
+                        .hide(mThreadsFragment)
                         .commit();
                 showFab(true);
                 mSelectionViewModel.setParentThread(0L);
@@ -1389,11 +1348,11 @@ public class MainActivity extends AppCompatActivity implements
             } else if (itemId == R.id.navigation_browser) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .hide(peersFragment)
-                        .show(browserFragment)
-                        .hide(swarmFragment)
-                        .hide(settingsFragment)
-                        .hide(threadsFragment)
+                        .hide(mPeersFragment)
+                        .show(mBrowserFragment)
+                        .hide(mSwarmFragment)
+                        .hide(mSettingsFragment)
+                        .hide(mThreadsFragment)
                         .commit();
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
@@ -1407,11 +1366,11 @@ public class MainActivity extends AppCompatActivity implements
             } else if (itemId == R.id.navigation_swarm) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .hide(peersFragment)
-                        .hide(browserFragment)
-                        .show(swarmFragment)
-                        .hide(settingsFragment)
-                        .hide(threadsFragment)
+                        .hide(mPeersFragment)
+                        .hide(mBrowserFragment)
+                        .show(mSwarmFragment)
+                        .hide(mSettingsFragment)
+                        .hide(mThreadsFragment)
                         .commit();
 
                 showFab(false);
@@ -1421,16 +1380,16 @@ public class MainActivity extends AppCompatActivity implements
                 mActionId.setVisibility(View.GONE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
-                refreshSwarmPage();
+                mSwarmFragment.updateData();
                 return true;
             } else if (itemId == R.id.navigation_settings) {
                 getSupportFragmentManager()
                         .beginTransaction()
-                        .hide(peersFragment)
-                        .hide(browserFragment)
-                        .hide(swarmFragment)
-                        .show(settingsFragment)
-                        .hide(threadsFragment)
+                        .hide(mPeersFragment)
+                        .hide(mBrowserFragment)
+                        .hide(mSwarmFragment)
+                        .show(mSettingsFragment)
+                        .hide(mThreadsFragment)
                         .commit();
                 showFab(false);
                 mSelectionViewModel.setParentThread(0L);
@@ -1748,41 +1707,19 @@ public class MainActivity extends AppCompatActivity implements
                 Objects.equals(uri.getScheme(), Content.IPNS));
     }
 
-    private boolean canGoForward() {
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                BrowserFragment.class.getSimpleName());
-        if (fragment instanceof BrowserFragment) {
-            BrowserFragment browserFragment = (BrowserFragment) fragment;
-            if (browserFragment.isResumed()) {
-                return browserFragment.canGoForward();
-            }
-        }
-        return false;
+
+    private void enableSwipeRefresh(boolean enable) {
+        mBrowserFragment.enableSwipeRefresh(enable);
+        mThreadsFragment.enableSwipeRefresh(enable);
+        mPeersFragment.enableSwipeRefresh(enable);
+        mSwarmFragment.enableSwipeRefresh(enable);
     }
 
-
-    private void refreshSwarmPage() {
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                SwarmFragment.class.getSimpleName());
-        if (fragment instanceof SwarmFragment) {
-            SwarmFragment swarmFragment = (SwarmFragment) fragment;
-            if (swarmFragment.isResumed()) {
-                swarmFragment.updateData();
-            }
-        }
-    }
 
     private void refreshOwnPage() {
         DOCS docs = DOCS.getInstance(getApplicationContext());
         if (Objects.equals(docs.getPinsPageUri(), uriAtomicReference.get())) {
-            Fragment fragment = getSupportFragmentManager().findFragmentByTag(
-                    BrowserFragment.class.getSimpleName());
-            if (fragment instanceof BrowserFragment) {
-                BrowserFragment browserFragment = (BrowserFragment) fragment;
-                if (browserFragment.isResumed()) {
-                    browserFragment.reload();
-                }
-            }
+            mBrowserFragment.reload();
         }
     }
 

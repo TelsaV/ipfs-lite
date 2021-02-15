@@ -756,6 +756,10 @@ public class BrowserFragment extends Fragment {
         return mWebView.canGoForward();
     }
 
+    public void enableSwipeRefresh(boolean enable) {
+        mSwipeRefreshLayout.setEnabled(enable);
+    }
+
 
     public interface ActionListener {
 
