@@ -7,7 +7,7 @@
         android:icon="@drawable/delete"
         android:orderInCategory="5"
         android:title="@string/delete"
-        app:iconTint="?android:textColorSecondary"
+        app:iconTint="?android:textColorPrimary"
         app:showAsAction="ifRoom" />
 
     <item
