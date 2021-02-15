@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.DocumentsContract;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -128,7 +127,6 @@ public class ThreadsFragment extends Fragment implements
                             }
                         }
                     });
-
 
 
     private final ActivityResultLauncher<Intent> mFileExportForResult =

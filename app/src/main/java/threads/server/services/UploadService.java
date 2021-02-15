@@ -1,7 +1,6 @@
 package threads.server.services;
 
 import android.content.Context;
-import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
@@ -9,7 +8,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,14 +18,11 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.IPFS;
-import threads.server.provider.FileDocumentsProvider;
 import threads.server.utils.MimeType;
-import threads.server.work.UploadContentWorker;
 
 public class UploadService {
 
     private static final String TAG = UploadService.class.getSimpleName();
-
 
 
     public static void storeText(@NonNull Context context, long parent, @NonNull String text,

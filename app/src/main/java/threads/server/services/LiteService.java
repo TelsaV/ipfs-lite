@@ -29,7 +29,6 @@ import threads.server.core.threads.THREADS;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
-import threads.server.work.UploadContentWorker;
 import threads.server.work.UploadFileWorker;
 import threads.server.work.UploadFilesWorker;
 import threads.server.work.UserConnectWorker;
@@ -152,7 +151,6 @@ public class LiteService {
         editor.putInt(PIN_SERVICE_TIME_KEY, timeout);
         editor.apply();
     }
-
 
 
     public static void file(@NonNull Context context, long parent, @NonNull Uri uri) {

@@ -34,6 +34,7 @@ public class InitApplication extends Application {
     public static final String CHANNEL_ID = "CHANNEL_ID";
     public static final long REFRESH = 250;    //  250ms
     public static final boolean SUPPORT_VIDEO_UPDATE_THUMBNAIL = false;
+    public static final String DOWNLOADS = "content://com.android.externalstorage.documents/document/primary:Download";
     private static final String APP_KEY = "AppKey";
     private static final String UPDATE = "UPDATE";
     private static final String TAG = InitApplication.class.getSimpleName();
@@ -41,7 +42,6 @@ public class InitApplication extends Application {
     private static final String TIMEOUT_KEY = "timeoutKey";
     private static final String AUTO_DISCOVERY_KEY = "autoDiscoveryKey";
     private static final String SORT_KEY = "sortKey";
-    public static final String DOWNLOADS = "content://com.android.externalstorage.documents/document/primary:Download";
     private final Gson gson = new Gson();
 
     public static void setAutoDiscovery(Context context, boolean auto) {
@@ -177,6 +177,11 @@ public class InitApplication extends Application {
         ipfs.swarmEnhance(peers.getSwarm());
     }
 
+    @NonNull
+    public static String getDefaultSearchEngine(@NonNull String query) {
+        return "https://ipfs-search.com/#/search?search=" + query;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -247,11 +252,5 @@ public class InitApplication extends Application {
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
-    }
-
-
-    @NonNull
-    public static String getDefaultSearchEngine(@NonNull String query) {
-        return "https://ipfs-search.com/#/search?search=" + query;
     }
 }

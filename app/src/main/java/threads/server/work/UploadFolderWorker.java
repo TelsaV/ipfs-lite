@@ -50,7 +50,6 @@ public class UploadFolderWorker extends Worker {
     private final AtomicReference<Notification> mLastNotification = new AtomicReference<>(null);
 
 
-
     @SuppressWarnings("WeakerAccess")
     public UploadFolderWorker(@NonNull Context context,
                               @NonNull WorkerParameters params) {

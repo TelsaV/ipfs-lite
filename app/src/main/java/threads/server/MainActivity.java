@@ -264,6 +264,8 @@ public class MainActivity extends AppCompatActivity implements
                             }
                         }
                     });
+    private final AtomicBoolean downloadActive = new AtomicBoolean(false);
+    private final AtomicReference<Uri> uriAtomicReference = new AtomicReference<>(null);
     private long mLastClickTime = 0;
     private CoordinatorLayout mDrawerLayout;
     private BottomNavigationView mNavigation;
@@ -381,15 +383,9 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private final AtomicBoolean downloadActive = new AtomicBoolean(false);
-
-
     private void setSortOrder(@NonNull SortOrder sortOrder) {
         InitApplication.setSortOrder(getApplicationContext(), sortOrder);
     }
-
-    private final AtomicReference<Uri> uriAtomicReference = new AtomicReference<>(null);
-
 
     private void clickFilesAdd() {
 
@@ -1285,7 +1281,6 @@ public class MainActivity extends AppCompatActivity implements
         updateUri(uri);
 
 
-
         mFloatingActionButton.setOnClickListener((v) -> {
 
             if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
@@ -1755,13 +1750,8 @@ public class MainActivity extends AppCompatActivity implements
         updateBookmark(uri);
         updateDownload(uri);
     }
-    public abstract static class AppBarStateChangedListener implements AppBarLayout.OnOffsetChangedListener {
 
-        public enum State {
-            EXPANDED,
-            COLLAPSED,
-            IDLE
-        }
+    public abstract static class AppBarStateChangedListener implements AppBarLayout.OnOffsetChangedListener {
 
         private State mCurrentState = State.IDLE;
 
@@ -1776,7 +1766,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
-        private void setCurrentStateAndNotify(AppBarLayout appBarLayout, State state){
+        private void setCurrentStateAndNotify(AppBarLayout appBarLayout, State state) {
             if (mCurrentState != state) {
                 onStateChanged(appBarLayout, state);
             }
@@ -1784,5 +1774,11 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         public abstract void onStateChanged(AppBarLayout appBarLayout, State state);
+
+        public enum State {
+            EXPANDED,
+            COLLAPSED,
+            IDLE
+        }
     }
 }

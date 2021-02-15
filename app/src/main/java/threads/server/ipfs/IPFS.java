@@ -880,11 +880,10 @@ public class IPFS implements Listener {
                             if (seq > init) {
                                 sequence.set(seq);
                                 visited.set(false);
-                                setName(hash);
                             } else {
                                 visited.set(true);
-                                setName(hash);
                             }
+                            setName(hash);
                             if (visited.get()) {
                                 close.set(true);
                             }

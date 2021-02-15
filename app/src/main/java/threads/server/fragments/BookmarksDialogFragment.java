@@ -12,6 +12,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,17 +37,20 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
     private BookmarksViewAdapter mBookmarksViewAdapter;
     private SelectionViewModel mSelectionViewModel;
     private Context mContext;
+    private  FragmentActivity mActivity;
 
     @Override
     public void onDetach() {
         super.onDetach();
         mContext = null;
+        mActivity = null;
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         mContext = context;
+        mActivity = getActivity();
     }
 
 
@@ -76,7 +80,7 @@ public class BookmarksDialogFragment extends DialogFragment implements Bookmarks
         });
 
 
-        mSelectionViewModel = new ViewModelProvider(getActivity()).get(SelectionViewModel.class);
+        mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
 
         RecyclerView bookmarks = dialog.findViewById(R.id.bookmarks);
         Objects.requireNonNull(bookmarks);
