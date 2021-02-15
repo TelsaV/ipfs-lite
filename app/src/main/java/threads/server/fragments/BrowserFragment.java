@@ -131,7 +131,7 @@ public class BrowserFragment extends Fragment {
     private DOCS docs;
     private CustomWebChromeClient mCustomWebChromeClient;
 
-    private ActionMode mSearchActionMode;
+    private ActionMode mActionMode;
 
 
     @Override
@@ -174,10 +174,7 @@ public class BrowserFragment extends Fragment {
         super.onDetach();
         mContext = null;
         mActivity = null;
-        if (mSearchActionMode != null) {
-            mSearchActionMode.finish();
-            mSearchActionMode = null;
-        }
+        releaseActionMode();
     }
 
     @Override
@@ -725,7 +722,7 @@ public class BrowserFragment extends Fragment {
 
     public void findInPage() {
         try {
-            mSearchActionMode = ((AppCompatActivity)
+            mActionMode = ((AppCompatActivity)
                     mActivity).startSupportActionMode(
                     createFindActionModeCallback());
         } catch (Throwable throwable) {
@@ -758,6 +755,17 @@ public class BrowserFragment extends Fragment {
 
     public void enableSwipeRefresh(boolean enable) {
         mSwipeRefreshLayout.setEnabled(enable);
+    }
+
+    public void releaseActionMode() {
+        try {
+            if (mActionMode != null) {
+                mActionMode.finish();
+                mActionMode = null;
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
 

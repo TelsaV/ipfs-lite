@@ -161,7 +161,6 @@ public class ThreadsFragment extends Fragment implements
     private RecyclerView mRecyclerView;
 
     private ActionMode mActionMode;
-    private ActionMode mSearchActionMode;
     private SelectionTracker<Long> mSelectionTracker;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ThreadItemDetailsLookup mThreadItemDetailsLookup;
@@ -211,10 +210,7 @@ public class ThreadsFragment extends Fragment implements
         mContext = null;
         mActivity = null;
         mListener = null;
-        if (mSearchActionMode != null) {
-            mSearchActionMode.finish();
-            mSearchActionMode = null;
-        }
+        releaseActionMode();
     }
 
 
@@ -235,7 +231,7 @@ public class ThreadsFragment extends Fragment implements
 
     public void findInPage() {
         try {
-            mSearchActionMode = ((AppCompatActivity)
+            mActionMode = ((AppCompatActivity)
                     mActivity).startSupportActionMode(
                     createSearchActionModeCallback());
 
@@ -271,8 +267,6 @@ public class ThreadsFragment extends Fragment implements
 
                 mSelectionTracker.clearSelection();
                 mSelectionViewModel.setParentThread(folder.getIdx());
-                mHandler.post(() -> mActivity.invalidateOptionsMenu());
-
             });
 
         }
@@ -310,7 +304,6 @@ public class ThreadsFragment extends Fragment implements
 
             mSelectionTracker.clearSelection();
             mSelectionViewModel.setParentThread(0L);
-            mHandler.post(() -> mActivity.invalidateOptionsMenu());
 
         });
 
@@ -771,13 +764,13 @@ public class ThreadsFragment extends Fragment implements
 
                 mListener.showFab(true);
 
-                if (mSearchActionMode != null) {
-                    mSearchActionMode.finish();
+                if (mActionMode != null) {
+                    mActionMode.finish();
+                    mActionMode = null;
                 }
 
                 if (thread.isDir()) {
                     mSelectionViewModel.setParentThread(thread.getIdx());
-                    mActivity.invalidateOptionsMenu();
                 } else {
                     clickThreadPlay(thread);
                 }
@@ -1018,8 +1011,8 @@ public class ThreadsFragment extends Fragment implements
                     mThreadItemDetailsLookup.setActive(true);
                     mSelectionViewModel.setQuery("");
 
-                    if (mSearchActionMode != null) {
-                        mSearchActionMode = null;
+                    if (mActionMode != null) {
+                        mActionMode = null;
                     }
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
@@ -1048,6 +1041,17 @@ public class ThreadsFragment extends Fragment implements
 
     public void enableSwipeRefresh(boolean enable) {
         mSwipeRefreshLayout.setEnabled(enable);
+    }
+
+    public void releaseActionMode() {
+        try {
+            if (mActionMode != null) {
+                mActionMode.finish();
+                mActionMode = null;
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
     public interface ActionListener {

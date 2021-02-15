@@ -1307,6 +1307,7 @@ public class MainActivity extends AppCompatActivity implements
 
             int itemId = item.getItemId();
             currentFragment.set(itemId);
+            releaseActionMode();
             if (itemId == R.id.navigation_files) {
 
                 getSupportFragmentManager()
@@ -1707,6 +1708,19 @@ public class MainActivity extends AppCompatActivity implements
                 Objects.equals(uri.getScheme(), Content.IPNS));
     }
 
+
+    private void releaseActionMode() {
+        try {
+            if (mActionMode != null) {
+                mActionMode.finish();
+                mActionMode = null;
+            }
+            mBrowserFragment.releaseActionMode();
+            mThreadsFragment.releaseActionMode();
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
 
     private void enableSwipeRefresh(boolean enable) {
         mBrowserFragment.enableSwipeRefresh(enable);
