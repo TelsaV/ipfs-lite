@@ -106,7 +106,7 @@
     <string name="bookmark_removed">Bookmark \"%1$s\" removed</string>
     <string name="share_link">Share Link</string>
     <string name="find_page">Find in page</string>
-    <string name="clear_cache">Clear Cache</string>
+    <string name="delete_browser_data">Delete browser data</string>
     <string name="previous">Previous</string>
     <string name="next">Next</string>
     <string name="private_sharing_mode">Enable Private Sharing</string>

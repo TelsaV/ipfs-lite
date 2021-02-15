@@ -105,7 +105,7 @@
     <string name="bookmark_removed">书签已删除 \"%1$s\"</string>
     <string name="share_link">分享链接</string>
     <string name="find_page">在页面中查找</string>
-    <string name="clear_cache">清除缓存</string>
+    <string name="delete_browser_data">删除浏览器数据</string>
     <string name="previous">以前</string>
     <string name="next">下一个</string>
     <string name="private_sharing_mode">启用私人共享</string>

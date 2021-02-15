@@ -12,20 +12,25 @@ import androidx.work.WorkerParameters;
 import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
+import threads.server.core.DOCS;
+import threads.server.core.blocks.BLOCKS;
+import threads.server.core.events.EVENTS;
+import threads.server.core.pages.PAGES;
+import threads.server.core.threads.THREADS;
 import threads.server.provider.FileProvider;
 
-public class ClearCacheWorker extends Worker {
+public class ClearBrowserDataWorker extends Worker {
 
-    private static final String TAG = ClearCacheWorker.class.getSimpleName();
+    private static final String TAG = ClearBrowserDataWorker.class.getSimpleName();
 
     @SuppressWarnings("WeakerAccess")
-    public ClearCacheWorker(@NonNull Context context, @NonNull WorkerParameters params) {
+    public ClearBrowserDataWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
     }
 
     private static OneTimeWorkRequest getWork() {
 
-        return new OneTimeWorkRequest.Builder(ClearCacheWorker.class)
+        return new OneTimeWorkRequest.Builder(ClearBrowserDataWorker.class)
                 .setInitialDelay(1, TimeUnit.MILLISECONDS)
                 .build();
 
@@ -54,6 +59,15 @@ public class ClearCacheWorker extends Worker {
             fileProvider.cleanImageDir();
             fileProvider.cleanDataDir();
 
+            PAGES.getInstance(getApplicationContext()).clear();
+            THREADS.getInstance(getApplicationContext()).clear();
+            BLOCKS.getInstance(getApplicationContext()).clear();
+
+            DOCS.getInstance(getApplicationContext()).initPinsPage();
+
+            PageWorker.publish(getApplicationContext());
+
+            EVENTS.getInstance(getApplicationContext()).refresh();
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

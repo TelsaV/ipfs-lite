@@ -442,7 +442,7 @@ public class DOCS {
     }
 
 
-    private void initPinsPage() {
+    public void initPinsPage() {
         try {
             Page page = getPinsPage();
             if (page == null) {

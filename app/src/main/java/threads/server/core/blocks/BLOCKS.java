@@ -43,6 +43,11 @@ public class BLOCKS {
     }
 
 
+    public void clear() {
+        getBlocksDatabase().clearAllTables();
+    }
+
+
     @NonNull
     public BlocksDatabase getBlocksDatabase() {
         return blocksDatabase;

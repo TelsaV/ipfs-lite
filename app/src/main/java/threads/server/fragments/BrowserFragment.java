@@ -11,7 +11,6 @@ import android.os.SystemClock;
 import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -60,7 +59,7 @@ import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;
 import threads.server.utils.MimeType;
 import threads.server.utils.SelectionViewModel;
-import threads.server.work.ClearCacheWorker;
+import threads.server.work.ClearBrowserDataWorker;
 import threads.server.work.DownloadContentWorker;
 import threads.server.work.DownloadFileWorker;
 import threads.server.work.PageResolveWorker;
@@ -699,15 +698,15 @@ public class BrowserFragment extends Fragment {
         }
     }
 
-    public void clearCache() {
+    public void clearBrowserData() {
         try {
             mWebView.clearHistory();
             mWebView.clearCache(true);
 
-            ClearCacheWorker.clearCache(mContext);
+            ClearBrowserDataWorker.clearCache(mContext);
 
             EVENTS.getInstance(mContext).warning(
-                    getString(R.string.clear_cache));
+                    getString(R.string.delete_browser_data));
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }

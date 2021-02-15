@@ -1116,11 +1116,11 @@ public class MainActivity extends AppCompatActivity implements
 
             });
 
-            TextView actionClearCache = menuOverflow.findViewById(R.id.action_clear_cache);
-            actionClearCache.setVisibility(View.GONE);
-            actionClearCache.setOnClickListener(v19 -> {
+            TextView actionClearData = menuOverflow.findViewById(R.id.action_clear_data);
+            actionClearData.setVisibility(View.VISIBLE);
+            actionClearData.setOnClickListener(v19 -> {
                 try {
-                    mBrowserFragment.clearCache();
+                    mBrowserFragment.clearBrowserData();
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -1416,6 +1416,17 @@ public class MainActivity extends AppCompatActivity implements
 
         EventViewModel eventViewModel =
                 new ViewModelProvider(this).get(EventViewModel.class);
+
+        eventViewModel.getRefresh().observe(this, (event) -> {
+            try {
+                if (event != null) {
+                    refreshOwnPage();
+                    eventViewModel.removeEvent(event);
+                }
+            } catch (Throwable e) {
+                LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+            }
+        });
 
         eventViewModel.getExit().observe(this, (event) -> {
             try {

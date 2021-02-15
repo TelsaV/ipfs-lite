@@ -16,7 +16,7 @@ public class EVENTS {
     public static final String SEEDING = "SEEDING";
     public static final String LEECHING = "LEECHING";
     public static final String REACHABLE = "REACHABLE";
-
+    public static final String REFRESH = "REFRESH";
     private static EVENTS INSTANCE = null;
     private final EventsDatabase eventsDatabase;
 
@@ -106,6 +106,10 @@ public class EVENTS {
 
     public void reachable(@NonNull String content) {
         storeEvent(createEvent(REACHABLE, content));
+    }
+
+    public void refresh() {
+        storeEvent(createEvent(REFRESH, ""));
     }
 
     static class Builder {

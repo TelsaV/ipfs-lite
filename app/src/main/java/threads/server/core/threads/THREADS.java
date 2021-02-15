@@ -48,6 +48,11 @@ public class THREADS {
         return INSTANCE;
     }
 
+
+    public void clear() {
+        getThreadsDatabase().clearAllTables();
+    }
+
     @NonNull
     public ThreadsDatabase getThreadsDatabase() {
         return threadsDatabase;
