@@ -49,7 +49,7 @@ public class QRCodeService {
                 threads.server.provider.FileProvider.getInstance(context);
 
 
-        File newFile = new File(fileProvider.getImageDir(), "img" + hash + ".png");
+        File newFile = new File(fileProvider.getImageDir(), "img" + hash.hashCode() + ".png");
 
         try {
             if (!newFile.exists()) {
