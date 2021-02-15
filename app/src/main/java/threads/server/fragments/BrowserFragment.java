@@ -198,8 +198,6 @@ public class BrowserFragment extends Fragment {
                 android.R.color.holo_green_dark,
                 android.R.color.holo_orange_dark,
                 android.R.color.holo_blue_dark);
-        final DisplayMetrics metrics = getResources().getDisplayMetrics();
-        mSwipeRefreshLayout.setDistanceToTriggerSync((int) metrics.density * 128);
 
         mProgressBar = view.findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
