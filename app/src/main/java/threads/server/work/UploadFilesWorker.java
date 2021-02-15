@@ -219,6 +219,7 @@ public class UploadFilesWorker extends Worker {
             LogUtils.error(TAG, e);
         } finally {
             PageWorker.publish(getApplicationContext());
+            EVENTS.getInstance(getApplicationContext()).refresh();
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
 

@@ -423,10 +423,15 @@ public class BrowserFragment extends Fragment {
 
                 if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                         Objects.equals(uri.getScheme(), Content.IPFS)) {
+                    long start = System.currentTimeMillis();
 
-                    docs.bootstrap();
+                    if(docs.foreignPage(uri)) {
+                        docs.bootstrap();
+                    }
 
-                    docs.connectUri(mContext, uri);
+                    if(docs.foreignPage(uri)) {
+                        docs.connectUri(mContext, uri);
+                    }
 
                     Thread thread = Thread.currentThread();
 
@@ -444,7 +449,9 @@ public class BrowserFragment extends Fragment {
                             return createRedirectMessage(redirectUri);
                         }
 
-                        docs.connectUri(mContext, redirectUri);
+                        if(docs.foreignPage(redirectUri)) {
+                            docs.connectUri(mContext, redirectUri);
+                        }
 
                         return docs.getResponse(mContext, redirectUri, closeable);
                     } catch (Throwable throwable) {
@@ -459,6 +466,8 @@ public class BrowserFragment extends Fragment {
                         return createErrorMessage(throwable);
                     } finally {
                         docs.detachUri(uri);
+                        LogUtils.info(TAG, "Finish page [" +
+                                (System.currentTimeMillis() - start) + "]...");
                     }
                 }
 
@@ -469,25 +478,25 @@ public class BrowserFragment extends Fragment {
     }
 
     public void reload() {
+        if(isResumed()) {
+            try {
+                mProgressBar.setVisibility(View.GONE);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
 
-        try {
-            mProgressBar.setVisibility(View.GONE);
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
+            try {
+                docs.cleanupResolver(Uri.parse(mWebView.getUrl()));
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
+
+            try {
+                mWebView.reload();
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
+            }
         }
-
-        try {
-            docs.cleanupResolver(Uri.parse(mWebView.getUrl()));
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-
-        try {
-            mWebView.reload();
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-
     }
 
 

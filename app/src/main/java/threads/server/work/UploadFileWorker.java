@@ -27,6 +27,7 @@ import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
+import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.IPFS;
@@ -157,6 +158,7 @@ public class UploadFileWorker extends Worker {
             LogUtils.error(TAG, e);
         } finally {
             PageWorker.publish(getApplicationContext());
+            EVENTS.getInstance(getApplicationContext()).refresh();
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
 

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 import threads.LogUtils;
+import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.provider.FileDocumentsProvider;
 
@@ -67,6 +68,7 @@ public class InitApplicationWorker extends Worker {
 
         } finally {
             PageWorker.publish(getApplicationContext());
+            EVENTS.getInstance(getApplicationContext()).refresh();
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
         return Result.success();

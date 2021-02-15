@@ -1357,7 +1357,6 @@ public class MainActivity extends AppCompatActivity implements
                 mActionId.setVisibility(View.GONE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
-                refreshOwnPage();
                 return true;
             } else if (itemId == R.id.navigation_swarm) {
                 getSupportFragmentManager()

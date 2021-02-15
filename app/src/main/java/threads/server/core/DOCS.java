@@ -64,7 +64,6 @@ public class DOCS {
         threads = THREADS.getInstance(context);
         pages = PAGES.getInstance(context);
         host = ipfs.getHost();
-
         initPinsPage();
     }
 
@@ -118,6 +117,10 @@ public class DOCS {
 
     public String getHost() {
         return host;
+    }
+
+    public boolean foreignPage(@NonNull Uri uri){
+        return !Objects.equals(uri.getHost(), getHost());
     }
 
     @NonNull
@@ -480,13 +483,18 @@ public class DOCS {
 
 
     @NonNull
-    private String getMimeType(@NonNull Context context,
-                               @NonNull String cid,
+    private String getMimeType(@NonNull Context context, @NonNull String cid,
                                @NonNull Closeable closeable) {
 
         if (ipfs.isEmptyDir(cid) || ipfs.isDir(cid, closeable)) {
             return MimeType.DIR_MIME_TYPE;
         }
+        return getContentMimeType(context, cid, closeable);
+    }
+    @NonNull
+    private String getContentMimeType(@NonNull Context context, @NonNull String cid,
+                                      @NonNull Closeable closeable) {
+
 
         String mimeType = MimeType.OCTET_MIME_TYPE;
         if (!closeable.isClosed()) {
@@ -612,8 +620,7 @@ public class DOCS {
     }
 
     @NonNull
-    public String resolveName(@NonNull Uri uri,
-                              @NonNull String name,
+    public String resolveName(@NonNull Uri uri, @NonNull String name,
                               @NonNull Closeable closeable) throws ResolveNameException {
 
         if (Objects.equals(getHost(), name)) {
@@ -679,7 +686,7 @@ public class DOCS {
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else {
-                String mimeType = getMimeType(context, root, closeable);
+                String mimeType = getContentMimeType(context, root, closeable);
                 if (closeable.isClosed()) {
                     throw new ClosedException();
                 }

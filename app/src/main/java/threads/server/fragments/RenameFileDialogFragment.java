@@ -27,6 +27,7 @@ import threads.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
+import threads.server.core.events.EVENTS;
 import threads.server.work.PageWorker;
 
 public class RenameFileDialogFragment extends DialogFragment {
@@ -126,7 +127,7 @@ public class RenameFileDialogFragment extends DialogFragment {
                     docs.renameDocument(idx, text.toString());
 
                     PageWorker.publish(mContext);
-
+                    EVENTS.getInstance(mContext).refresh();
                 })
 
                 .setTitle(R.string.rename_file);
