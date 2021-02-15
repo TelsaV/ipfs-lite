@@ -446,7 +446,7 @@ public class BrowserFragment extends Fragment {
 
                         docs.connectUri(mContext, redirectUri);
 
-                        return docs.getResponse(redirectUri, closeable);
+                        return docs.getResponse(mContext, redirectUri, closeable);
                     } catch (Throwable throwable) {
                         if (closeable.isClosed()) {
                             return createEmptyResource();

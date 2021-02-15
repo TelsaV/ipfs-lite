@@ -55,7 +55,7 @@ public class DOCS {
     private final THREADS threads;
     private final PAGES pages;
     private final String host;
-    private final ContentInfoUtil util;
+
     private final Hashtable<String, String> resolves = new Hashtable<>();
     private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
 
@@ -64,7 +64,6 @@ public class DOCS {
         threads = THREADS.getInstance(context);
         pages = PAGES.getInstance(context);
         host = ipfs.getHost();
-        util = ContentInfoUtil.getInstance(context);
 
         initPinsPage();
     }
@@ -481,7 +480,9 @@ public class DOCS {
 
 
     @NonNull
-    private String getMimeType(@NonNull String cid, @NonNull Closeable closeable) {
+    private String getMimeType(@NonNull Context context,
+                               @NonNull String cid,
+                               @NonNull Closeable closeable) {
 
         if (ipfs.isEmptyDir(cid) || ipfs.isDir(cid, closeable)) {
             return MimeType.DIR_MIME_TYPE;
@@ -490,7 +491,7 @@ public class DOCS {
         String mimeType = MimeType.OCTET_MIME_TYPE;
         if (!closeable.isClosed()) {
             try (InputStream in = ipfs.getLoaderStream(cid, closeable)) {
-                ContentInfo info = util.findMatch(in);
+                ContentInfo info = ContentInfoUtil.getInstance(context).findMatch(in);
 
                 if (info != null) {
                     mimeType = info.getMimeType();
@@ -656,7 +657,8 @@ public class DOCS {
     }
 
     @NonNull
-    public WebResourceResponse getResponse(@NonNull Uri uri, @NonNull String root,
+    public WebResourceResponse getResponse(@NonNull Context context,
+                                           @NonNull Uri uri, @NonNull String root,
                                            @NonNull List<String> paths,
                                            @NonNull Closeable closeable) throws Exception {
 
@@ -677,7 +679,7 @@ public class DOCS {
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else {
-                String mimeType = getMimeType(root, closeable);
+                String mimeType = getMimeType(context, root, closeable);
                 if (closeable.isClosed()) {
                     throw new ClosedException();
                 }
@@ -715,7 +717,7 @@ public class DOCS {
                         new ByteArrayInputStream(answer.getBytes()));
 
             } else {
-                String mimeType = getMimeType(uri, cid, closeable);
+                String mimeType = getMimeType(context, uri, cid, closeable);
                 if (closeable.isClosed()) {
                     throw new ClosedException();
                 }
@@ -792,7 +794,8 @@ public class DOCS {
     }
 
     @NonNull
-    public String getMimeType(@NonNull Uri uri,
+    public String getMimeType(@NonNull Context context,
+                              @NonNull Uri uri,
                               @NonNull String cid,
                               @NonNull Closeable closeable) {
 
@@ -803,10 +806,10 @@ public class DOCS {
             if (!mimeType.equals(MimeType.OCTET_MIME_TYPE)) {
                 return mimeType;
             } else {
-                return getMimeType(cid, closeable);
+                return getMimeType(context, cid, closeable);
             }
         } else {
-            return getMimeType(cid, closeable);
+            return getMimeType(context, cid, closeable);
         }
 
     }
@@ -875,7 +878,7 @@ public class DOCS {
     }
 
     @NonNull
-    public WebResourceResponse getResponse(@NonNull Uri uri,
+    public WebResourceResponse getResponse(@NonNull Context context, @NonNull Uri uri,
                                            @NonNull Closeable closeable) throws Exception {
 
         List<String> paths = uri.getPathSegments();
@@ -887,7 +890,7 @@ public class DOCS {
             throw new ClosedException();
         }
 
-        return getResponse(uri, root, paths, closeable);
+        return getResponse(context, uri, root, paths, closeable);
 
     }
 

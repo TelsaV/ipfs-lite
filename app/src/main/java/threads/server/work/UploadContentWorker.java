@@ -249,7 +249,8 @@ public class UploadContentWorker extends Worker {
 
                         String content = docs.getContent(uri, this::isStopped);
 
-                        String mimeType = docs.getMimeType(uri, content, this::isStopped);
+                        String mimeType = docs.getMimeType(getApplicationContext(),
+                                uri, content, this::isStopped);
 
                         List<Thread> names = threads.getThreadsByNameAndParent(name, 0L);
                         names.remove(thread);
