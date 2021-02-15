@@ -121,4 +121,5 @@
     <string name="refreshing">提神醒脑…</string>
     <string name="publisher_service_details">当应用程序在服务器模式下运行时。发布者服务间隔定义了将内容重新发布到IPFS的时间段。</string>
     <string name="connection_timeout_details">连接超时定义了在IPFS上查找对等方或内容的最长时间。</string>
+    <string name="enter_url" />
 </resources>

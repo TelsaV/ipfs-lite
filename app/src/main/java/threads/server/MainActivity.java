@@ -650,7 +650,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-    private ActionMode.Callback createSearchActionModeCallback(@NonNull String hint) {
+    private ActionMode.Callback createSearchActionModeCallback() {
         return new ActionMode.Callback() {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -661,7 +661,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 SearchView mSearchView = (SearchView) searchMenuItem.getActionView();
 
-                mSearchView.setQueryHint(hint);
+                mSearchView.setQueryHint(getString(R.string.enter_url));
                 mSearchView.setIconifiedByDefault(false);
                 mSearchView.setFocusable(true);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -695,9 +695,8 @@ public class MainActivity extends AppCompatActivity implements
                                     if (ipfs.isValidCID(query)) {
                                         openBrowserView(Uri.parse(Content.IPFS + "://" + query));
                                     } else {
-                                        EVENTS.getInstance(getApplicationContext()).error(
-                                                getString(R.string.cid_not_valid)
-                                        );
+                                        openBrowserView(Uri.parse(
+                                                InitApplication.getDefaultSearchEngine(query)));
                                     }
                                 }
                             }
@@ -1255,9 +1254,8 @@ public class MainActivity extends AppCompatActivity implements
         mBrowserText.setOnClickListener(view -> {
             try {
                 try {
-                    String hint = getString(R.string.ipfs) + "://";
                     mActionMode = startSupportActionMode(
-                            createSearchActionModeCallback(hint));
+                            createSearchActionModeCallback());
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 }
@@ -1285,7 +1283,8 @@ public class MainActivity extends AppCompatActivity implements
             }
 
         });
-        Uri uri = Uri.parse(InitApplication.getDefaultHomepage());
+
+        Uri uri = docs.getPinsPageUri();
         mSelectionViewModel.setUri(uri.toString());
         updateUri(uri);
 
@@ -1473,9 +1472,7 @@ public class MainActivity extends AppCompatActivity implements
 
                                 IPFS.getInstance(getApplicationContext()).shutdown();
                                 finishAffinity();
-                                java.lang.Thread.sleep(500);
-                                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                startActivity(intent);
+                                System.exit(0);
                             } catch (Throwable e) {
                                 LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
                             } finally {
