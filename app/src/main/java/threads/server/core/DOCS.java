@@ -119,7 +119,7 @@ public class DOCS {
         return host;
     }
 
-    public boolean foreignPage(@NonNull Uri uri){
+    public boolean foreignPage(@NonNull Uri uri) {
         return !Objects.equals(uri.getHost(), getHost());
     }
 
@@ -484,31 +484,34 @@ public class DOCS {
 
     @NonNull
     private String getMimeType(@NonNull Context context, @NonNull String cid,
-                               @NonNull Closeable closeable) {
+                               @NonNull Closeable closeable) throws ClosedException {
 
         if (ipfs.isEmptyDir(cid) || ipfs.isDir(cid, closeable)) {
             return MimeType.DIR_MIME_TYPE;
         }
         return getContentMimeType(context, cid, closeable);
     }
+
     @NonNull
     private String getContentMimeType(@NonNull Context context, @NonNull String cid,
-                                      @NonNull Closeable closeable) {
+                                      @NonNull Closeable closeable) throws ClosedException {
 
 
         String mimeType = MimeType.OCTET_MIME_TYPE;
-        if (!closeable.isClosed()) {
-            try (InputStream in = ipfs.getLoaderStream(cid, closeable)) {
-                ContentInfo info = ContentInfoUtil.getInstance(context).findMatch(in);
 
-                if (info != null) {
-                    mimeType = info.getMimeType();
-                }
+        try (InputStream in = ipfs.getLoaderStream(cid, closeable)) {
+            ContentInfo info = ContentInfoUtil.getInstance(context).findMatch(in);
 
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
+            if (info != null) {
+                mimeType = info.getMimeType();
+            }
+
+        } catch (Throwable e) {
+            if (closeable.isClosed()) {
+                throw new ClosedException();
             }
         }
+
         return mimeType;
     }
 
@@ -621,7 +624,7 @@ public class DOCS {
 
     @NonNull
     public String resolveName(@NonNull Uri uri, @NonNull String name,
-                              @NonNull Closeable closeable) throws ResolveNameException {
+                              @NonNull Closeable closeable) throws ResolveNameException, ClosedException {
 
         if (Objects.equals(getHost(), name)) {
             String local = getLocalName();
@@ -675,35 +678,19 @@ public class DOCS {
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else if (ipfs.isDir(root, closeable)) {
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
                 List<LinkInfo> links = ipfs.getLinks(root, closeable);
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
                 String answer = generateDirectoryHtml(uri, root, paths, links);
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else {
                 String mimeType = getContentMimeType(context, root, closeable);
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
-
                 long size = ipfs.getSize(root, closeable);
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
                 return getContentResponse(root, mimeType, size, closeable);
             }
 
 
         } else {
             String cid = ipfs.resolve(root, paths, closeable);
-            if (closeable.isClosed()) {
-                throw new ClosedException();
-            }
             if (cid.isEmpty()) {
                 throw new ContentException(uri.toString());
             }
@@ -712,26 +699,14 @@ public class DOCS {
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else if (ipfs.isDir(cid, closeable)) {
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
                 List<LinkInfo> links = ipfs.getLinks(cid, closeable);
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
                 String answer = generateDirectoryHtml(uri, root, paths, links);
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
 
             } else {
                 String mimeType = getMimeType(context, uri, cid, closeable);
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
                 long size = ipfs.getSize(cid, closeable);
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
                 return getContentResponse(cid, mimeType, size, closeable);
             }
 
@@ -784,7 +759,7 @@ public class DOCS {
 
     @NonNull
     public String getContent(@NonNull Uri uri, @NonNull Closeable closeable)
-            throws InvalidNameException, ResolveNameException {
+            throws InvalidNameException, ResolveNameException, ClosedException {
 
         String host = uri.getHost();
         Objects.requireNonNull(host);
@@ -804,7 +779,7 @@ public class DOCS {
     public String getMimeType(@NonNull Context context,
                               @NonNull Uri uri,
                               @NonNull String cid,
-                              @NonNull Closeable closeable) {
+                              @NonNull Closeable closeable) throws ClosedException {
 
         List<String> paths = uri.getPathSegments();
         if (!paths.isEmpty()) {
@@ -823,7 +798,7 @@ public class DOCS {
 
 
     @Nullable
-    public String getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException {
+    public String getRoot(@NonNull Uri uri, @NonNull Closeable closeable) throws ResolveNameException, InvalidNameException, ClosedException {
         String host = uri.getHost();
         Objects.requireNonNull(host);
 
@@ -892,10 +867,6 @@ public class DOCS {
 
         String root = getRoot(uri, closeable);
         Objects.requireNonNull(root);
-
-        if (closeable.isClosed()) {
-            throw new ClosedException();
-        }
 
         return getResponse(context, uri, root, paths, closeable);
 
@@ -1112,9 +1083,7 @@ public class DOCS {
 
             if (!ipfs.isEmptyDir(root)) {
                 boolean exists = ipfs.resolve(root, INDEX_HTML, closeable);
-                if (closeable.isClosed()) {
-                    throw new ClosedException();
-                }
+
                 if (exists) {
                     Uri.Builder builder = new Uri.Builder();
                     builder.scheme(uri.getScheme())
@@ -1129,15 +1098,11 @@ public class DOCS {
         } else {
 
             String cid = ipfs.resolve(root, paths, closeable);
-            if (closeable.isClosed()) {
-                throw new ClosedException();
-            }
+
             if (!cid.isEmpty()) {
                 if (!ipfs.isEmptyDir(cid)) {
                     boolean exists = ipfs.resolve(cid, INDEX_HTML, closeable);
-                    if (closeable.isClosed()) {
-                        throw new ClosedException();
-                    }
+
                     if (exists) {
                         Uri.Builder builder = new Uri.Builder();
                         builder.scheme(uri.getScheme())

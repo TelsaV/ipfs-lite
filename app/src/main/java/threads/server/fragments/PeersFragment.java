@@ -496,7 +496,13 @@ public class PeersFragment extends Fragment implements
     }
 
     public void enableSwipeRefresh(boolean enable) {
-        mSwipeRefreshLayout.setEnabled(enable);
+        try {
+            if (isResumed()) {
+                mSwipeRefreshLayout.setEnabled(enable);
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
 

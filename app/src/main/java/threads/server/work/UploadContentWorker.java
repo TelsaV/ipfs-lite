@@ -42,6 +42,7 @@ import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
+import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.Link;
 import threads.server.ipfs.Progress;
@@ -562,7 +563,7 @@ public class UploadContentWorker extends Worker {
     }
 
 
-    private List<Thread> evalLinks(long parent, @NonNull List<Link> links) {
+    private List<Thread> evalLinks(long parent, @NonNull List<Link> links) throws ClosedException {
         List<Thread> threadList = new ArrayList<>();
 
         for (Link link : links) {
@@ -586,7 +587,7 @@ public class UploadContentWorker extends Worker {
         return threadList;
     }
 
-    private long createThread(@NonNull String cid, @NonNull Link link, long parent) {
+    private long createThread(@NonNull String cid, @NonNull Link link, long parent) throws ClosedException {
 
         String name = link.getName();
         String mimeType = null;
@@ -599,7 +600,7 @@ public class UploadContentWorker extends Worker {
     }
 
 
-    private void downloadThread(long idx) {
+    private void downloadThread(long idx) throws ClosedException {
 
         Thread thread = threads.getThreadByIdx(idx);
         Objects.requireNonNull(thread);

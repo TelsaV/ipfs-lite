@@ -145,9 +145,15 @@ public class BrowserFragment extends Fragment {
     }
 
     public void goForward() {
-        mWebView.stopLoading();
-        docs.releaseThreads();
-        mWebView.goForward();
+        try {
+            if(isResumed()) {
+                mWebView.stopLoading();
+                docs.releaseThreads();
+                mWebView.goForward();
+            }
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
+        }
     }
 
     public boolean onBackPressed() {
@@ -478,24 +484,28 @@ public class BrowserFragment extends Fragment {
     }
 
     public void reload() {
-        if(isResumed()) {
-            try {
-                mProgressBar.setVisibility(View.GONE);
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
+        try {
+            if (isResumed()) {
+                try {
+                    mProgressBar.setVisibility(View.GONE);
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
 
-            try {
-                docs.cleanupResolver(Uri.parse(mWebView.getUrl()));
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
+                try {
+                    docs.cleanupResolver(Uri.parse(mWebView.getUrl()));
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
 
-            try {
-                mWebView.reload();
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
+                try {
+                    mWebView.reload();
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
             }
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
         }
     }
 
@@ -665,43 +675,43 @@ public class BrowserFragment extends Fragment {
 
     public void bookmark(@NonNull Context context, @NonNull ImageButton mActionBookmark) {
         try {
-            String url = mWebView.getUrl();
-            Uri uri = docs.getOriginalUri(Uri.parse(url));
+            if(isResumed()) {
+                String url = mWebView.getUrl();
+                Uri uri = docs.getOriginalUri(Uri.parse(url));
 
-            BOOKS books = BOOKS.getInstance(context);
+                BOOKS books = BOOKS.getInstance(context);
 
-            Bookmark bookmark = books.getBookmark(uri.toString());
-            if (bookmark != null) {
-                String name = bookmark.getTitle();
-                books.removeBookmark(bookmark);
-                Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star_outline);
-                mActionBookmark.setImageDrawable(drawable);
+                Bookmark bookmark = books.getBookmark(uri.toString());
+                if (bookmark != null) {
+                    String name = bookmark.getTitle();
+                    books.removeBookmark(bookmark);
+                    Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star_outline);
+                    mActionBookmark.setImageDrawable(drawable);
 
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.bookmark_removed, name));
-            } else {
-                Bitmap bitmap = mCustomWebChromeClient.getFavicon(url);
+                    EVENTS.getInstance(mContext).warning(
+                            getString(R.string.bookmark_removed, name));
+                } else {
+                    Bitmap bitmap = mCustomWebChromeClient.getFavicon(url);
 
-                String title = mCustomWebChromeClient.getTitle(url);
-                if (title == null) {
-                    title = "" + mWebView.getTitle();
+                    String title = mCustomWebChromeClient.getTitle(url);
+                    if (title == null) {
+                        title = "" + mWebView.getTitle();
+                    }
+
+                    bookmark = books.createBookmark(uri.toString(), title);
+                    if (bitmap != null) {
+                        bookmark.setBitmapIcon(bitmap);
+                    }
+
+                    books.storeBookmark(bookmark);
+
+                    Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star);
+                    mActionBookmark.setImageDrawable(drawable);
+
+                    EVENTS.getInstance(mContext).warning(
+                            getString(R.string.bookmark_added, title));
                 }
-
-                bookmark = books.createBookmark(uri.toString(), title);
-                if (bitmap != null) {
-                    bookmark.setBitmapIcon(bitmap);
-                }
-
-                books.storeBookmark(bookmark);
-
-                Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star);
-                mActionBookmark.setImageDrawable(drawable);
-
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.bookmark_added, title));
             }
-
-
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -709,13 +719,15 @@ public class BrowserFragment extends Fragment {
 
     public void clearBrowserData() {
         try {
-            mWebView.clearHistory();
-            mWebView.clearCache(true);
+            if(isResumed()) {
+                mWebView.clearHistory();
+                mWebView.clearCache(true);
 
-            ClearBrowserDataWorker.clearCache(mContext);
+                ClearBrowserDataWorker.clearCache(mContext);
 
-            EVENTS.getInstance(mContext).warning(
-                    getString(R.string.delete_browser_data));
+                EVENTS.getInstance(mContext).warning(
+                        getString(R.string.delete_browser_data));
+            }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -728,9 +740,11 @@ public class BrowserFragment extends Fragment {
 
     public void findInPage() {
         try {
-            mActionMode = ((AppCompatActivity)
-                    mActivity).startSupportActionMode(
-                    createFindActionModeCallback());
+            if(isResumed()) {
+                mActionMode = ((AppCompatActivity)
+                        mActivity).startSupportActionMode(
+                        createFindActionModeCallback());
+            }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -756,18 +770,34 @@ public class BrowserFragment extends Fragment {
     }
 
     public boolean canGoForward() {
-        return mWebView.canGoForward();
+        try {
+            if(isResumed()) {
+                return mWebView.canGoForward();
+            }
+            return false;
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
+        }
+        return false;
     }
 
     public void enableSwipeRefresh(boolean enable) {
-        mSwipeRefreshLayout.setEnabled(enable);
+        try {
+            if (isResumed()) {
+                mSwipeRefreshLayout.setEnabled(enable);
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
     public void releaseActionMode() {
         try {
-            if (mActionMode != null) {
-                mActionMode.finish();
-                mActionMode = null;
+            if(isResumed()) {
+                if (mActionMode != null) {
+                    mActionMode.finish();
+                    mActionMode = null;
+                }
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);

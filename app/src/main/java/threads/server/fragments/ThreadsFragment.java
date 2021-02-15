@@ -229,10 +229,11 @@ public class ThreadsFragment extends Fragment implements
 
     public void findInPage() {
         try {
-            mActionMode = ((AppCompatActivity)
-                    mActivity).startSupportActionMode(
-                    createSearchActionModeCallback());
-
+            if(isResumed()) {
+                mActionMode = ((AppCompatActivity)
+                        mActivity).startSupportActionMode(
+                        createSearchActionModeCallback());
+            }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -1035,14 +1036,22 @@ public class ThreadsFragment extends Fragment implements
     }
 
     public void enableSwipeRefresh(boolean enable) {
-        mSwipeRefreshLayout.setEnabled(enable);
+        try {
+            if (isResumed()) {
+                mSwipeRefreshLayout.setEnabled(enable);
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
     public void releaseActionMode() {
         try {
-            if (mActionMode != null) {
-                mActionMode.finish();
-                mActionMode = null;
+            if (isResumed()) {
+                if (mActionMode != null) {
+                    mActionMode.finish();
+                    mActionMode = null;
+                }
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);

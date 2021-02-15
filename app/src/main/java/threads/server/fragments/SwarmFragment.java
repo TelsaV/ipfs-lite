@@ -93,13 +93,15 @@ public class SwarmFragment extends Fragment implements
     }
 
     public void updateData() {
-        try {
-            IPFS ipfs = IPFS.getInstance(mContext);
-            List<String> peers = ipfs.swarmPeers();
-            peers.sort(String::compareTo);
-            mSwarmAdapter.updateData(peers);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+        if (isResumed()) {
+            try {
+                IPFS ipfs = IPFS.getInstance(mContext);
+                List<String> peers = ipfs.swarmPeers();
+                peers.sort(String::compareTo);
+                mSwarmAdapter.updateData(peers);
+            } catch (Throwable e) {
+                LogUtils.error(TAG, e);
+            }
         }
     }
 
@@ -235,7 +237,13 @@ public class SwarmFragment extends Fragment implements
     }
 
     public void enableSwipeRefresh(boolean enable) {
-        mSwipeRefreshLayout.setEnabled(enable);
+        try {
+            if (isResumed()) {
+                mSwipeRefreshLayout.setEnabled(enable);
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
 

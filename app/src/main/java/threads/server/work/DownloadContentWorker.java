@@ -34,6 +34,7 @@ import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
+import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.LinkInfo;
 import threads.server.ipfs.Progress;
@@ -169,7 +170,7 @@ public class DownloadContentWorker extends Worker {
 
 
     private void downloadContent(@NonNull DocumentFile doc, @NonNull String root,
-                                 @NonNull String mimeType, @NonNull String name) {
+                                 @NonNull String mimeType, @NonNull String name) throws ClosedException {
 
 
         downloadLinks(doc, root, mimeType, name);
@@ -346,7 +347,7 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void evalLinks(@NonNull DocumentFile doc, @NonNull List<LinkInfo> links) {
+    private void evalLinks(@NonNull DocumentFile doc, @NonNull List<LinkInfo> links) throws ClosedException {
 
         for (LinkInfo link : links) {
             if (!isStopped()) {
@@ -366,7 +367,7 @@ public class DownloadContentWorker extends Worker {
 
 
     private void downloadLinks(@NonNull DocumentFile doc, @NonNull String cid,
-                               @NonNull String mimeType, @NonNull String name) {
+                               @NonNull String mimeType, @NonNull String name) throws ClosedException {
 
 
         List<LinkInfo> links = ipfs.getLinks(cid, this::isStopped);

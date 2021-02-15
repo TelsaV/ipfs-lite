@@ -751,14 +751,11 @@ public class MainActivity extends AppCompatActivity implements
         mAppBar.addOnOffsetChangedListener(new AppBarStateChangedListener() {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
-                LogUtils.error(TAG, state.name());
-
                 if (state == State.EXPANDED) {
                     enableSwipeRefresh(true);
                 } else if (state == State.COLLAPSED) {
                     enableSwipeRefresh(false);
                 }
-
             }
         });
 
@@ -1116,6 +1113,7 @@ public class MainActivity extends AppCompatActivity implements
             actionClearData.setVisibility(View.GONE);
             actionClearData.setOnClickListener(v19 -> {
                 try {
+                    // TODO activate and do main things here and not in browser
                     mBrowserFragment.clearBrowserData();
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
