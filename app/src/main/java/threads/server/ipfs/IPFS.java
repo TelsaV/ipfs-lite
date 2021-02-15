@@ -580,7 +580,7 @@ public class IPFS implements Listener {
         }
     }
 
-    public synchronized void startDaemon(boolean privateSharing) {
+    public void startDaemon(boolean privateSharing) {
         if (!node.getRunning()) {
             synchronized (locker) {
                 if (!node.getRunning()) {
