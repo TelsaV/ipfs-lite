@@ -10,6 +10,7 @@ import android.graphics.drawable.Icon;
 import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.ForegroundInfo;
@@ -133,12 +134,12 @@ public class ClearBrowserDataWorker extends Worker {
         try {
             File dir = context.getCacheDir();
             deleteDir(dir);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
     }
 
-    public static boolean deleteDir(File dir) {
+    public static boolean deleteDir(@Nullable File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
             for (String child : children) {
