@@ -124,14 +124,12 @@ public class ClearBrowserDataWorker extends Worker {
     }
 
     public static void clearCache(@NonNull Context context) {
-
         WorkManager.getInstance(context).enqueueUniqueWork(
                 TAG, ExistingWorkPolicy.REPLACE, getWork());
-
     }
 
 
-    public static void deleteCache(Context context) {
+    public static void deleteCache(@NonNull Context context) {
         try {
             File dir = context.getCacheDir();
             deleteDir(dir);

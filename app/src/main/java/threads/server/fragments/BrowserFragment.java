@@ -722,9 +722,6 @@ public class BrowserFragment extends Fragment {
                 mWebView.clearCache(true);
 
                 ClearBrowserDataWorker.clearCache(mContext);
-
-                EVENTS.getInstance(mContext).warning(
-                        getString(R.string.delete_browser_data));
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
