@@ -123,4 +123,6 @@
     <string name="publisher_service_details">When the application runs in server mode, the publisher service interval defines the time period when your content will be republished to IPFS.</string>
     <string name="connection_timeout_details">The connection timeout defines the maximum time for finding a peer on IPFS.</string>
     <string name="enter_url">URL or search input</string>
+    <string name="warning">Warning</string>
+    <string name="delete_browser_data_warning">All data will be removed, this includes your provided content and all browser data like cookies, cache data, etc.</string>
 </resources>

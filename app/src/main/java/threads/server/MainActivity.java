@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -1151,7 +1152,7 @@ public class MainActivity extends AppCompatActivity implements
             });
 
             TextView actionClearData = menuOverflow.findViewById(R.id.action_clear_data);
-            actionClearData.setVisibility(View.GONE);
+
             actionClearData.setOnClickListener(v19 -> {
                 try {
                     if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
@@ -1159,8 +1160,18 @@ public class MainActivity extends AppCompatActivity implements
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
 
-                    // TODO activate and do main things here and not in browser
-                    mBrowserFragment.clearBrowserData();
+                    AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+                    alertDialog.setTitle(getString(R.string.warning));
+                    alertDialog.setMessage(getString(R.string.delete_browser_data_warning));
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(android.R.string.ok),
+                            (dialog, which) -> {
+                                mBrowserFragment.clearBrowserData();
+                                dialog.dismiss();
+                            });
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(android.R.string.cancel),
+                            (dialog, which) -> dialog.dismiss());
+                    alertDialog.show();
+
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
