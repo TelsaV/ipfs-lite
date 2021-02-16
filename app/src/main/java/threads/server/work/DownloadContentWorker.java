@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import threads.LogUtils;
@@ -36,7 +35,7 @@ import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.IPFS;
-import threads.server.ipfs.LinkInfo;
+import threads.server.ipfs.Link;
 import threads.server.ipfs.Progress;
 import threads.server.services.LiteService;
 import threads.server.services.MimeTypeService;
@@ -184,12 +183,8 @@ public class DownloadContentWorker extends Worker {
 
         LogUtils.info(TAG, " start [" + (System.currentTimeMillis() - start) + "]...");
 
-
         String name = doc.getName();
         Objects.requireNonNull(name);
-
-        AtomicLong started = new AtomicLong(System.currentTimeMillis());
-
 
         if (!ipfs.isEmptyDir(cid)) {
 
@@ -201,9 +196,7 @@ public class DownloadContentWorker extends Worker {
 
                 @Override
                 public void setProgress(int percent) {
-
                     reportProgress(name, percent);
-                    started.set(System.currentTimeMillis());
                 }
 
                 @Override
@@ -347,11 +340,11 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void evalLinks(@NonNull DocumentFile doc, @NonNull List<LinkInfo> links) throws ClosedException {
+    private void evalLinks(@NonNull DocumentFile doc, @NonNull List<Link> links) throws ClosedException {
 
-        for (LinkInfo link : links) {
+        for (Link link : links) {
             if (!isStopped()) {
-                if (link.isDirectory()) {
+                if (ipfs.isDir(link.getContent(), this::isStopped)) {
                     DocumentFile dir = doc.createDirectory(link.getName());
                     Objects.requireNonNull(dir);
                     downloadLinks(dir, link.getContent(), MimeType.DIR_MIME_TYPE, link.getName());
@@ -370,7 +363,7 @@ public class DownloadContentWorker extends Worker {
                                @NonNull String mimeType, @NonNull String name) throws ClosedException {
 
 
-        List<LinkInfo> links = ipfs.getLinks(cid, this::isStopped);
+        List<Link> links = ipfs.links(cid, this::isStopped);
 
         if (links != null) {
             if (links.isEmpty()) {

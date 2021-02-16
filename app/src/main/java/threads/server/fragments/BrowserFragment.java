@@ -283,17 +283,14 @@ public class BrowserFragment extends Fragment {
             public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
                 LogUtils.error(TAG, "doUpdateVisitedHistory : " + url + " " + isReload);
 
-
-                Uri uri = docs.getOriginalUri(Uri.parse(url));
-                mListener.updateUri(uri);
+                mListener.updateUri(docs.getOriginalUri(Uri.parse(url)));
             }
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 LogUtils.error(TAG, "onPageStarted : " + url);
 
-                Uri uri = docs.getOriginalUri(Uri.parse(url));
-                mListener.updateUri(uri);
+                mListener.updateUri(docs.getOriginalUri(Uri.parse(url)));
             }
 
             @Override
@@ -335,6 +332,7 @@ public class BrowserFragment extends Fragment {
                         if (!Objects.equals(newUri, uri)) {
                             Intent intent = new Intent(Intent.ACTION_VIEW, newUri,
                                     mContext, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                             startActivity(intent);
                             return true;
                         }
@@ -791,9 +789,21 @@ public class BrowserFragment extends Fragment {
         }
     }
 
+    @Nullable
+    public String getUrl() {
+        try {
+            if (isResumed()) {
+                return mWebView.getUrl();
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+        return null;
+    }
+
     public void releaseActionMode() {
         try {
-            if(isResumed()) {
+            if (isResumed()) {
                 if (mActionMode != null) {
                     mActionMode.finish();
                     mActionMode = null;

@@ -1000,9 +1000,10 @@ public class IPFS implements Listener {
         if (!isDaemonRunning()) {
             return "";
         }
+        String result = "";
         AtomicBoolean abort = new AtomicBoolean(false);
         try {
-            return node.resolve(path, () -> abort.get() || closeable.isClosed());
+            result = node.resolve(path, () -> abort.get() || closeable.isClosed());
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
             abort.set(true);
@@ -1011,7 +1012,7 @@ public class IPFS implements Listener {
         if (closeable.isClosed()) {
             throw new ClosedException();
         }
-        return "";
+        return result;
     }
 
     public boolean resolve(@NonNull String cid, @NonNull String name, @NonNull Closeable closeable) throws ClosedException {
@@ -1071,7 +1072,7 @@ public class IPFS implements Listener {
 
         List<Link> links = lss(cid, closeable);
         if (links == null) {
-            LogUtils.info(TAG, "no links or stopped");
+            LogUtils.info(TAG, "no links");
             return null;
         }
 
@@ -1092,7 +1093,7 @@ public class IPFS implements Listener {
 
         List<LinkInfo> links = ls(cid, closeable);
         if (links == null) {
-            LogUtils.info(TAG, "no links or stopped");
+            LogUtils.info(TAG, "no links");
             return null;
         }
 

@@ -876,11 +876,10 @@ public class ThreadsFragment extends Fragment implements
                     return;
                 } else if (Objects.equals(mimeType, MimeType.HTML_MIME_TYPE)) {
                     Uri uri = DOCS.getInstance(mContext).getPath(thread);
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri,
+                            mContext, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                     startActivity(intent);
-
                     return;
                 }
 

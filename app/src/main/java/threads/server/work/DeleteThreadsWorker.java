@@ -68,6 +68,7 @@ public class DeleteThreadsWorker extends Worker {
 
         } finally {
             PageWorker.publish(getApplicationContext());
+            EVENTS.getInstance(getApplicationContext()).refresh();
             LogUtils.info(TAG, " finish onStart [" + (System.currentTimeMillis() - start) + "]...");
         }
         return Result.success();

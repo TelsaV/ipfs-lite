@@ -64,7 +64,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import threads.LogUtils;
 import threads.server.core.Content;
@@ -265,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     });
     private final AtomicBoolean downloadActive = new AtomicBoolean(false);
-    private final AtomicReference<Uri> uriAtomicReference = new AtomicReference<>(null);
+
     private long mLastClickTime = 0;
     private CoordinatorLayout mDrawerLayout;
     private BottomNavigationView mNavigation;
@@ -798,6 +797,11 @@ public class MainActivity extends AppCompatActivity implements
         mActionBookmark = findViewById(R.id.action_bookmark);
         mActionBookmark.setOnClickListener(v -> {
             try {
+                if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                    return;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
+
                 mBrowserFragment.bookmark(getApplicationContext(), mActionBookmark);
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
@@ -816,6 +820,11 @@ public class MainActivity extends AppCompatActivity implements
         ImageView mActionBookmarks = findViewById(R.id.action_bookmarks);
         mActionBookmarks.setOnClickListener(v -> {
             try {
+                if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                    return;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
+
                 BookmarksDialogFragment dialogFragment = new BookmarksDialogFragment();
                 dialogFragment.show(getSupportFragmentManager(), BookmarksDialogFragment.TAG);
             } catch (Throwable throwable) {
@@ -826,6 +835,11 @@ public class MainActivity extends AppCompatActivity implements
         ImageView mActionEditCid = findViewById(R.id.action_edit_cid);
         mActionEditCid.setOnClickListener(v -> {
             try {
+                if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                    return;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
+
                 EditContentDialogFragment.newInstance(null, false).show(
                         getSupportFragmentManager(), EditContentDialogFragment.TAG);
             } catch (Throwable throwable) {
@@ -837,6 +851,11 @@ public class MainActivity extends AppCompatActivity implements
         ImageView mActionSorting = findViewById(R.id.action_sorting);
         mActionSorting.setOnClickListener(v -> {
             try {
+                if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                    return;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
+
                 SortOrder sortOrder = InitApplication.getSortOrder(getApplicationContext());
                 PopupMenu popup = new PopupMenu(MainActivity.this, v);
                 popup.inflate(R.menu.popup_sorting);
@@ -921,6 +940,10 @@ public class MainActivity extends AppCompatActivity implements
         ImageView mActionId = findViewById(R.id.action_id);
         mActionId.setOnClickListener(v -> {
             try {
+                if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                    return;
+                }
+                mLastClickTime = SystemClock.elapsedRealtime();
 
                 String peerID = IPFS.getPeerID(getApplicationContext());
                 Objects.requireNonNull(peerID);
@@ -937,6 +960,10 @@ public class MainActivity extends AppCompatActivity implements
 
         ImageView mActionOverflow = findViewById(R.id.action_overflow);
         mActionOverflow.setOnClickListener(v -> {
+            if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                return;
+            }
+            mLastClickTime = SystemClock.elapsedRealtime();
 
             LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
 
@@ -1018,7 +1045,12 @@ public class MainActivity extends AppCompatActivity implements
 
             actionDownload.setOnClickListener(v13 -> {
                 try {
-                    Uri uri = uriAtomicReference.get();
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
+                    Uri uri = Uri.parse(mBrowserFragment.getUrl());
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle(R.string.download_title);
                     String filename = docs.getFileName(uri);
@@ -1049,7 +1081,7 @@ public class MainActivity extends AppCompatActivity implements
             });
 
             ImageButton actionShare = menuOverflow.findViewById(R.id.action_share);
-            if (uriAtomicReference.get() != null) {
+            if (mBrowserFragment.getUrl() != null) {
                 actionShare.setEnabled(true);
                 actionShare.setColorFilter(ContextCompat.getColor(getApplicationContext(),
                         R.color.colorActiveImage), android.graphics.PorterDuff.Mode.SRC_IN);
@@ -1060,15 +1092,19 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionShare.setOnClickListener(v14 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
 
-                    Uri uri = uriAtomicReference.get();
-                    Objects.requireNonNull(uri);
+                    Uri uri = DOCS.getInstance(getApplicationContext()).getOriginalUri(
+                            Uri.parse(mBrowserFragment.getUrl()));
 
                     ComponentName[] names = {new ComponentName(getApplicationContext(), MainActivity.class)};
 
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
-                    intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
+                    intent.putExtra(Intent.EXTRA_TEXT, uri);
                     intent.setType(MimeType.PLAIN_MIME_TYPE);
                     intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
@@ -1098,6 +1134,11 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionReload.setOnClickListener(v15 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
                     if (frag == R.id.navigation_browser) {
                         mBrowserFragment.reload();
                     }
@@ -1113,6 +1154,11 @@ public class MainActivity extends AppCompatActivity implements
             actionClearData.setVisibility(View.GONE);
             actionClearData.setOnClickListener(v19 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
                     // TODO activate and do main things here and not in browser
                     mBrowserFragment.clearBrowserData();
                 } catch (Throwable throwable) {
@@ -1131,6 +1177,11 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionNewFolder.setOnClickListener(v19 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
 
                     long parent = 0L;
                     Long thread = mSelectionViewModel.getParentThread().getValue();
@@ -1158,6 +1209,11 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionImportFolder.setOnClickListener(v19 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
                     long parent = 0L;
                     Long thread = mSelectionViewModel.getParentThread().getValue();
                     if (thread != null) {
@@ -1188,6 +1244,10 @@ public class MainActivity extends AppCompatActivity implements
             }
             actionNewText.setOnClickListener(v19 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
 
                     long parent = 0L;
                     Long thread = mSelectionViewModel.getParentThread().getValue();
@@ -1209,6 +1269,11 @@ public class MainActivity extends AppCompatActivity implements
             TextView actionBackup = menuOverflow.findViewById(R.id.action_backup);
             actionBackup.setOnClickListener(v19 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                     intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
@@ -1225,6 +1290,11 @@ public class MainActivity extends AppCompatActivity implements
             TextView actionDocumentation = menuOverflow.findViewById(R.id.action_documentation);
             actionDocumentation.setOnClickListener(v19 -> {
                 try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
                     String uri = "https://gitlab.com/remmer.wilts/ipfs-lite";
                     openBrowserView(Uri.parse(uri));
                 } catch (Throwable throwable) {
@@ -1412,7 +1482,13 @@ public class MainActivity extends AppCompatActivity implements
         eventViewModel.getRefresh().observe(this, (event) -> {
             try {
                 if (event != null) {
-                    refreshOwnPage();
+                    String url = mBrowserFragment.getUrl();
+                    if (url != null) {
+                        Uri checkUri = Uri.parse(url);
+                        if (Objects.equals(checkUri.getHost(), docs.getHost())) {
+                            mSelectionViewModel.setUri(docs.getPinsPageUri().toString());
+                        }
+                    }
                     eventViewModel.removeEvent(event);
                 }
             } catch (Throwable e) {
@@ -1732,17 +1808,8 @@ public class MainActivity extends AppCompatActivity implements
         mSwarmFragment.enableSwipeRefresh(enable);
     }
 
-
-    private void refreshOwnPage() {
-        DOCS docs = DOCS.getInstance(getApplicationContext());
-        if (Objects.equals(docs.getPinsPageUri(), uriAtomicReference.get())) {
-            mBrowserFragment.reload();
-        }
-    }
-
     @Override
     public void updateUri(@NonNull Uri uri) {
-        uriAtomicReference.set(uri);
         updateTitle(uri);
         updateBookmark(uri);
         updateDownload(uri);
