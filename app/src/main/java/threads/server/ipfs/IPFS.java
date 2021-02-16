@@ -995,27 +995,25 @@ public class IPFS implements Listener {
 
     }
 
-    @NonNull
     public String resolve(@NonNull String path, @NonNull Closeable closeable) throws ClosedException {
         if (!isDaemonRunning()) {
             return "";
         }
         String result = "";
-        AtomicBoolean abort = new AtomicBoolean(false);
+
         try {
-            result = node.resolve(path, () -> abort.get() || closeable.isClosed());
+            result = node.resolve(path, closeable::isClosed);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
-            abort.set(true);
         }
-
         if (closeable.isClosed()) {
             throw new ClosedException();
         }
         return result;
     }
 
-    public boolean resolve(@NonNull String cid, @NonNull String name, @NonNull Closeable closeable) throws ClosedException {
+    public boolean resolve(@NonNull String cid, @NonNull String name,
+                           @NonNull Closeable closeable) throws ClosedException {
         String res = resolve("/" + Content.IPFS + "/" + cid + "/" + name, closeable);
         return !res.isEmpty();
     }
@@ -1023,33 +1021,20 @@ public class IPFS implements Listener {
 
     public boolean isDir(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
 
-        AtomicBoolean abort = new AtomicBoolean(false);
         if (!isDaemonRunning()) {
-            return abort.get();
+            return false;
         }
+        boolean result;
         try {
-            node.ls(cid, new LsInfoClose() {
-                @Override
-                public boolean close() {
-                    return abort.get() || closeable.isClosed();
-                }
-
-                @Override
-                public void lsInfo(String name, String hash, long size, int type) {
-                    if (!name.isEmpty()) {
-                        abort.set(true);
-                    }
-                }
-            }, false);
+            result = node.isDir(cid, closeable::isClosed);
 
         } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+            result = false;
         }
-
-        if(closeable.isClosed()){
+        if (closeable.isClosed()) {
             throw new ClosedException();
         }
-        return abort.get();
+        return result;
     }
 
 

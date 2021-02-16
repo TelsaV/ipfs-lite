@@ -1105,7 +1105,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.share_link));
-                    intent.putExtra(Intent.EXTRA_TEXT, uri);
+                    intent.putExtra(Intent.EXTRA_TEXT, uri.toString());
                     intent.setType(MimeType.PLAIN_MIME_TYPE);
                     intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

@@ -8,8 +8,8 @@ android {
         applicationId "threads.server"
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 226
-        versionName "2.2.6"
+        versionCode 227
+        versionName "2.2.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         def documentsAuthorityValue = applicationId + ".provider"
@@ -106,7 +106,7 @@ dependencies {
     implementation 'commons-io:commons-io:2.8.0'
 
     // API (IPFS lite)
-    implementation 'lite.ipfs:lite:1.1.0'
+    implementation 'lite.ipfs:lite:1.1.1'
 
     annotationProcessor 'androidx.room:room-compiler:2.2.6'
 
