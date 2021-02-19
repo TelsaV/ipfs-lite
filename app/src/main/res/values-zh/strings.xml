@@ -43,8 +43,8 @@
     <string name="search">搜索</string>
     <string name="copy_to">复制到</string>
     <string name="content_already_exists">内容已经存在CID \"%1$s\"</string>
-    <string name="identification">对等ID</string>
-    <string name="account_address">帐户 - 对等ID</string>
+    <string name="identification">识别码</string>
+    <string name="account_address">识别码 - 对等ID</string>
     <string name="user_account_address_message">Y您可以与他人共享您的帐户对等ID。因此，他们只需扫描QR码即可与您联系。</string>
     <string name="delete">删除</string>
     <string name="revert_operation">还原</string>

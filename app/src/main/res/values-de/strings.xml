@@ -44,8 +44,8 @@
     <string name="download_failed">Download schlug fehl für \"%1$s\"</string>
     <string name="added_pid_to_peers">\"%1$s\" wurde zu Deinen Peers hinzugefügt</string>
     <string name="content_already_exists">Datei mit der Content ID \"%1$s\" existiert bereits</string>
-    <string name="identification">Peer ID</string>
-    <string name="account_address">Account - Peer ID</string>
+    <string name="identification">Identifikation</string>
+    <string name="account_address">Identifikation - Peer ID</string>
     <string name="user_account_address_message">Der angegebenen QR Code enthält Deine Peer ID. Darüber können Andere Dich erreichen, wenn Du online bist.</string>
     <string name="delete">Entfernen</string>
     <string name="revert_operation">Rückgängig</string>

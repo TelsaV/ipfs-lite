@@ -938,26 +938,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        ImageView mActionId = findViewById(R.id.action_id);
-        mActionId.setOnClickListener(v -> {
-            try {
-                if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
-                    return;
-                }
-                mLastClickTime = SystemClock.elapsedRealtime();
-
-                String peerID = IPFS.getPeerID(getApplicationContext());
-                Objects.requireNonNull(peerID);
-
-                Uri uri = QRCodeService.getImage(getApplicationContext(), peerID);
-
-                AccountDialogFragment.newInstance(uri).show(
-                        getSupportFragmentManager(), AccountDialogFragment.TAG);
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        });
-
 
         ImageView mActionOverflow = findViewById(R.id.action_overflow);
         mActionOverflow.setOnClickListener(v -> {
@@ -1298,6 +1278,32 @@ public class MainActivity extends AppCompatActivity implements
 
             });
 
+
+            TextView actionIdentification = menuOverflow.findViewById(R.id.action_identification);
+            actionIdentification.setOnClickListener(v19 -> {
+                try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
+
+                    String peerID = IPFS.getPeerID(getApplicationContext());
+                    Objects.requireNonNull(peerID);
+
+                    Uri uri = QRCodeService.getImage(getApplicationContext(), peerID);
+
+                    AccountDialogFragment.newInstance(uri).show(
+                            getSupportFragmentManager(), AccountDialogFragment.TAG);
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+
             TextView actionDocumentation = menuOverflow.findViewById(R.id.action_documentation);
             actionDocumentation.setOnClickListener(v19 -> {
                 try {
@@ -1397,7 +1403,6 @@ public class MainActivity extends AppCompatActivity implements
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
                 mActionBookmarks.setVisibility(View.GONE);
-                mActionId.setVisibility(View.GONE);
                 mActionEditCid.setVisibility(View.VISIBLE);
                 mActionSorting.setVisibility(View.VISIBLE);
                 setFabImage(R.drawable.plus_thick);
@@ -1415,7 +1420,6 @@ public class MainActivity extends AppCompatActivity implements
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
                 mActionBookmarks.setVisibility(View.GONE);
-                mActionId.setVisibility(View.VISIBLE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
                 setFabImage(R.drawable.account_plus);
@@ -1433,7 +1437,6 @@ public class MainActivity extends AppCompatActivity implements
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.VISIBLE);
                 mActionBookmarks.setVisibility(View.VISIBLE);
-                mActionId.setVisibility(View.GONE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
                 return true;
@@ -1451,7 +1454,6 @@ public class MainActivity extends AppCompatActivity implements
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
                 mActionBookmarks.setVisibility(View.GONE);
-                mActionId.setVisibility(View.GONE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
                 mSwarmFragment.updateData();
@@ -1469,7 +1471,6 @@ public class MainActivity extends AppCompatActivity implements
                 mSelectionViewModel.setParentThread(0L);
                 mActionBookmark.setVisibility(View.GONE);
                 mActionBookmarks.setVisibility(View.GONE);
-                mActionId.setVisibility(View.VISIBLE);
                 mActionEditCid.setVisibility(View.GONE);
                 mActionSorting.setVisibility(View.GONE);
 

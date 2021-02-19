@@ -66,17 +66,6 @@
                     app:tint="?android:textColorPrimary" />
 
                 <ImageButton
-                    android:id="@+id/action_id"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/identification"
-                    android:padding="8dp"
-                    android:src="@drawable/qrcode"
-                    app:tint="?android:textColorPrimary" />
-
-                <ImageButton
                     android:id="@+id/action_bookmark"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"

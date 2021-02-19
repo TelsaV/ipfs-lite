@@ -43,9 +43,9 @@
     <string name="copy_to">Copy to…</string>
     <string name="content_already_exists">Content exists already with CID \"%1$s\"</string>
 
-    <string name="identification">Peer ID</string>
-    <string name="account_address">Account - Peer ID</string>
-    <string name="user_account_address_message">You can share your account Peer ID with others. So they can contact you, by simply scanning the QR code.</string>
+    <string name="identification">Identification</string>
+    <string name="account_address">Identification - Peer ID</string>
+    <string name="user_account_address_message">You can share your Peer ID with others. So they can contact you, by simply scanning the QR code.</string>
     <string name="delete">Delete</string>
     <string name="revert_operation">Revert</string>
     <string name="delete_files">Delete %1$s files</string>
