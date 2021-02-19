@@ -31,7 +31,7 @@
     <string name="account_access">Der QR Code enthält meine Peer ID.</string>
     <string name="multi_hash_access">The QR Code enthält die CID um auf die Daten \"%1$s\" zuzugreifen.</string>
     <string name="feature_camera_required">Feature Kamera benötigt</string>
-    <string name="daemon_restart_config_changed">Bitte starte die Applikation neu, da sich die Konfiguration geändert hat.</string>
+    <string name="restart_config_changed">Bitte starte die Applikation neu, da sich die Konfiguration geändert hat.</string>
     <string name="cid_not_valid">Content ID ist nicht gültig</string>
     <string name="pid_not_valid">Peer ID ist nicht gültig</string>
     <string name="peer_exists_with_pid">Eine Peer mit der ID existiert bereits in Deinen Kontakten</string>
@@ -128,11 +128,8 @@
 
 
     <string name="redirect_url_support">Redirect URL Support</string>
-    <string name="concurrency_value">Concurrency (DHT) [%1$s]</string>
-    <string name="restart_config_changed">Bitte starte die Applikation neu, da sich die Konfiguration geändert hat.</string>
     <string name="redirect_index_support">Redirect Index HTML</string>
     <string name="redirect_url_support_text">Wenn diese Option aktiviert ist, werden URLs, die auf IPFS- oder IPNS-Inhalte verweisen, automatisch auf den lokalen IPFS-Knoten umgeleitet. Derzeit werden nur URLs der Form https://xxx/ipfs/… oder https://xxx/ipns/… umgeleitet.</string>
     <string name="redirect_index_support_text">Wenn diese Option aktiviert ist, dann versucht der lokale Knoten zu einer angegeben ipfs oder ipns URL eine HTML index Datei zu finden, sofern sie nicht angeben wurde.</string>
-    <string name="concurrency_text">Um so höher der Concurrency Wert ist, umso aggressiver versucht der lokale Knoten angeforderte IPFS Inhalte zu finden. Dabei wird auch mehr Energy verbraucht.</string>
 
 </resources>

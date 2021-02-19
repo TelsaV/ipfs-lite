@@ -15,7 +15,7 @@
     <string name="feature_camera_required">需要功能相机</string>
     <string name="share">分享</string>
     <string name="settings">设定值</string>
-    <string name="daemon_restart_config_changed">由于配置更改，请重新启动应用程序。</string>
+    <string name="restart_config_changed">由于配置更改，请重新启动应用程序。</string>
     <string name="cid_not_valid">CID无效</string>
     <string name="pid_not_valid">对等ID无效</string>
     <string name="codec_not_supported">不支持编解码器</string>
@@ -127,12 +127,8 @@
 
 
 
-    <string name="redirect_url_support">Redirect URL Support</string>
-    <string name="concurrency_value">Concurrency (DHT) [%1$s]</string>
-    <string name="restart_config_changed">Please restart the application due to the configuration changes.</string>
-    <string name="redirect_index_support">Redirect Index HTML</string>
-    <string name="redirect_url_support_text">When this option is enabled, URLs which references IPFS or IPNS content, will be automatically redirected to the local IPFS node. Currently only URLs of the form https://xxx/ipfs/… or https://xxx/ipns/… will be redirected.</string>
-    <string name="redirect_index_support_text">If this option is enabled, the local node tries to find an HTML index file for a given ipfs or ipns URL if it is not specified.</string>
-    <string name="concurrency_text">The higher the concurrency value, the more aggressively the local node tries to find the requested content. This also consumes more energy.</string>
-
+    <string name="redirect_url_support">重定向URL支持</string>
+    <string name="redirect_index_support">重定向索引HTML</string>
+    <string name="redirect_url_support_text">启用此选项后，引用IPFS或IPNS内容的URL将自动重定向到本地IPFS节点。目前，仅格式为https：// xxx / ipfs /…或https：// xxx / ipns /…的URL将被重定向。</string>
+    <string name="redirect_index_support_text">如果启用此选项，则本地节点将尝试为给定的ipfs或ipns URL查找HTML索引文件（如果未指定）。</string>
 </resources>

@@ -88,7 +88,7 @@ public class SettingsFragment extends Fragment {
 
                                 if (IPFS.isPrivateNetworkEnabled(mContext)) {
                                     EVENTS.getInstance(mContext).exit(
-                                            getString(R.string.daemon_restart_config_changed));
+                                            getString(R.string.restart_config_changed));
                                 }
                             } catch (Throwable throwable) {
                                 LogUtils.error(TAG, throwable);
@@ -259,7 +259,7 @@ public class SettingsFragment extends Fragment {
                     try {
                         IPFS.setPrivateSharingEnabled(mContext, isChecked);
                         EVENTS.getInstance(mContext).exit(
-                                getString(R.string.daemon_restart_config_changed));
+                                getString(R.string.restart_config_changed));
                     } catch (Throwable throwable) {
                         LogUtils.error(TAG, throwable);
                     }
@@ -367,7 +367,7 @@ public class SettingsFragment extends Fragment {
         enable_private_network.setOnCheckedChangeListener((buttonView, isChecked) -> {
             IPFS.setPrivateNetworkEnabled(mContext, isChecked);
             EVENTS.getInstance(mContext).exit(
-                    getString(R.string.daemon_restart_config_changed));
+                    getString(R.string.restart_config_changed));
 
         });
 
