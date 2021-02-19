@@ -41,8 +41,36 @@ public class InitApplication extends Application {
     private static final String PREF_KEY = "prefKey";
     private static final String TIMEOUT_KEY = "timeoutKey";
     private static final String AUTO_DISCOVERY_KEY = "autoDiscoveryKey";
+    private static final String REDIRECT_URL_KEY = "redirectUrlKey";
+    private static final String REDIRECT_INDEX_KEY = "redirectIndexKey";
     private static final String SORT_KEY = "sortKey";
     private final Gson gson = new Gson();
+
+
+    public static void setRedirectUrlEnabled(Context context, boolean auto) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(REDIRECT_URL_KEY, auto);
+        editor.apply();
+    }
+
+    public static boolean isRedirectUrlEnabled(@NonNull Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(REDIRECT_URL_KEY, false);
+    }
+
+    public static void setRedirectIndexEnabled(Context context, boolean auto) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(REDIRECT_INDEX_KEY, auto);
+        editor.apply();
+    }
+
+    public static boolean isRedirectIndexEnabled(@NonNull Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(REDIRECT_INDEX_KEY, true);
+
+    }
 
     public static void setAutoDiscovery(Context context, boolean auto) {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);

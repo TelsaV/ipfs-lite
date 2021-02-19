@@ -210,6 +210,29 @@ public class SettingsFragment extends Fragment {
         });
 
 
+        SwitchMaterial enableRedirectUrl = view.findViewById(R.id.enable_redirect_url);
+        Objects.requireNonNull(enableRedirectUrl);
+        enableRedirectUrl.setChecked(InitApplication.isRedirectUrlEnabled(mContext));
+        enableRedirectUrl.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    InitApplication.setRedirectUrlEnabled(mContext, isChecked);
+
+                    EVENTS.getInstance(mContext).exit(
+                            getString(R.string.restart_config_changed));
+                }
+        );
+
+        SwitchMaterial enableRedirectIndex = view.findViewById(R.id.enable_redirect_index);
+        Objects.requireNonNull(enableRedirectIndex);
+        enableRedirectIndex.setChecked(InitApplication.isRedirectIndexEnabled(mContext));
+        enableRedirectIndex.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    InitApplication.setRedirectIndexEnabled(mContext, isChecked);
+
+                    EVENTS.getInstance(mContext).exit(
+                            getString(R.string.restart_config_changed));
+                }
+        );
+
+
         TextView automatic_discovery_mode_text = view.findViewById(R.id.automatic_discovery_mode_text);
 
         String auto_discovery_html = getString(R.string.automatic_discovery_mode_text);
