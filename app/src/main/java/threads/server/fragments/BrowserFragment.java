@@ -748,6 +748,12 @@ public class BrowserFragment extends Fragment {
 
     public void openUri(@NonNull Uri uri) {
         try {
+
+            if (Objects.equals(uri.getScheme(), Content.IPNS) ||
+                    Objects.equals(uri.getScheme(), Content.IPFS)) {
+                docs.attachUri(uri);
+            }
+
             docs.releaseThreads();
 
             mWebView.stopLoading();
