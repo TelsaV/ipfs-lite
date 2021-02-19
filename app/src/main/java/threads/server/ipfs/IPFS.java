@@ -116,6 +116,7 @@ public class IPFS implements Listener {
         node.setGracePeriod(getGracePeriod(context));
         node.setHighWater(getHighWater(context));
         node.setLowWater(getLowWater(context));
+        node.setResponsive(200);
 
     }
 
