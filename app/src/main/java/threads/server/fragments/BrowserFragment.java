@@ -748,8 +748,6 @@ public class BrowserFragment extends Fragment {
 
     public void openUri(@NonNull Uri uri) {
         try {
-            docs.cleanupResolver(uri);
-
             docs.releaseThreads();
 
             mWebView.stopLoading();

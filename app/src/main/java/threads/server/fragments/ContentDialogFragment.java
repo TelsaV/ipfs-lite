@@ -2,12 +2,9 @@ package threads.server.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,11 +21,8 @@ import com.bumptech.glide.Glide;
 import java.util.Objects;
 
 import threads.LogUtils;
-import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
-import threads.server.core.events.EVENTS;
-import threads.server.utils.MimeType;
 
 public class ContentDialogFragment extends DialogFragment {
 
@@ -96,13 +90,9 @@ public class ContentDialogFragment extends DialogFragment {
 
 
         try {
-
-            Glide.with(mContext).
-                    load(uri).
-                    into(imageView);
-
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+            Glide.with(mContext).load(uri).into(imageView);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
@@ -110,9 +100,7 @@ public class ContentDialogFragment extends DialogFragment {
         builder.setTitle(title)
                 .setMessage(message)
                 .setView(view)
-                .setNeutralButton(android.R.string.cancel, (dialogInterface, i) -> dismiss())
-                .setPositiveButton(R.string.share, (dialogInterface, i) ->
-                        shareQRCode(uri, name, message, url))
+                .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> dismiss())
                 .create();
 
         Dialog dialog = builder.create();
@@ -123,40 +111,4 @@ public class ContentDialogFragment extends DialogFragment {
 
         return dialog;
     }
-
-
-    private void shareQRCode(@NonNull Uri uri, @NonNull String name, @NonNull String message, @NonNull String url) {
-
-        try {
-            String text = message;
-            if (!url.isEmpty()) {
-                text = text.concat("\n\n").concat(url);
-            }
-
-            ComponentName[] names = {new ComponentName(mContext, MainActivity.class)};
-
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.putExtra(Intent.EXTRA_SUBJECT, name);
-            intent.putExtra(Intent.EXTRA_TEXT, text);
-            intent.putExtra(Intent.EXTRA_STREAM, uri);
-            intent.setType(MimeType.RFC_822);
-            intent.putExtra(DocumentsContract.EXTRA_EXCLUDE_SELF, true);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-
-            Intent chooser = Intent.createChooser(intent, getText(R.string.share));
-            chooser.putExtra(Intent.EXTRA_EXCLUDE_COMPONENTS, names);
-            chooser.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(chooser);
-
-
-        } catch (Throwable ignore) {
-            EVENTS.getInstance(mContext).warning(
-                    getString(R.string.no_activity_found_to_handle_uri));
-        } finally {
-            dismiss();
-        }
-    }
-
 }
