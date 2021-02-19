@@ -313,7 +313,6 @@ public class BrowserFragment extends Fragment {
             @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 LogUtils.error(TAG, "" + error.getDescription());
-                mProgressBar.setVisibility(View.GONE);
             }
 
 
@@ -347,7 +346,6 @@ public class BrowserFragment extends Fragment {
                             return true;
                         }
                         mProgressBar.setVisibility(View.VISIBLE);
-                        docs.attachUri(uri);
                         docs.releaseThreads();
                         return false;
 
@@ -428,6 +426,8 @@ public class BrowserFragment extends Fragment {
                 if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                         Objects.equals(uri.getScheme(), Content.IPFS)) {
                     long start = System.currentTimeMillis();
+
+                    docs.attachUri(uri);
 
                     if(docs.foreignPage(uri)) {
                         docs.bootstrap();
