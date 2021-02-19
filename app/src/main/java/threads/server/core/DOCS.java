@@ -38,7 +38,7 @@ import threads.server.ipfs.Closeable;
 import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.DnsAddrResolver;
 import threads.server.ipfs.IPFS;
-import threads.server.ipfs.LinkInfo;
+import threads.server.ipfs.Link;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
 import threads.server.services.MimeTypeService;
@@ -544,7 +544,7 @@ public class DOCS {
     }
 
 
-    public String generateDirectoryHtml(@NonNull Uri uri, @NonNull String root, List<String> paths, @Nullable List<LinkInfo> links) {
+    public String generateDirectoryHtml(@NonNull Uri uri, @NonNull String root, List<String> paths, @Nullable List<Link> links) {
         String title = root;
 
         if (!paths.isEmpty()) {
@@ -566,18 +566,15 @@ public class DOCS {
         if (links != null) {
             if (!links.isEmpty()) {
                 answer.append("<form><table  width=\"100%\" style=\"border-spacing: 4px;\">");
-                for (LinkInfo linkInfo : links) {
+                for (Link linkInfo : links) {
 
-                    String mimeType = MimeType.DIR_MIME_TYPE;
-                    if (!linkInfo.isDirectory()) {
-                        mimeType = MimeTypeService.getMimeType(linkInfo.getName());
-                    }
+
                     String linkUri = uri + "/" + linkInfo.getName();
 
                     answer.append("<tr>");
 
                     answer.append("<td>");
-                    answer.append(MimeTypeService.getSvgResource(mimeType));
+                    answer.append(MimeTypeService.getSvgResource(linkInfo.getName()));
                     answer.append("</td>");
 
                     answer.append("<td width=\"100%\" style=\"word-break:break-word\">");
@@ -588,11 +585,6 @@ public class DOCS {
                     answer.append("</a>");
                     answer.append("</td>");
 
-                    answer.append("<td>");
-                    if (!linkInfo.isDirectory()) {
-                        answer.append(getFileSize(linkInfo.getSize()));
-                    }
-                    answer.append("</td>");
                     answer.append("<td align=\"center\">");
                     String text = "<button style=\"float:none!important;display:inline;\" name=\"download\" value=\"1\" formenctype=\"text/plain\" formmethod=\"get\" type=\"submit\" formaction=\"" +
                             linkUri + "\">" + MimeTypeService.getSvgDownload() + "</button>";
@@ -608,22 +600,6 @@ public class DOCS {
 
 
         return answer.toString();
-    }
-
-    private String getFileSize(long size) {
-
-        String fileSize;
-
-        if (size < 1000) {
-            fileSize = String.valueOf(size);
-            return fileSize.concat(" B");
-        } else if (size < 1000 * 1000) {
-            fileSize = String.valueOf((double) (size / 1000));
-            return fileSize.concat(" KB");
-        } else {
-            fileSize = String.valueOf((double) (size / (1000 * 1000)));
-            return fileSize.concat(" MB");
-        }
     }
 
     @NonNull
@@ -682,7 +658,7 @@ public class DOCS {
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else if (ipfs.isDir(root, closeable)) {
-                List<LinkInfo> links = ipfs.getLinks(root, closeable);
+                List<Link> links = ipfs.links(root, closeable);
                 String answer = generateDirectoryHtml(uri, root, paths, links);
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
@@ -703,7 +679,7 @@ public class DOCS {
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else if (ipfs.isDir(cid, closeable)) {
-                List<LinkInfo> links = ipfs.getLinks(cid, closeable);
+                List<Link> links = ipfs.links(cid, closeable);
                 String answer = generateDirectoryHtml(uri, root, paths, links);
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));

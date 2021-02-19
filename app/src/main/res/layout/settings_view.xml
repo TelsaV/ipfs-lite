@@ -259,13 +259,6 @@
             android:layout_margin="16dp"
             android:text="@string/redirect_index_support_text" />
 
-        <TextView
-            android:id="@+id/concurrency_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:textColor="?android:textColorPrimary" />
-
         
         <TextView
             android:id="@+id/connection_timeout_text"
