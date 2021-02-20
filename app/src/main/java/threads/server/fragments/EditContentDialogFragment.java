@@ -267,7 +267,7 @@ public class EditContentDialogFragment extends DialogFragment {
 
                 })
 
-                .setTitle(getString(R.string.content_id));
+                .setTitle(getString(R.string.content_url));
 
 
         Dialog dialog = builder.create();

@@ -3,7 +3,7 @@
 
     <item
         android:id="@+id/popup_info"
-        android:title="@string/action_info" />
+        android:title="@string/information" />
 
     <item
         android:id="@+id/popup_add"

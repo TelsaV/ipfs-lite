@@ -4,13 +4,13 @@
     <string name="channel_description">For upload and download notifications</string>
     <string name="daemon_channel_name">Daemon Notifications</string>
     <string name="daemon_channel_description">Notification that the daemon has started</string>
-    <string name="action_info">Information</string>
-    <string name="content_id">Content ID (CID)</string>
+    <string name="information">Information</string>
+    <string name="content_url">Content - URL </string>
     <string name="peer_id">Peer ID</string>
     <string name="peer_access">The QR code contains the peer ID of \"%1$s\".</string>
     <string name="account_access">The QR code contains my peer ID.</string>
     <string name="multi_hash">Multihash</string>
-    <string name="multi_hash_access">The QR code contains a CID to access the content of the data \"%1$s\".</string>
+    <string name="url_data_access">The QR code contains the URL to access the content of the data \"%1$s\".</string>
     <string name="feature_camera_required">Feature camera required</string>
     <string name="share">Share</string>
     <string name="settings">Settings</string>
@@ -132,5 +132,6 @@
     <string name="redirect_index_support">Redirect Index HTML</string>
     <string name="redirect_url_support_text">When this option is enabled, URLs which references IPFS or IPNS content, will be automatically redirected to the local IPFS node. Currently only URLs of the form https://xxx/ipfs/… or https://xxx/ipns/… will be redirected.</string>
     <string name="redirect_index_support_text">If this option is enabled, the local node tries to find an HTML index file for a given ipfs or ipns URL if it is not specified.</string>
+    <string name="url_access">The QR-Code contains the URL</string>
 
 </resources>

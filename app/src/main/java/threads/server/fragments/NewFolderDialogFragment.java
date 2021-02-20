@@ -29,8 +29,10 @@ import threads.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
+import threads.server.core.events.EVENTS;
 import threads.server.ipfs.IPFS;
 import threads.server.utils.MimeType;
+import threads.server.work.PageWorker;
 
 public class NewFolderDialogFragment extends DialogFragment {
     public static final String TAG = NewFolderDialogFragment.class.getSimpleName();
@@ -127,6 +129,9 @@ public class NewFolderDialogFragment extends DialogFragment {
                             ipfs.createEmptyDir(),
                             null, name, 0L, true, false);
                     docs.finishDocument(idx);
+
+                    PageWorker.publish(mContext);
+                    EVENTS.getInstance(mContext).refresh();
 
                 })
 

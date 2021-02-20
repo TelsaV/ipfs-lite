@@ -5,7 +5,7 @@
     <string name="channel_description">Benachrichtigungen für Up- und Downloads</string>
     <string name="daemon_channel_name">Service Benachrichtigungen</string>
     <string name="multi_hash">Multihash</string>
-    <string name="content_id">Content ID (CID)</string>
+    <string name="content_url">Content ID (CID)</string>
     <string name="peer_id">Peer ID</string>
     <string name="share">Teilen</string>
     <string name="settings">Settings</string>
@@ -26,10 +26,10 @@
     <string name="no_activity_found_to_handle_uri">Keine Applikation gefunden, welche die Datei verabeiten kann.</string>
     <string name="general_settings">Allgemeine Einstellungen</string>
     <string name="daemon_channel_description">Benachrichtigung das der Service getarted ist</string>
-    <string name="action_info">Information</string>
+    <string name="information">Information</string>
     <string name="peer_access">Der QR Code enthält die Peer ID für \"%1$s\".</string>
     <string name="account_access">Der QR Code enthält meine Peer ID.</string>
-    <string name="multi_hash_access">The QR Code enthält die CID um auf die Daten \"%1$s\" zuzugreifen.</string>
+    <string name="url_data_access">The QR Code enthält die URL um auf die Daten \"%1$s\" zuzugreifen.</string>
     <string name="feature_camera_required">Feature Kamera benötigt</string>
     <string name="restart_config_changed">Bitte starte die Applikation neu, da sich die Konfiguration geändert hat.</string>
     <string name="cid_not_valid">Content ID ist nicht gültig</string>
@@ -131,5 +131,6 @@
     <string name="redirect_index_support">Redirect Index HTML</string>
     <string name="redirect_url_support_text">Wenn diese Option aktiviert ist, werden URLs, die auf IPFS- oder IPNS-Inhalte verweisen, automatisch auf den lokalen IPFS-Knoten umgeleitet. Derzeit werden nur URLs der Form https://xxx/ipfs/… oder https://xxx/ipns/… umgeleitet.</string>
     <string name="redirect_index_support_text">Wenn diese Option aktiviert ist, dann versucht der lokale Knoten zu einer angegeben ipfs oder ipns URL eine HTML index Datei zu finden, sofern sie nicht angeben wurde.</string>
+    <string name="url_access">Der QR-Code enthält die URL</string>
 
 </resources>

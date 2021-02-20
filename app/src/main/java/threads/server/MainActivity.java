@@ -79,6 +79,7 @@ import threads.server.core.threads.THREADS;
 import threads.server.fragments.AccountDialogFragment;
 import threads.server.fragments.BookmarksDialogFragment;
 import threads.server.fragments.BrowserFragment;
+import threads.server.fragments.ContentDialogFragment;
 import threads.server.fragments.EditContentDialogFragment;
 import threads.server.fragments.EditPeerDialogFragment;
 import threads.server.fragments.NewFolderDialogFragment;
@@ -1151,6 +1152,37 @@ public class MainActivity extends AppCompatActivity implements
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(android.R.string.cancel),
                             (dialog, which) -> dialog.dismiss());
                     alertDialog.show();
+
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+
+            TextView actionInformation = menuOverflow.findViewById(R.id.action_information);
+            if (mBrowserFragment.getUrl() != null) {
+                actionInformation.setVisibility(View.VISIBLE);
+            } else {
+                actionInformation.setVisibility(View.GONE);
+            }
+            actionInformation.setOnClickListener(v19 -> {
+                try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
+                    Uri uri = DOCS.getInstance(getApplicationContext()).getOriginalUri(
+                            Uri.parse(mBrowserFragment.getUrl()));
+
+                    Uri uriImage = QRCodeService.getImage(getApplicationContext(), uri.toString());
+                    ContentDialogFragment.newInstance(uriImage,
+                            getString(R.string.url_access), uri.toString())
+                            .show(getSupportFragmentManager(), ContentDialogFragment.TAG);
+
 
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);

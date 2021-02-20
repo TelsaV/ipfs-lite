@@ -5,13 +5,13 @@
     <string name="channel_description">用于上传和下载通知</string>
     <string name="daemon_channel_name">守护程序通知</string>
     <string name="daemon_channel_description">关于守护程序已启动的通知</string>
-    <string name="action_info">信息</string>
-    <string name="content_id">内容编号 (CID)</string>
+    <string name="information">信息</string>
+    <string name="content_url">内容编号 (CID)</string>
     <string name="peer_id">对等ID</string>
     <string name="peer_access">QR码包含的对等ID \"%1$s\"</string>
     <string name="account_access">QR码包含我的对等ID</string>
     <string name="multi_hash">多哈希</string>
-    <string name="multi_hash_access">QR码包含一个CID以访问数据内容。\"%1$s\"</string>
+    <string name="url_data_access">QR码包含一个URL以访问数据内容。\"%1$s\"</string>
     <string name="feature_camera_required">需要功能相机</string>
     <string name="share">分享</string>
     <string name="settings">设定值</string>
@@ -131,4 +131,5 @@
     <string name="redirect_index_support">重定向索引HTML</string>
     <string name="redirect_url_support_text">启用此选项后，引用IPFS或IPNS内容的URL将自动重定向到本地IPFS节点。目前，仅格式为https：// xxx / ipfs /…或https：// xxx / ipns /…的URL将被重定向。</string>
     <string name="redirect_index_support_text">如果启用此选项，则本地节点将尝试为给定的ipfs或ipns URL查找HTML索引文件（如果未指定）。</string>
+    <string name="url_access">QR码包含URL</string>
 </resources>

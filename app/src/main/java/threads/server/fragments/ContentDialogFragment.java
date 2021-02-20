@@ -31,13 +31,13 @@ public class ContentDialogFragment extends DialogFragment {
     private Context mContext;
 
 
-    public static ContentDialogFragment newInstance(
-            @NonNull Uri uri, @NonNull String name, @NonNull String message, @NonNull String url) {
+    public static ContentDialogFragment newInstance(@NonNull Uri uri,
+                                                    @NonNull String message,
+                                                    @NonNull String url) {
 
 
         Bundle bundle = new Bundle();
         bundle.putString(Content.URI, uri.toString());
-        bundle.putString(Content.NAME, name);
         bundle.putString(Content.TEXT, message);
         bundle.putString(Content.URL, url);
         ContentDialogFragment fragment = new ContentDialogFragment();
@@ -71,13 +71,12 @@ public class ContentDialogFragment extends DialogFragment {
         ImageView imageView = view.findViewById(R.id.dialog_server_info);
         Bundle bundle = getArguments();
         Objects.requireNonNull(bundle);
-        String title = getString(R.string.content_id);
+        String title = getString(R.string.information);
         String message = bundle.getString(Content.TEXT, "");
         Uri uri = Uri.parse(bundle.getString(Content.URI));
         Objects.requireNonNull(uri);
         String url = bundle.getString(Content.URL, "");
-        String name = bundle.getString(Content.NAME);
-        Objects.requireNonNull(name);
+
 
 
         TextView page = view.findViewById(R.id.page);

@@ -785,9 +785,9 @@ public class ThreadsFragment extends Fragment implements
             Objects.requireNonNull(cid);
             String uri = Content.IPFS + "://" + cid;
 
-            Uri uriImage = QRCodeService.getImage(mContext, cid);
-            ContentDialogFragment.newInstance(uriImage, cid,
-                    getString(R.string.multi_hash_access, thread.getName()), uri)
+            Uri uriImage = QRCodeService.getImage(mContext, uri);
+            ContentDialogFragment.newInstance(uriImage,
+                    getString(R.string.url_data_access, thread.getName()), uri)
                     .show(getChildFragmentManager(), ContentDialogFragment.TAG);
 
 
