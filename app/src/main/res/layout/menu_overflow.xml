@@ -149,9 +149,7 @@
             android:padding="12dp"
             android:text="@string/information"
             android:textColor="?android:textColorPrimary"
-            android:textSize="16sp"
-            app:drawableEndCompat="@drawable/qrcode"
-            app:drawableTint="?android:textColorPrimary" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 
@@ -170,7 +168,7 @@
             android:padding="12dp"
             android:text="@string/scan_url"
             android:textColor="?android:textColorPrimary"
-            android:textSize="16sp" />
+            android:textSize="16sp"/>
 
     </LinearLayout>
 

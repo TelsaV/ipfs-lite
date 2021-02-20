@@ -1,15 +1,16 @@
 package threads.server;
 
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -55,6 +56,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.Gson;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -126,6 +129,54 @@ public class MainActivity extends AppCompatActivity implements
         }
     };
     private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_browser);
+
+    private final ActivityResultLauncher<Intent> mScanRequestForResult = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                try {
+                    IntentResult resultIntent = IntentIntegrator.parseActivityResult(
+                            IntentIntegrator.REQUEST_CODE, result.getResultCode(), result.getData());
+                    if (resultIntent != null) {
+                        if (resultIntent.getContents() != null) {
+
+                            try {
+                                Uri uri = Uri.parse(resultIntent.getContents());
+                                if (uri != null) {
+                                    String scheme = uri.getScheme();
+                                    if (Objects.equals(scheme, Content.IPNS) ||
+                                            Objects.equals(scheme, Content.IPFS) ||
+                                            Objects.equals(scheme, Content.HTTP) ||
+                                            Objects.equals(scheme, Content.HTTPS)) {
+                                        openBrowserView(uri);
+                                    } else {
+                                        EVENTS.getInstance(getApplicationContext()).error(
+                                                getString(R.string.codec_not_supported));
+                                    }
+                                } else {
+                                    EVENTS.getInstance(getApplicationContext()).error(
+                                            getString(R.string.codec_not_supported));
+                                }
+                            } catch (Throwable throwable) {
+                                EVENTS.getInstance(getApplicationContext()).error(
+                                        getString(R.string.codec_not_supported));
+                            }
+                        }
+                    }
+
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
+
+            });
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    invokeScan();
+                } else {
+                    EVENTS.getInstance(getApplicationContext()).permission(
+                            getString(R.string.permission_camera_denied));
+                }
+            });
 
     private final ActivityResultLauncher<Intent> mContentForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -729,6 +780,7 @@ public class MainActivity extends AppCompatActivity implements
         return Math.round((float) dp * density);
     }
 
+    private boolean hasCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -739,6 +791,8 @@ public class MainActivity extends AppCompatActivity implements
         DOCS docs = DOCS.getInstance(getApplicationContext());
 
 
+        PackageManager pm = getPackageManager();
+        hasCamera = pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mNavigation = findViewById(R.id.navigation);
         mNavigation.refreshDrawableState();
@@ -1184,6 +1238,45 @@ public class MainActivity extends AppCompatActivity implements
                             .show(getSupportFragmentManager(), ContentDialogFragment.TAG);
 
 
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                } finally {
+                    mPopupWindow.dismiss();
+                }
+
+            });
+
+
+            TextView actionScanURL = menuOverflow.findViewById(R.id.action_scan_url);
+            if (!hasCamera) {
+                actionScanURL.setVisibility(View.GONE);
+            }
+
+            actionScanURL.setOnClickListener(v19 -> {
+                try {
+                    if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                        return;
+                    }
+                    mLastClickTime = SystemClock.elapsedRealtime();
+
+
+                    if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+                        return;
+                    }
+
+                    invokeScan();
+
+                    if (hasCamera) {
+                        IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
+                        integrator.setOrientationLocked(false);
+                        Intent intent = integrator.createScanIntent();
+                        mScanRequestForResult.launch(intent);
+                    } else {
+                        EVENTS.getInstance(getApplicationContext()).permission(
+                                getString(R.string.feature_camera_required));
+                    }
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
@@ -1889,4 +1982,24 @@ public class MainActivity extends AppCompatActivity implements
             IDLE
         }
     }
+
+
+    private void invokeScan() {
+        try {
+            PackageManager pm = getPackageManager();
+
+            if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
+                IntentIntegrator integrator = new IntentIntegrator(this);
+                integrator.setOrientationLocked(false);
+                Intent intent = integrator.createScanIntent();
+                mScanRequestForResult.launch(intent);
+            } else {
+                EVENTS.getInstance(getApplicationContext()).permission(
+                        getString(R.string.feature_camera_required));
+            }
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
+    }
+
 }
