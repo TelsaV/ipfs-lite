@@ -132,4 +132,5 @@
     <string name="redirect_url_support_text">启用此选项后，引用IPFS或IPNS内容的URL将自动重定向到本地IPFS节点。目前，仅格式为https：// xxx / ipfs /…或https：// xxx / ipns /…的URL将被重定向。</string>
     <string name="redirect_index_support_text">如果启用此选项，则本地节点将尝试为给定的ipfs或ipns URL查找HTML索引文件（如果未指定）。</string>
     <string name="url_access">QR码包含URL</string>
+    <string name="scan_url">扫描URL</string>
 </resources>

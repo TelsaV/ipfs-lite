@@ -132,5 +132,6 @@
     <string name="redirect_url_support_text">Wenn diese Option aktiviert ist, werden URLs, die auf IPFS- oder IPNS-Inhalte verweisen, automatisch auf den lokalen IPFS-Knoten umgeleitet. Derzeit werden nur URLs der Form https://xxx/ipfs/… oder https://xxx/ipns/… umgeleitet.</string>
     <string name="redirect_index_support_text">Wenn diese Option aktiviert ist, dann versucht der lokale Knoten zu einer angegeben ipfs oder ipns URL eine HTML index Datei zu finden, sofern sie nicht angeben wurde.</string>
     <string name="url_access">Der QR-Code enthält die URL</string>
+    <string name="scan_url">Scan URL</string>
 
 </resources>
