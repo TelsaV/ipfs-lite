@@ -58,7 +58,7 @@
                 android:padding="8dp"
                 android:scaleType="center"
                 android:src="@drawable/access_point_network"
-                app:tint="@color/colorAccent"
+                app:tint="?android:colorPrimary"
                 tools:ignore="ContentDescription" />
 
         </LinearLayout>
@@ -203,7 +203,7 @@
             android:layout_marginStart="16dp"
             android:text="@string/general_settings"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-            android:textColor="@color/colorAccent" />
+            android:textColor="?android:colorPrimary" />
 
         <TextView
             android:id="@+id/publisher_service_time_text"
@@ -311,7 +311,7 @@
             android:layout_marginTop="16dp"
             android:text="@string/private_network"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-            android:textColor="@color/colorAccent" />
+            android:textColor="?android:colorPrimary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/enable_private_network"
@@ -367,7 +367,7 @@
                 android:padding="8dp"
                 android:scaleType="center"
                 android:src="@drawable/file_outline"
-                app:tint="@color/colorAccent"
+                app:tint="?android:colorPrimary"
                 tools:ignore="ContentDescription" />
 
         </LinearLayout>
@@ -385,7 +385,7 @@
             android:layout_marginTop="16dp"
             android:text="@string/private_sharing"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-            android:textColor="@color/colorAccent" />
+            android:textColor="?android:colorPrimary" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/private_sharing_mode"

@@ -377,10 +377,7 @@ public class ThreadsFragment extends Fragment implements
 
         mSwipeRefreshLayout = view.findViewById(R.id.swipe_container);
         mSwipeRefreshLayout.setOnRefreshListener(this);
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent,
-                android.R.color.holo_green_dark,
-                android.R.color.holo_orange_dark,
-                android.R.color.holo_blue_dark);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
 
 
         mSelectionTracker = new SelectionTracker.Builder<>(TAG, mRecyclerView,
@@ -956,7 +953,7 @@ public class ThreadsFragment extends Fragment implements
 
                 mThreadItemDetailsLookup.setActive(false);
 
-                MenuItem searchMenuItem = menu.findItem(R.id.search_view);
+                MenuItem searchMenuItem = menu.findItem(R.id.action_search);
 
                 SearchView mSearchView = (SearchView) searchMenuItem.getActionView();
 

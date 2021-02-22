@@ -40,6 +40,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.webkit.WebSettingsCompat;
+import androidx.webkit.WebViewFeature;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
@@ -199,10 +201,7 @@ public class BrowserFragment extends Fragment {
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorAccent,
-                android.R.color.holo_green_dark,
-                android.R.color.holo_orange_dark,
-                android.R.color.holo_blue_dark);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
 
         mProgressBar = view.findViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.GONE);
@@ -215,6 +214,11 @@ public class BrowserFragment extends Fragment {
         mWebView.setWebChromeClient(mCustomWebChromeClient);
 
         InitApplication.setWebSettings(mWebView);
+
+
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            WebSettingsCompat.setForceDark(mWebView.getSettings(), WebSettingsCompat.FORCE_DARK_AUTO);
+        }
 
         SelectionViewModel mSelectionViewModel = new ViewModelProvider(mActivity).get(SelectionViewModel.class);
 

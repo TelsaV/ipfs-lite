@@ -1,7 +1,6 @@
 <!--?xml version="1.0" encoding="UTF-8"?-->
 <resources>
-    <color name="colorAccent">#67D8E8</color>
-    <color name="colorPrimary">#32787F</color>
+    <color name="colorPrimary">@android:color/holo_blue_dark</color>
     <color name="colorBackground">#1a1a1a</color>
     <color name="colorSelectedItem">#696969</color>
     <color name="colorChips">#696969</color>

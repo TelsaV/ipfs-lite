@@ -129,7 +129,8 @@ public class CopyDirectoryWorker extends Worker {
                 .setOnlyAlertOnce(true)
                 .setSmallIcon(R.drawable.download)
                 .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent))
+                .setColor(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorPrimary))
                 .setCategory(Notification.CATEGORY_PROGRESS)
                 .setOngoing(true)
                 .setUsesChronometer(true);
@@ -175,7 +176,8 @@ public class CopyDirectoryWorker extends Worker {
                 .setOnlyAlertOnce(true)
                 .setSmallIcon(R.drawable.download)
                 .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent))
+                .setColor(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorPrimary))
                 .setCategory(Notification.CATEGORY_PROGRESS)
                 .setOngoing(true)
                 .setUsesChronometer(true);

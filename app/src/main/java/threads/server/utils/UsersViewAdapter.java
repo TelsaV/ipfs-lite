@@ -142,7 +142,7 @@ public class UsersViewAdapter extends
                 }
 
                 if (user.isConnected()) {
-                    int color = ContextCompat.getColor(mContext, R.color.colorAccent);
+                    int color = ContextCompat.getColor(mContext, R.color.colorPrimary);
                     userViewHolder.user_date.setTextColor(color);
                     userViewHolder.user_date.setText(mContext.getString(R.string.online));
                 } else {

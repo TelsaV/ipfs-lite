@@ -20,7 +20,7 @@
             android:padding="16dp"
             android:text="@android:string/cancel"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-            android:textColor="@color/colorAccent" />
+            android:textColor="?android:colorPrimary" />
 
         <View
             android:layout_width="0dp"
@@ -38,7 +38,7 @@
             android:padding="16dp"
             android:text="@android:string/ok"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
-            android:textColor="@color/colorAccent" />
+            android:textColor="?android:colorPrimary" />
     </LinearLayout>
 
 

@@ -15,7 +15,7 @@
         android:id="@+id/navigation_browser"
         android:icon="@drawable/view"
         android:title="@string/browser"
-        app:iconTint="@color/colorAccent" />
+        app:iconTint="?android:colorPrimary" />
     <item
         android:id="@+id/navigation_swarm"
         android:icon="@drawable/selector_swarm"
@@ -24,6 +24,6 @@
         android:id="@+id/navigation_settings"
         android:icon="@drawable/tune"
         android:title="@string/settings"
-        app:iconTint="@color/colorAccent" />
+        app:iconTint="?android:colorPrimary" />
 </menu>
 

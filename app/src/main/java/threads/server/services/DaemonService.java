@@ -119,7 +119,7 @@ public class DaemonService extends Service {
                 builder.setContentIntent(viewIntent);
                 builder.setSubText(getApplicationContext().getString(
                         R.string.port) + " " + ipfs.getSwarmPort());
-                builder.setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
+                builder.setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary));
                 builder.setCategory(Notification.CATEGORY_SERVICE);
 
 

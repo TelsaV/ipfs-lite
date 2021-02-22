@@ -12,12 +12,12 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.DocumentsContract;
@@ -698,19 +698,25 @@ public class MainActivity extends AppCompatActivity implements
                 mode.getMenuInflater().inflate(R.menu.menu_search_action_mode, menu);
 
 
-                MenuItem searchMenuItem = menu.findItem(R.id.search_view);
+                MenuItem searchMenuItem = menu.findItem(R.id.action_search);
 
                 SearchView mSearchView = (SearchView) searchMenuItem.getActionView();
 
-                mSearchView.setQueryHint(getString(R.string.enter_url));
-                mSearchView.setIconifiedByDefault(false);
-                mSearchView.setFocusable(true);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    mSearchView.setFocusedByDefault(true);
-                }
 
-                mSearchView.setQuery("", true);
+                TextView textView = mSearchView.findViewById(
+                        androidx.appcompat.R.id.search_src_text);
+                textView.setTextSize(14);
+
+                ImageView magImage = mSearchView.findViewById(
+                        androidx.appcompat.R.id.search_mag_icon);
+                magImage.setVisibility(View.GONE);
+                magImage.setImageDrawable(null);
+
+                mSearchView.setIconifiedByDefault(false);
                 mSearchView.setIconified(false);
+                mSearchView.setSubmitButtonEnabled(false);
+                mSearchView.setQueryHint(getString(R.string.enter_url));
+                mSearchView.setFocusable(true);
                 mSearchView.requestFocus();
 
 
@@ -787,6 +793,11 @@ public class MainActivity extends AppCompatActivity implements
         setTheme(R.style.ThreadsTheme);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        if (!isDarkTheme()) {
+            setLightStatusBar(this);
+        }
 
         DOCS docs = DOCS.getInstance(getApplicationContext());
 
@@ -870,7 +881,7 @@ public class MainActivity extends AppCompatActivity implements
                     android.R.color.holo_orange_dark), android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
             mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                    R.color.colorAccent), android.graphics.PorterDuff.Mode.SRC_IN);
+                    R.color.colorPrimary), android.graphics.PorterDuff.Mode.SRC_IN);
         }
 
         ImageView mActionBookmarks = findViewById(R.id.action_bookmarks);
@@ -1451,6 +1462,9 @@ public class MainActivity extends AppCompatActivity implements
         });
 
         mBrowserText = findViewById(R.id.action_browser);
+        mBrowserText.setClickable(true);
+        mBrowserText.setBackgroundResource(R.drawable.browser);
+        mBrowserText.getBackground().setAlpha(75);
 
 
         mBrowserText.setOnClickListener(view -> {
@@ -1899,8 +1913,6 @@ public class MainActivity extends AppCompatActivity implements
 
         boolean http = Objects.equals(uri.getScheme(), Content.HTTP);
 
-        mBrowserText.setTextAppearance(R.style.TextAppearance_AppCompat_Small);
-        mBrowserText.setClickable(true);
         if (!http) {
             mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
                     R.drawable.lock, 0, 0, 0
@@ -1910,10 +1922,6 @@ public class MainActivity extends AppCompatActivity implements
                     R.drawable.lock_open, 0, 0, 0
             );
         }
-        mBrowserText.setCompoundDrawablePadding(8);
-        mBrowserText.setBackgroundResource(R.drawable.browser);
-        mBrowserText.getBackground().setAlpha(30);
-
         mBrowserText.setText(uri.toString());
 
     }
@@ -2002,4 +2010,16 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+
+    private boolean isDarkTheme() {
+        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    private void setLightStatusBar(@NonNull Activity activity) {
+        int flags = activity.getWindow().getDecorView().getSystemUiVisibility(); // get current flag
+        flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;   // add LIGHT_STATUS_BAR to flag
+        activity.getWindow().getDecorView().setSystemUiVisibility(flags);
+        activity.getWindow().setStatusBarColor(Color.WHITE); // optional
+    }
 }

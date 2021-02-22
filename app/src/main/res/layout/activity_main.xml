@@ -10,13 +10,12 @@
         android:id="@+id/appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top">
+        android:background="@android:color/white">
 
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/colorBackground"
             android:orientation="horizontal"
             app:layout_scrollFlags="scroll|enterAlways|snap">
 
@@ -27,97 +26,99 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@null"
-                    android:padding="8dp"
-                    android:src="@drawable/home_outline">
+                android:contentDescription="@null"
+                android:padding="8dp"
+                android:src="@drawable/home_outline">
 
-                </ImageButton>
+            </ImageButton>
 
-                <TextView
-                    android:id="@+id/action_browser"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_weight="1"
-                    android:singleLine="true"
-                    android:textColor="?android:textColorPrimary" />
+            <TextView
+                android:id="@+id/action_browser"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="8dp"
+                android:layout_weight="1"
+                android:drawablePadding="8dp"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"
+                android:textColor="?android:textColorPrimary" />
 
-                <ImageButton
-                    android:id="@+id/action_edit_cid"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/action_edit_cid"
-                    android:padding="8dp"
-                    android:src="@drawable/qrcode_edit"
-                    app:tint="?android:textColorPrimary" />
-
-
-                <ImageButton
-                    android:id="@+id/action_sorting"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/sort"
-                    android:padding="8dp"
-                    android:src="@drawable/sort_variant"
-                    app:tint="?android:textColorPrimary" />
-
-                <ImageButton
-                    android:id="@+id/action_bookmark"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/bookmark"
-                    android:padding="8dp"
-                    android:src="@drawable/star_outline"
-                    app:tint="?android:textColorPrimary" />
-
-                <ImageButton
-                    android:id="@+id/action_bookmarks"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/bookmarks"
-                    android:padding="8dp"
-                    android:src="@drawable/bookmark_multiple_outline"
-                    app:tint="?android:textColorPrimary" />
-
-                <ImageButton
-                    android:id="@+id/action_overflow"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@null"
-                    android:padding="8dp"
-                    android:src="@drawable/dots_vertical"
-                    app:tint="?android:textColorPrimary" />
-
-            </LinearLayout>
-
-        </com.google.android.material.appbar.AppBarLayout>
-
-        <FrameLayout
-            android:id="@+id/fragment_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            <ImageButton
+                android:id="@+id/action_edit_cid"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_edit_cid"
+                android:padding="8dp"
+                android:src="@drawable/qrcode_edit"
+                app:tint="?android:textColorPrimary" />
 
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/navigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:background="@color/colorBackground"
-            app:layout_behavior="threads.server.utils.BottomNavigationBehavior"
-            app:labelVisibilityMode="selected"
-            app:menu="@menu/bottom_navigation" />
+            <ImageButton
+                android:id="@+id/action_sorting"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/sort"
+                android:padding="8dp"
+                android:src="@drawable/sort_variant"
+                app:tint="?android:textColorPrimary" />
+
+            <ImageButton
+                android:id="@+id/action_bookmark"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/bookmark"
+                android:padding="8dp"
+                android:src="@drawable/star_outline"
+                app:tint="?android:textColorPrimary" />
+
+            <ImageButton
+                android:id="@+id/action_bookmarks"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/bookmarks"
+                android:padding="8dp"
+                android:src="@drawable/bookmark_multiple_outline"
+                app:tint="?android:textColorPrimary" />
+
+            <ImageButton
+                android:id="@+id/action_overflow"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@null"
+                android:padding="8dp"
+                android:src="@drawable/dots_vertical"
+                app:tint="?android:textColorPrimary" />
+
+        </LinearLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:labelVisibilityMode="selected"
+        app:layout_behavior="threads.server.utils.BottomNavigationBehavior"
+        app:menu="@menu/bottom_navigation" />
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -130,6 +131,7 @@
         app:layout_anchor="@id/navigation"
         app:layout_anchorGravity="top|end"
         app:layout_behavior="threads.server.utils.FloatingButtonBehavior"
+        app:tint="@android:color/white"
         app:srcCompat="@drawable/dots"
         app:useCompatPadding="true" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

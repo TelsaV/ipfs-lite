@@ -45,10 +45,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    packagingOptions {
-        exclude 'META-INF/DEPENDENCIES'
-    }
-
     buildToolsVersion '30.0.3'
 
 }
@@ -104,6 +100,9 @@ dependencies {
 
     // API (LICENSE done)
     implementation 'commons-io:commons-io:2.8.0'
+
+    // API (LICENSE done)
+    implementation 'androidx.webkit:webkit:1.4.0'
 
     // API (LICENSE done)
     implementation 'lite.ipfs:lite:1.1.2'

@@ -133,7 +133,8 @@ public class BackupWorker extends Worker {
                 .setOnlyAlertOnce(true)
                 .setSmallIcon(R.drawable.download)
                 .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent))
+                .setColor(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorPrimary))
                 .setCategory(Notification.CATEGORY_PROGRESS)
                 .setUsesChronometer(true)
                 .setOngoing(true);
@@ -167,7 +168,8 @@ public class BackupWorker extends Worker {
                 .setOnlyAlertOnce(true)
                 .setSmallIcon(R.drawable.download)
                 .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent))
+                .setColor(ContextCompat.getColor(getApplicationContext(),
+                        R.color.colorPrimary))
                 .setCategory(Notification.CATEGORY_PROGRESS)
                 .setUsesChronometer(true)
                 .setOngoing(true);

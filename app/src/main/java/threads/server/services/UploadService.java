@@ -19,6 +19,7 @@ import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.IPFS;
 import threads.server.utils.MimeType;
+import threads.server.work.PageWorker;
 
 public class UploadService {
 
@@ -70,6 +71,8 @@ public class UploadService {
 
                     docs.finishDocument(idx);
                 }
+                PageWorker.publish(context);
+                EVENTS.getInstance(context).refresh();
 
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
