@@ -133,5 +133,7 @@
     <string name="redirect_index_support_text">Wenn diese Option aktiviert ist, dann versucht der lokale Knoten zu einer angegeben ipfs oder ipns URL eine HTML index Datei zu finden, sofern sie nicht angeben wurde.</string>
     <string name="url_access">Der QR-Code enthält die URL</string>
     <string name="scan_url">Scan URL</string>
+    <string name="enable_publisher">Enable Publisher</string>
+    <string name="enable_publisher_text">When the publisher is disabled, no content will be published.</string>
 
 </resources>

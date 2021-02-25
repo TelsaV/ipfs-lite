@@ -43,14 +43,28 @@ public class InitApplication extends Application {
     private static final String AUTO_DISCOVERY_KEY = "autoDiscoveryKey";
     private static final String REDIRECT_URL_KEY = "redirectUrlKey";
     private static final String REDIRECT_INDEX_KEY = "redirectIndexKey";
+    private static final String ENABLE_PUBLISHER_KEY = "enablePublisherKey";
     private static final String SORT_KEY = "sortKey";
     private final Gson gson = new Gson();
 
 
-    public static void setRedirectUrlEnabled(Context context, boolean auto) {
+    public static void setPublisherEnabled(Context context, boolean enable) {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean(REDIRECT_URL_KEY, auto);
+        editor.putBoolean(ENABLE_PUBLISHER_KEY, enable);
+        editor.apply();
+    }
+
+    public static boolean isPublisherEnabled(@NonNull Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(ENABLE_PUBLISHER_KEY, true);
+    }
+
+
+    public static void setRedirectUrlEnabled(Context context, boolean enable) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(REDIRECT_URL_KEY, enable);
         editor.apply();
     }
 
@@ -163,51 +177,11 @@ public class InitApplication extends Application {
     }
 
 
-    @SuppressLint("SetJavaScriptEnabled")
-    public static void setWebSettings(@NonNull WebView webView) {
-
-
-        WebSettings settings = webView.getSettings();
-        settings.setUserAgentString("Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ")");
-
-
-        settings.setJavaScriptEnabled(true);
-        settings.setJavaScriptCanOpenWindowsAutomatically(false);
-
-
-        settings.setSafeBrowsingEnabled(true);
-        settings.setAllowFileAccessFromFileURLs(false);
-        settings.setAllowContentAccess(false);
-        settings.setAllowUniversalAccessFromFileURLs(false);
-        settings.setAllowFileAccess(false);
-        settings.setLoadsImagesAutomatically(true);
-        settings.setBlockNetworkLoads(false);
-        settings.setBlockNetworkImage(false);
-        settings.setDomStorageEnabled(true);
-        settings.setAppCacheEnabled(true);
-        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
-        settings.setDatabaseEnabled(true);
-        settings.setSupportZoom(true);
-        settings.setBuiltInZoomControls(true);
-        settings.setDisplayZoomControls(false);
-        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
-        settings.setUseWideViewPort(true);
-        settings.setLoadWithOverviewMode(true);
-        settings.setMediaPlaybackRequiresUserGesture(true);
-        settings.setSupportMultipleWindows(false);
-        settings.setGeolocationEnabled(false);
-    }
 
     public static void syncData(@NonNull Context context) {
         IPFS ipfs = IPFS.getInstance(context);
         PEERS peers = PEERS.getInstance(context);
         ipfs.swarmEnhance(peers.getSwarm());
-    }
-
-    @NonNull
-    public static String getDefaultSearchEngine(@NonNull String query) {
-        return "https://ipfs-search.com/#/search?search=" + query;
     }
 
     @Override

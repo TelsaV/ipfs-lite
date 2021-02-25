@@ -134,5 +134,7 @@
     <string name="redirect_index_support_text">If this option is enabled, the local node tries to find an HTML index file for a given ipfs or ipns URL if it is not specified.</string>
     <string name="url_access">The QR-Code contains the URL</string>
     <string name="scan_url">Scan URL</string>
+    <string name="enable_publisher">Enable Publisher</string>
+    <string name="enable_publisher_text">When the publisher is disabled, no content will be published.</string>
 
 </resources>

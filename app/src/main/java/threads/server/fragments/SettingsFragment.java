@@ -302,6 +302,29 @@ public class SettingsFragment extends Fragment {
             }
         });
 
+        boolean publisherEnabled = InitApplication.isPublisherEnabled(mContext);
+        SwitchMaterial enablePublisher = view.findViewById(R.id.enable_publisher);
+        Objects.requireNonNull(enablePublisher);
+        enablePublisher.setChecked(publisherEnabled);
+        enablePublisher.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    InitApplication.setPublisherEnabled(mContext, isChecked);
+                    publisher_service_time.setEnabled(isChecked);
+                    publisher_service_time_text.setEnabled(isChecked);
+                }
+        );
+
+        if(publisherEnabled){
+            publisher_service_time.setEnabled(true);
+            publisher_service_time_text.setEnabled(true);
+        } else {
+            publisher_service_time.setEnabled(false);
+            publisher_service_time_text.setEnabled(false);
+        }
+
+
+
+
+
         TextView connection_timeout_text = view.findViewById(R.id.connection_timeout_text);
         SeekBar connection_timeout = view.findViewById(R.id.connection_timeout);
 

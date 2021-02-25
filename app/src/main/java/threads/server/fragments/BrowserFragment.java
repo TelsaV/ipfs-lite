@@ -51,6 +51,7 @@ import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.books.BOOKS;
@@ -214,7 +215,7 @@ public class BrowserFragment extends Fragment {
         mCustomWebChromeClient = new CustomWebChromeClient(mActivity);
         mWebView.setWebChromeClient(mCustomWebChromeClient);
 
-        InitApplication.setWebSettings(mWebView);
+        Settings.setWebSettings(mWebView);
 
 
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {

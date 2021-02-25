@@ -1,5 +1,10 @@
 package threads.server;
 
+import android.annotation.SuppressLint;
+import android.os.Build;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
@@ -26,4 +31,48 @@ public class Settings {
     public static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
     public static final String DNS_LINK = "dnslink=";
     public static final String BLOCKS = "/blocks";
+
+
+
+    @NonNull
+    public static String getDefaultSearchEngine(@NonNull String query) {
+        return "https://ipfs-search.com/#/search?search=" + query;
+    }
+
+
+    @SuppressLint("SetJavaScriptEnabled")
+    public static void setWebSettings(@NonNull WebView webView) {
+
+
+        WebSettings settings = webView.getSettings();
+        settings.setUserAgentString("Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ")");
+
+
+        settings.setJavaScriptEnabled(true);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
+
+
+        settings.setSafeBrowsingEnabled(true);
+        settings.setAllowFileAccessFromFileURLs(false);
+        settings.setAllowContentAccess(false);
+        settings.setAllowUniversalAccessFromFileURLs(false);
+        settings.setAllowFileAccess(false);
+        settings.setLoadsImagesAutomatically(true);
+        settings.setBlockNetworkLoads(false);
+        settings.setBlockNetworkImage(false);
+        settings.setDomStorageEnabled(true);
+        settings.setAppCacheEnabled(true);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setDatabaseEnabled(true);
+        settings.setSupportZoom(true);
+        settings.setBuiltInZoomControls(true);
+        settings.setDisplayZoomControls(false);
+        settings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+        settings.setMediaPlaybackRequiresUserGesture(true);
+        settings.setSupportMultipleWindows(false);
+        settings.setGeolocationEnabled(false);
+    }
 }

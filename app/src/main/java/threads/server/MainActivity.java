@@ -743,7 +743,7 @@ public class MainActivity extends AppCompatActivity implements
                                         openBrowserView(Uri.parse(Content.IPFS + "://" + query));
                                     } else {
                                         openBrowserView(Uri.parse(
-                                                InitApplication.getDefaultSearchEngine(query)));
+                                                Settings.getDefaultSearchEngine(query)));
                                     }
                                 }
                             }

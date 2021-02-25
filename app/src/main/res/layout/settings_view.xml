@@ -205,6 +205,23 @@
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
             android:textColor="?android:colorPrimary" />
 
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/enable_publisher"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="16dp"
+            android:padding="8dp"
+            android:text="@string/enable_publisher" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="@string/enable_publisher_text" />
+
         <TextView
             android:id="@+id/publisher_service_time_text"
             android:layout_width="match_parent"

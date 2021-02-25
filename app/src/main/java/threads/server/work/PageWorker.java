@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
+import threads.server.InitApplication;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.pages.Page;
@@ -75,19 +76,20 @@ public class PageWorker extends Worker {
 
         try {
 
+            if (InitApplication.isPublisherEnabled(getApplicationContext())) {
 
-            if (!ipfs.isPrivateNetwork()) {
-                ipfs.bootstrap();
+                if (!ipfs.isPrivateNetwork()) {
+                    ipfs.bootstrap();
+                }
+
+                if (ipfs.isPrivateNetwork()) {
+                    ConnectService.connect(getApplicationContext());
+                }
+
+                if (!isStopped()) {
+                    publishPage();
+                }
             }
-
-            if (ipfs.isPrivateNetwork()) {
-                ConnectService.connect(getApplicationContext());
-            }
-
-            if (!isStopped()) {
-                publishPage();
-            }
-
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         } finally {
