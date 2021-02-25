@@ -29,6 +29,11 @@ public class EventViewModel extends AndroidViewModel {
     }
 
 
+    public LiveData<Event> getHome() {
+        return eventsDatabase.eventDao().getEvent(EVENTS.HOME);
+    }
+
+
     public LiveData<Event> getRefresh() {
         return eventsDatabase.eventDao().getEvent(EVENTS.REFRESH);
     }

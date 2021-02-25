@@ -258,6 +258,7 @@ public class SettingsFragment extends Fragment {
         private_sharing_mode.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     try {
                         IPFS.setPrivateSharingEnabled(mContext, isChecked);
+                        EVENTS.getInstance(mContext).home();
                         EVENTS.getInstance(mContext).exit(
                                 getString(R.string.restart_config_changed));
                     } catch (Throwable throwable) {
@@ -309,7 +310,8 @@ public class SettingsFragment extends Fragment {
         enablePublisher.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     InitApplication.setPublisherEnabled(mContext, isChecked);
                     publisher_service_time.setEnabled(isChecked);
-                    publisher_service_time_text.setEnabled(isChecked);
+            publisher_service_time_text.setEnabled(isChecked);
+            EVENTS.getInstance(mContext).home();
                 }
         );
 

@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -787,6 +788,20 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private boolean hasCamera;
+    private ImageButton mActionHome;
+
+    private void updateHome(@NonNull DOCS docs) {
+        if (!InitApplication.isPublisherEnabled(getApplicationContext())) {
+            mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                    android.R.color.holo_red_dark), PorterDuff.Mode.SRC_ATOP);
+        } else if (docs.isPrivateNetwork(getApplicationContext())) {
+            mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                    android.R.color.holo_orange_dark), PorterDuff.Mode.SRC_ATOP);
+        } else {
+            mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
+                    R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -860,7 +875,7 @@ public class MainActivity extends AppCompatActivity implements
                     .commit();
         }
 
-
+        mActionHome = findViewById(R.id.action_home);
         mActionBookmark = findViewById(R.id.action_bookmark);
         mActionBookmark.setOnClickListener(v -> {
             try {
@@ -875,14 +890,7 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        ImageButton mActionHome = findViewById(R.id.action_home);
-        if (docs.isPrivateNetwork(getApplicationContext())) {
-            mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                    android.R.color.holo_orange_dark), android.graphics.PorterDuff.Mode.SRC_IN);
-        } else {
-            mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                    R.color.colorPrimary), android.graphics.PorterDuff.Mode.SRC_IN);
-        }
+        updateHome(docs);
 
         ImageView mActionBookmarks = findViewById(R.id.action_bookmarks);
         mActionBookmarks.setOnClickListener(v -> {
@@ -1629,6 +1637,17 @@ public class MainActivity extends AppCompatActivity implements
 
         EventViewModel eventViewModel =
                 new ViewModelProvider(this).get(EventViewModel.class);
+
+        eventViewModel.getHome().observe(this, (event) -> {
+            try {
+                if (event != null) {
+                    updateHome(docs);
+                    eventViewModel.removeEvent(event);
+                }
+            } catch (Throwable e) {
+                LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+            }
+        });
 
         eventViewModel.getRefresh().observe(this, (event) -> {
             try {

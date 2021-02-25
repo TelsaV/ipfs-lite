@@ -17,6 +17,7 @@ public class EVENTS {
     public static final String LEECHING = "LEECHING";
     public static final String REACHABLE = "REACHABLE";
     public static final String REFRESH = "REFRESH";
+    public static final String HOME = "HOME";
     private static EVENTS INSTANCE = null;
     private final EventsDatabase eventsDatabase;
 
@@ -110,6 +111,10 @@ public class EVENTS {
 
     public void refresh() {
         storeEvent(createEvent(REFRESH, ""));
+    }
+
+    public void home() {
+        storeEvent(createEvent(HOME, ""));
     }
 
     static class Builder {
