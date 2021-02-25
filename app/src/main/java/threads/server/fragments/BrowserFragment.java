@@ -136,6 +136,7 @@ public class BrowserFragment extends Fragment {
     private ActionMode mActionMode;
 
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -295,6 +296,8 @@ public class BrowserFragment extends Fragment {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 LogUtils.error(TAG, "onPageStarted : " + url);
 
+                mProgressBar.setVisibility(View.VISIBLE);
+                releaseActionMode();
                 mListener.updateUri(docs.getOriginalUri(Uri.parse(url)));
             }
 

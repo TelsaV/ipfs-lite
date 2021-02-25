@@ -51,7 +51,6 @@ public class BookmarksDialogFragment extends BottomSheetDialogFragment implement
         mActivity = getActivity();
     }
 
-
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
