@@ -177,7 +177,7 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void download(@NonNull DocumentFile doc, @NonNull String cid) {
+    private void download(@NonNull DocumentFile doc, @NonNull String cid) throws ClosedException {
 
         long start = System.currentTimeMillis();
 
@@ -186,7 +186,7 @@ public class DownloadContentWorker extends Worker {
         String name = doc.getName();
         Objects.requireNonNull(name);
 
-        if (!ipfs.isEmptyDir(cid)) {
+        if (!ipfs.isDir(cid, this::isStopped)) {
 
             try (InputStream is = ipfs.getLoaderStream(cid, new Progress() {
                 @Override

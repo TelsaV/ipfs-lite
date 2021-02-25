@@ -1487,10 +1487,6 @@ public class IPFS implements Listener {
         });
     }
 
-    public boolean isEmptyDir(@NonNull String cid) {
-        return Objects.equals(cid, EMPTY_DIR_32) || Objects.equals(cid, EMPTY_DIR_58);
-    }
-
 
     public long numSwarmPeers() {
         if (!isDaemonRunning()) {

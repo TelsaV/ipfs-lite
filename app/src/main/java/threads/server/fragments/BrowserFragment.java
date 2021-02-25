@@ -45,6 +45,7 @@ import androidx.webkit.WebViewFeature;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import threads.LogUtils;
 import threads.server.InitApplication;
@@ -434,10 +435,6 @@ public class BrowserFragment extends Fragment {
                     docs.attachUri(uri);
 
                     if(docs.foreignPage(uri)) {
-                        docs.bootstrap();
-                    }
-
-                    if(docs.foreignPage(uri)) {
                         docs.connectUri(mContext, uri);
                     }
 
@@ -737,9 +734,11 @@ public class BrowserFragment extends Fragment {
         return inflater.inflate(R.layout.browser_view, container, false);
     }
 
+    private final AtomicBoolean firstRun = new AtomicBoolean(true);
+
     public void findInPage() {
         try {
-            if(isResumed()) {
+            if (isResumed()) {
                 mActionMode = ((AppCompatActivity)
                         mActivity).startSupportActionMode(
                         createFindActionModeCallback());
@@ -749,9 +748,17 @@ public class BrowserFragment extends Fragment {
         }
     }
 
-
     public void openUri(@NonNull Uri uri) {
         try {
+            mListener.updateUri(uri);
+
+            mProgressBar.setVisibility(View.VISIBLE);
+
+            if (docs.foreignPage(uri)) {
+                if (firstRun.getAndSet(false)) {
+                    docs.bootstrap();
+                }
+            }
 
             if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                     Objects.equals(uri.getScheme(), Content.IPFS)) {
@@ -761,10 +768,6 @@ public class BrowserFragment extends Fragment {
             docs.releaseThreads();
 
             mWebView.stopLoading();
-
-            mProgressBar.setVisibility(View.VISIBLE);
-
-            mListener.updateUri(uri);
 
             mWebView.loadUrl(uri.toString());
         } catch (Throwable throwable) {

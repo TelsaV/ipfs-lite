@@ -84,7 +84,6 @@ public class PageWorker extends Worker {
                 ConnectService.connect(getApplicationContext());
             }
 
-
             if (!isStopped()) {
                 publishPage();
             }

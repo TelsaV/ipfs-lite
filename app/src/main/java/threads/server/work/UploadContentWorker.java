@@ -161,15 +161,12 @@ public class UploadContentWorker extends Worker {
                     if (!isStopped()) {
                         try {
                             if (!ipfs.isPrivateNetwork()) {
-
                                 ipfs.bootstrap();
                             }
-
                         } catch (Throwable throwable) {
                             LogUtils.error(TAG, throwable);
                         }
                         try {
-
                             ConnectService.connect(getApplicationContext());
                         } catch (Throwable e) {
                             LogUtils.error(TAG, e);
@@ -351,7 +348,7 @@ public class UploadContentWorker extends Worker {
             AtomicLong started = new AtomicLong(System.currentTimeMillis());
 
             long parent = thread.getParent();
-            if (ipfs.isEmptyDir(cid)) {
+            if (ipfs.isDir(cid, this::isStopped)) {
                 // empty directory
                 threads.setThreadDone(threadIdx);
                 threads.setThreadSize(threadIdx, 0L);
