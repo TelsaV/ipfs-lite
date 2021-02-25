@@ -78,7 +78,7 @@ public class ClearBrowserDataWorker extends Worker {
         builder.setContentTitle(getApplicationContext().getString(R.string.delete_browser_data))
                 .setContentIntent(pendingIntent)
                 .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.reload)
+                .setSmallIcon(R.drawable.refresh)
                 .addAction(action)
                 .setColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black))
                 .setCategory(Notification.CATEGORY_MESSAGE)

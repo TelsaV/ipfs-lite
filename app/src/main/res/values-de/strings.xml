@@ -134,5 +134,6 @@
     <string name="url_access">Der QR-Code enthält die URL</string>
     <string name="scan_url">Scan URL</string>
     <string name="enable_publisher">Enable Publisher</string>
+    <string name="cleanup_caches">Bereinigung interner Caches wie IPFS-Daten, Bilder, etc.</string>
 
 </resources>
