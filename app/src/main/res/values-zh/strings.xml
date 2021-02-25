@@ -134,5 +134,4 @@
     <string name="url_access">QR码包含URL</string>
     <string name="scan_url">扫描URL</string>
     <string name="enable_publisher">Enable Publisher</string>
-    <string name="enable_publisher_text">When the publisher is disabled, no content will be published.</string>
 </resources>

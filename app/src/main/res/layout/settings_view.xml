@@ -217,16 +217,11 @@
             android:text="@string/enable_publisher" />
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:text="@string/enable_publisher_text" />
-
-        <TextView
             android:id="@+id/publisher_service_time_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
+            android:textAlignment="textEnd"
             android:textColor="?android:textColorPrimary" />
 
         <SeekBar
@@ -281,6 +276,7 @@
             android:id="@+id/connection_timeout_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textAlignment="textEnd"
             android:layout_margin="16dp"
             android:textColor="?android:textColorPrimary" />
 
