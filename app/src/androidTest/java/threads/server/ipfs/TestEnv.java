@@ -37,12 +37,11 @@ class TestEnv {
 
         if (!ipfs.isDaemonRunning()) {
             ipfs.startDaemon(false);
-            ipfs.bootstrap(10, 10);
+            ipfs.bootstrap();
         }
 
         LogUtils.error(TAG, "Time Daemon : " + (System.currentTimeMillis() - time));
 
-        ipfs.gc();
 
 
         return ipfs;

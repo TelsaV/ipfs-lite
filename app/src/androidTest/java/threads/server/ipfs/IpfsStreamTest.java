@@ -26,13 +26,13 @@ public class IpfsStreamTest {
 
 
     @Test
-    public void test_string() {
+    public void test_string() throws ClosedException {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         String text = "Hello Moin und Zehn Elf";
         String hash = ipfs.storeText(text);
         assertNotNull(hash);
-        List<LinkInfo> links = ipfs.ls(hash, () -> false);
+        List<LinkInfo> links = ipfs.getLinks(hash, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 
@@ -44,7 +44,7 @@ public class IpfsStreamTest {
 
         String hash2 = ipfs.storeText("TEST test");
         assertNotNull(hash2);
-        links = ipfs.ls(hash2, () -> false);
+        links = ipfs.getLinks(hash2, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 

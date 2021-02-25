@@ -123,4 +123,16 @@
     <string name="publisher_service_details">Quando o App é executado em modo de servidor, o Intervalo do serviço de publicador define o período de tempo em que seu conteúdo será republicado no IPFS.</string>
     <string name="connection_timeout_details">O tempo limite de conexão define o tempo máximo para encontrar um Peer no IPFS.</string>
     <string name="enter_url">URL ou termo de busca</string>
+    <string name="warning">Warning</string>
+    <string name="delete_browser_data_warning">All data will be removed, this includes your provided content and all browser data like cookies, cache data, etc.</string>
+
+
+
+    <string name="redirect_url_support">Redirect URL Support</string>
+    <string name="redirect_index_support">Redirect Index HTML</string>
+    <string name="redirect_url_support_text">When this option is enabled, URLs which references IPFS or IPNS content, will be automatically redirected to the local IPFS node. Currently only URLs of the form https://xxx/ipfs/… or https://xxx/ipns/… will be redirected.</string>
+    <string name="redirect_index_support_text">If this option is enabled, the local node tries to find an HTML index file for a given ipfs or ipns URL if it is not specified.</string>
+    <string name="url_access">The QR-Code contains the URL</string>
+    <string name="scan_url">Scan URL</string>
+
 </resources>

@@ -65,7 +65,6 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearBrowserDataWorker;
 import threads.server.work.DownloadContentWorker;
 import threads.server.work.DownloadFileWorker;
-import threads.server.work.PageResolveWorker;
 
 
 public class BrowserFragment extends Fragment {
@@ -468,7 +467,8 @@ public class BrowserFragment extends Fragment {
                         }
                         if (throwable instanceof DOCS.ContentException) {
                             if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-                                PageResolveWorker.resolve(mContext, uri.getHost());
+                                LogUtils.error(TAG,
+                                        "Content not found ... " + uri.toString());
                             }
                         }
                         return createErrorMessage(throwable);
@@ -477,8 +477,12 @@ public class BrowserFragment extends Fragment {
                         LogUtils.info(TAG, "Finish page [" +
                                 (System.currentTimeMillis() - start) + "]...");
                     }
+                } else if (Objects.equals(uri.getScheme(), Content.HTTPS)) {
+                    Uri redirectUri = docs.redirectHttps(uri);
+                    if (!Objects.equals(redirectUri, uri)) {
+                        return createRedirectMessage(redirectUri);
+                    }
                 }
-
                 return null;
             }
         });

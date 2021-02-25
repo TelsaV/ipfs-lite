@@ -126,18 +126,15 @@ public class IpfsTest {
 
         ipfs.rm(hash58Base, true);
 
-        ipfs.gc();
-
-
     }
 
 
     @Test
-    public void test_ls_timeout() {
+    public void test_ls_timeout() throws ClosedException {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
 
-        List<LinkInfo> links = ipfs.ls(
+        List<LinkInfo> links = ipfs.getLinks(
                 "QmXm3f7uKuFKK3QUL1V1oJZnpJSYX8c3vdhd94evSQUPCH",
                 new TimeoutProgress(20));
         assertNull(links);
@@ -145,17 +142,17 @@ public class IpfsTest {
     }
 
     @Test
-    public void test_ls_small() {
+    public void test_ls_small() throws ClosedException {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
 
 
         String cid = ipfs.storeText("hallo");
         assertNotNull(cid);
-        List<LinkInfo> links = ipfs.ls(cid, () -> false);
+        List<LinkInfo> links = ipfs.getLinks(cid, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
-        links = ipfs.ls(cid, new TimeoutProgress(20));
+        links = ipfs.getLinks(cid, new TimeoutProgress(20));
         assertNotNull(links);
         assertEquals(links.size(), 0);
     }

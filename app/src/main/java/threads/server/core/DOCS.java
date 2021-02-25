@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
 import threads.server.InitApplication;
+import threads.server.Settings;
 import threads.server.core.pages.PAGES;
 import threads.server.core.pages.Page;
 import threads.server.core.threads.THREADS;
@@ -192,7 +193,7 @@ public class DOCS {
                     threads.removeThread(thread);
                     if (cid != null) {
                         if (!threads.isReferenced(cid)) {
-                            ipfs.rm(cid, false);
+                            ipfs.rm(cid, true);
                         }
                     }
                 }
@@ -804,7 +805,7 @@ public class DOCS {
             ipfs.bootstrap();
 
 
-            if (ipfs.numSwarmPeers() < IPFS.MIN_PEERS) {
+            if (ipfs.numSwarmPeers() < Settings.MIN_PEERS) {
                 List<Page> bootstraps = pages.getBootstraps(5);
                 List<String> addresses = new ArrayList<>();
                 for (Page bootstrap : bootstraps) {
@@ -817,10 +818,10 @@ public class DOCS {
                     List<Callable<Boolean>> tasks = new ArrayList<>();
                     ExecutorService executor = Executors.newFixedThreadPool(addresses.size());
                     for (String address : addresses) {
-                        tasks.add(() -> ipfs.swarmConnect(address, null, IPFS.TIMEOUT_BOOTSTRAP));
+                        tasks.add(() -> ipfs.swarmConnect(address, null, Settings.TIMEOUT_BOOTSTRAP));
                     }
                     List<Future<Boolean>> result = executor.invokeAll(tasks,
-                            IPFS.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
+                            Settings.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                     for (Future<Boolean> future : result) {
                         LogUtils.error(TAG, "Bootstrap done " + future.isDone());
                     }
@@ -957,7 +958,18 @@ public class DOCS {
                         }
                     }
                 }
-            } else if (isRedirectUrl && Objects.equals(uri.getScheme(), Content.HTTPS)) {
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+        return uri;
+    }
+
+
+    @NonNull
+    public Uri redirectHttps(@NonNull Uri uri) {
+        try {
+            if (isRedirectUrl && Objects.equals(uri.getScheme(), Content.HTTPS)) {
 
 
                 List<String> paths = uri.getPathSegments();
@@ -998,6 +1010,7 @@ public class DOCS {
         }
         return uri;
     }
+
 
     @NonNull
     public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable)

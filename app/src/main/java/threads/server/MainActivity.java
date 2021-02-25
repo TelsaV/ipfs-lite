@@ -816,7 +816,7 @@ public class MainActivity extends AppCompatActivity implements
 
         mAppBar.addOnOffsetChangedListener(new AppBarStateChangedListener() {
             @Override
-            public void onStateChanged(AppBarLayout appBarLayout, State state) {
+            public void onStateChanged(State state) {
                 if (state == State.EXPANDED) {
                     enableSwipeRefresh(true);
                 } else if (state == State.COLLAPSED) {
@@ -1967,22 +1967,22 @@ public class MainActivity extends AppCompatActivity implements
         @Override
         public final void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
             if (verticalOffset == 0) {
-                setCurrentStateAndNotify(appBarLayout, State.EXPANDED);
+                setCurrentStateAndNotify(State.EXPANDED);
             } else if (Math.abs(verticalOffset) >= appBarLayout.getTotalScrollRange()) {
-                setCurrentStateAndNotify(appBarLayout, State.COLLAPSED);
+                setCurrentStateAndNotify(State.COLLAPSED);
             } else {
-                setCurrentStateAndNotify(appBarLayout, State.IDLE);
+                setCurrentStateAndNotify(State.IDLE);
             }
         }
 
-        private void setCurrentStateAndNotify(AppBarLayout appBarLayout, State state) {
+        private void setCurrentStateAndNotify(State state) {
             if (mCurrentState != state) {
-                onStateChanged(appBarLayout, state);
+                onStateChanged(state);
             }
             mCurrentState = state;
         }
 
-        public abstract void onStateChanged(AppBarLayout appBarLayout, State state);
+        public abstract void onStateChanged(State state);
 
         public enum State {
             EXPANDED,

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import threads.LogUtils;
+import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertNotNull;
 
@@ -61,7 +62,7 @@ public class IpfsSwarmTest {
                 }
 
 
-                LogUtils.error(TAG, "Connect to peer : " + ipfs.swarmConnect(peer, 2));
+                LogUtils.error(TAG, "Connect to peer : " + ipfs.swarmConnect(Content.P2P_PATH + peer, null, 2));
 
 
             }

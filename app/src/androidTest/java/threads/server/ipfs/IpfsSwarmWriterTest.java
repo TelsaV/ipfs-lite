@@ -17,6 +17,7 @@ import java.util.Objects;
 
 import lite.PeerInfo;
 import threads.LogUtils;
+import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertNotNull;
 
@@ -50,7 +51,7 @@ public class IpfsSwarmWriterTest {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         LogUtils.error(TAG, "Connecting to RELAY ...");
-        boolean success = ipfs.swarmConnect(RELAY_PID, 10);
+        boolean success = ipfs.swarmConnect(Content.P2P_PATH + RELAY_PID, null, 10);
         LogUtils.error(TAG, "Connecting to RELAY done " + success);
 
 

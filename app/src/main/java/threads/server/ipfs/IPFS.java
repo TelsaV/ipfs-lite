@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import ipns.pb.IpnsEntryProtos;
 import lite.DhtClose;
 import lite.Listener;
 import lite.Loader;
@@ -40,14 +41,14 @@ import lite.PeerInfo;
 import lite.Reader;
 import lite.ResolveInfo;
 import threads.LogUtils;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.blocks.BLOCKS;
 import threads.server.core.blocks.Block;
 import threads.server.core.events.EVENTS;
 
 public class IPFS implements Listener {
-    public static final int TIMEOUT_BOOTSTRAP = 5;
-    public static final int MIN_PEERS = 10;
+
     private static final String PREF_KEY = "prefKey";
     private static final String PID_KEY = "pidKey";
     private static final String PRIVATE_NETWORK_KEY = "privateNetworkKey";
@@ -524,7 +525,7 @@ public class IPFS implements Listener {
 
     @Override
     public void blockPut(String key, byte[] bytes) {
-        blocks.insertBlock(key, bytes);
+        blocks.insertBlock(Settings.BLOCKS + key, bytes);
     }
 
 
@@ -544,7 +545,12 @@ public class IPFS implements Listener {
 
     @Override
     public long blockSize(String key) {
-        return blocks.getBlockSize(key);
+        //LogUtils.error(TAG, "size " + key);
+        Block block = blocks.getBlock(Settings.BLOCKS + key);
+        if (block != null) {
+            return block.getSize();
+        }
+        return -1;
     }
 
 
@@ -630,7 +636,7 @@ public class IPFS implements Listener {
 
     public void bootstrap() {
         if (isDaemonRunning()) {
-            if (numSwarmPeers() < MIN_PEERS) {
+            if (numSwarmPeers() < Settings.MIN_PEERS) {
                 try {
                     Pair<List<String>, List<String>> result = DnsAddrResolver.getBootstrap();
 
@@ -638,10 +644,10 @@ public class IPFS implements Listener {
                     List<Callable<Boolean>> tasks = new ArrayList<>();
                     ExecutorService executor = Executors.newFixedThreadPool(bootstrap.size());
                     for (String address : bootstrap) {
-                        tasks.add(() -> swarmConnect(address, null, TIMEOUT_BOOTSTRAP));
+                        tasks.add(() -> swarmConnect(address, null, Settings.TIMEOUT_BOOTSTRAP));
                     }
 
-                    List<Future<Boolean>> futures = executor.invokeAll(tasks, TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
+                    List<Future<Boolean>> futures = executor.invokeAll(tasks, Settings.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                     for (Future<Boolean> future : futures) {
                         LogUtils.info(TAG, "\nBootstrap done " + future.isDone());
                     }
@@ -651,10 +657,10 @@ public class IPFS implements Listener {
                     if (!second.isEmpty()) {
                         executor = Executors.newFixedThreadPool(second.size());
                         for (String address : second) {
-                            tasks.add(() -> swarmConnect(address, null, TIMEOUT_BOOTSTRAP));
+                            tasks.add(() -> swarmConnect(address, null, Settings.TIMEOUT_BOOTSTRAP));
                         }
                         futures.clear();
-                        futures = executor.invokeAll(tasks, TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
+                        futures = executor.invokeAll(tasks, Settings.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                         for (Future<Boolean> future : futures) {
                             LogUtils.info(TAG, "\nConnect done " + future.isDone());
                         }
@@ -821,84 +827,59 @@ public class IPFS implements Listener {
     }
 
 
-    public void resolveName(@NonNull String name, @NonNull Closeable closeable) throws ClosedException {
-        if (!isDaemonRunning()) {
-            return;
-        }
-        try {
-            node.resolveName(new ResolveInfo() {
-                @Override
-                public boolean close() {
-                    return closeable.isClosed();
-                }
-
-                @Override
-                public void resolved(String hash, long seq) {
-                    LogUtils.error(TAG, "" + seq + " " + hash);
-                }
-            }, name, false, 32);
-
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-
-        if (closeable.isClosed()) {
-            throw new ClosedException();
-        }
-    }
-
     @Nullable
-    public ResolvedName resolveName(@NonNull String name, long initSequence,
+    public ResolvedName resolveName(@NonNull String name, long last,
                                     @NonNull Closeable closeable) throws ClosedException {
         if (!isDaemonRunning()) {
             return null;
         }
+
+
         long time = System.currentTimeMillis();
 
         AtomicReference<ResolvedName> resolvedName = new AtomicReference<>(null);
         try {
-            AtomicLong sequence = new AtomicLong(initSequence);
-            AtomicBoolean visited = new AtomicBoolean(false);
-            AtomicBoolean close = new AtomicBoolean(false);
+            AtomicLong timeout = new AtomicLong(System.currentTimeMillis() + Settings.RESOLVE_MAX_TIME);
+            AtomicBoolean abort = new AtomicBoolean(false);
             node.resolveName(new ResolveInfo() {
                 @Override
                 public boolean close() {
-                    return close.get() || closeable.isClosed();
+                    return (timeout.get() < System.currentTimeMillis()) || abort.get() || closeable.isClosed();
                 }
 
-                private void setName(@NonNull String hash) {
-                    resolvedName.set(new ResolvedName(
-                            sequence.get(), hash.replaceFirst(Content.IPFS_PATH, "")));
+                private void setName(@NonNull String hash, long sequence) {
+                    resolvedName.set(new ResolvedName(sequence,
+                            hash.replaceFirst(Content.IPFS_PATH, "")));
                 }
 
                 @Override
-                public void resolved(String hash, long seq) {
+                public void resolved(byte[] data) {
 
+                    try {
+                        IpnsEntryProtos.IpnsEntry entry = IpnsEntryProtos.IpnsEntry.parseFrom(data);
+                        Objects.requireNonNull(entry);
+                        String hash = entry.getValue().toStringUtf8();
+                        long seq = entry.getSequence();
 
-                    LogUtils.error(TAG, "" + seq + " " + hash);
-                    if (!close.get()) {
-                        long init = sequence.get();
-                        if (seq < init) {
-                            close.set(true);
+                        LogUtils.error(TAG, "IpnsEntry : " + seq + " " + hash + " " +
+                                (System.currentTimeMillis() - time));
+
+                        if (seq < last) {
+                            abort.set(true);
                             return; // newest value already available
                         }
-
-                        if (hash.startsWith(Content.IPFS_PATH)) {
-                            if (seq > init) {
-                                sequence.set(seq);
-                                visited.set(false);
+                        if (!abort.get()) {
+                            if (hash.startsWith(Content.IPFS_PATH)) {
+                                timeout.set(System.currentTimeMillis() + Settings.RESOLVE_TIMEOUT);
+                                setName(hash, seq);
                             } else {
-                                visited.set(true);
+                                LogUtils.error(TAG, "invalid hash " + hash);
                             }
-                            setName(hash);
-                            if (visited.get()) {
-                                close.set(true);
-                            }
-
-                        } else {
-                            LogUtils.error(TAG, "invalid hash " + hash);
                         }
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
                     }
+
                 }
             }, name, false, 8);
 
@@ -908,13 +889,12 @@ public class IPFS implements Listener {
         LogUtils.error(TAG, "Finished resolve name " + name + " " +
                 (System.currentTimeMillis() - time));
 
-
         if (closeable.isClosed()) {
             throw new ClosedException();
         }
-
         return resolvedName.get();
     }
+
 
     public void rm(@NonNull String cid, boolean recursively) {
 
@@ -1128,7 +1108,7 @@ public class IPFS implements Listener {
 
 
     @Nullable
-    private List<LinkInfo> ls(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
+    List<LinkInfo> ls(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
         if (!isDaemonRunning()) {
             return Collections.emptyList();
         }
@@ -1387,7 +1367,7 @@ public class IPFS implements Listener {
     public void blockDelete(String key) {
         // LogUtils.error(TAG, "del " + key);
 
-        blocks.deleteBlock(key);
+        blocks.deleteBlock(Settings.BLOCKS + key);
 
     }
 
@@ -1400,7 +1380,8 @@ public class IPFS implements Listener {
 
     @Override
     public byte[] blockGet(String key) {
-        Block block = blocks.getBlock(key);
+        //LogUtils.error(TAG, "get " + key);
+        Block block = blocks.getBlock(Settings.BLOCKS + key);
         if (block != null) {
             return block.getData();
         }
@@ -1409,7 +1390,7 @@ public class IPFS implements Listener {
 
     @Override
     public boolean blockHas(String key) {
-        return blocks.hasBlock(key);
+        return blocks.hasBlock(Settings.BLOCKS + key);
     }
 
     @Override

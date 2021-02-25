@@ -94,7 +94,6 @@ public class IpfsPerformance {
 
 
         ipfs.rm(cid, true);
-        ipfs.gc();
 
 
         data = ipfs.loadData(cid, new TimeoutProgress(10));
@@ -136,7 +135,7 @@ public class IpfsPerformance {
 
 
         ipfs.rm(cid, true);
-        ipfs.gc();
+
 
     }
 
@@ -243,7 +242,7 @@ public class IpfsPerformance {
         assertTrue(inputFile.delete());
 
         ipfs.rm(cid, true);
-        ipfs.gc();
+
 
     }
 

@@ -31,7 +31,7 @@ public class IpfsCatTest {
     }
 
     @Test
-    public void cat_test() {
+    public void cat_test() throws ClosedException {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         String cid = "Qmaisz6NMhDB51cCvNWa1GMS7LU1pAxdF4Ld6Ft9kZEP2a";
@@ -43,7 +43,7 @@ public class IpfsCatTest {
         LogUtils.error(TAG, "Time Providers : " + (System.currentTimeMillis() - time) + " [ms]");
 
         time = System.currentTimeMillis();
-        List<LinkInfo> res = ipfs.ls(cid, new TimeoutProgress(10));
+        List<LinkInfo> res = ipfs.getLinks(cid, new TimeoutProgress(10));
         LogUtils.error(TAG, "Time : " + (System.currentTimeMillis() - time) + " [ms]");
         assertNotNull(res);
         assertTrue(res.isEmpty());
@@ -98,11 +98,11 @@ public class IpfsCatTest {
 
 
     @Test
-    public void cat_empty() {
+    public void cat_empty() throws ClosedException {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         String cid = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
-        List<LinkInfo> res = ipfs.ls(cid, new TimeoutProgress(10));
+        List<LinkInfo> res = ipfs.getLinks(cid, new TimeoutProgress(10));
         assertNotNull(res);
 
         assertTrue(res.isEmpty());
