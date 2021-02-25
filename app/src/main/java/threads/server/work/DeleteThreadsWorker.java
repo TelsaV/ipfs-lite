@@ -12,6 +12,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.ForegroundInfo;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -42,17 +43,15 @@ public class DeleteThreadsWorker extends Worker {
     }
 
     private static OneTimeWorkRequest getWork() {
-
-
         return new OneTimeWorkRequest.Builder(DeleteThreadsWorker.class)
                 .addTag(TAG)
                 .build();
-
     }
 
 
     public static void cleanup(@NonNull Context context) {
-        WorkManager.getInstance(context).enqueue(DeleteThreadsWorker.getWork());
+        WorkManager.getInstance(context).enqueueUniqueWork(
+                TAG, ExistingWorkPolicy.APPEND, getWork());
     }
 
 
