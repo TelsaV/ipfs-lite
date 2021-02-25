@@ -20,7 +20,7 @@ public class BOOKS {
     }
 
     @NonNull
-    private static BOOKS createPages(@NonNull BookmarkDatabase bookmarkDatabase) {
+    private static BOOKS createBooks(@NonNull BookmarkDatabase bookmarkDatabase) {
 
         return new BOOKS.Builder()
                 .bookmarkDatabase(bookmarkDatabase)
@@ -39,7 +39,7 @@ public class BOOKS {
                             fallbackToDestructiveMigration().
                             build();
 
-                    INSTANCE = BOOKS.createPages(pageDatabase);
+                    INSTANCE = BOOKS.createBooks(pageDatabase);
                 }
             }
         }

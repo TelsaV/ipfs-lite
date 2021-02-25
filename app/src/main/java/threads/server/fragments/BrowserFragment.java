@@ -700,6 +700,10 @@ public class BrowserFragment extends Fragment {
                         title = "" + mWebView.getTitle();
                     }
 
+                    if(title.isEmpty()){
+                        title = uri.toString();
+                    }
+
                     bookmark = books.createBookmark(uri.toString(), title);
                     if (bitmap != null) {
                         bookmark.setBitmapIcon(bitmap);
