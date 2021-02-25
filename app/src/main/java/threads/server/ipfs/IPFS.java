@@ -48,8 +48,6 @@ import threads.server.core.events.EVENTS;
 public class IPFS implements Listener {
     public static final int TIMEOUT_BOOTSTRAP = 5;
     public static final int MIN_PEERS = 10;
-    private static final String EMPTY_DIR_58 = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
-    private static final String EMPTY_DIR_32 = "bafybeiczsscdsbs7ffqz55asqdf3smv6klcw3gofszvwlyarci47bgf354";
     private static final String PREF_KEY = "prefKey";
     private static final String PID_KEY = "pidKey";
     private static final String PRIVATE_NETWORK_KEY = "privateNetworkKey";
