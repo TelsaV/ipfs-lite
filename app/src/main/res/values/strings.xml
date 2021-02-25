@@ -5,7 +5,7 @@
     <string name="daemon_channel_name">Daemon Notifications</string>
     <string name="daemon_channel_description">Notification that the daemon has started</string>
     <string name="information">Information</string>
-    <string name="content_url">Content - URL </string>
+    <string name="content_url">Content - URL</string>
     <string name="peer_id">Peer ID</string>
     <string name="peer_access">The QR code contains the peer ID of \"%1$s\".</string>
     <string name="account_access">The QR code contains my peer ID.</string>
