@@ -60,7 +60,6 @@ public class IPFS implements Listener {
     private static final String SWARM_PORT_KEY = "swarmPortKey";
     private static final String PUBLIC_KEY = "publicKey";
     private static final String SEQUENCE = "sequence";
-    private static final String AGENT_KEY = "agentKey";
     private static final String PRIVATE_KEY = "privateKey";
     private static final String TAG = IPFS.class.getSimpleName();
     private static IPFS INSTANCE = null;
@@ -107,7 +106,7 @@ public class IPFS implements Listener {
             node.setEnablePrivateNetwork(isPrivateNetworkEnabled(context));
         }
 
-        node.setAgent(IPFS.getStoredAgent(context));
+        node.setAgent(Settings.AGENT);
         node.setPushing(false);
         node.setPort(IPFS.getSwarmPort(context));
 
@@ -165,13 +164,6 @@ public class IPFS implements Listener {
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(PUBLIC_KEY, key);
         editor.apply();
-    }
-
-    private static String getStoredAgent(@NonNull Context context) {
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        return sharedPref.getString(AGENT_KEY, "go-ipfs/0.8.0-dev/lite");
-
     }
 
     private static void setPrivateKey(@NonNull Context context, @NonNull String key) {
