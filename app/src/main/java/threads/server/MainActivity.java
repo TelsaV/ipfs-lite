@@ -75,6 +75,7 @@ import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;
 import threads.server.core.books.BOOKS;
+import threads.server.core.books.Bookmark;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.core.peers.PEERS;
@@ -1927,22 +1928,39 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
+    private String prettyUri(@NonNull Uri uri, @NonNull String replace) {
+        return uri.toString().replaceFirst(replace, "");
+    }
     public void updateTitle(@NonNull Uri uri) {
 
+        try {
+            if (Objects.equals(uri.getScheme(), Content.HTTPS)) {
+                mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        R.drawable.lock, 0, 0, 0
+                );
+                mBrowserText.setText(prettyUri(uri, "https://"));
+            } else if (Objects.equals(uri.getScheme(), Content.HTTP)) {
+                mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        R.drawable.lock_open, 0, 0, 0
+                );
+                mBrowserText.setText(prettyUri(uri, "http://"));
+            } else {
+                BOOKS books = BOOKS.getInstance(getApplicationContext());
+                Bookmark bookmark = books.getBookmark(uri.toString());
 
-        boolean http = Objects.equals(uri.getScheme(), Content.HTTP);
+                String title = uri.toString();
+                if (bookmark != null) {
+                    title = bookmark.getTitle();
+                }
 
-        if (!http) {
-            mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    R.drawable.lock, 0, 0, 0
-            );
-        } else {
-            mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    R.drawable.lock_open, 0, 0, 0
-            );
+                mBrowserText.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                        R.drawable.lock, 0, 0, 0
+                );
+                mBrowserText.setText(title);
+            }
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
         }
-        mBrowserText.setText(uri.toString());
-
     }
 
 
