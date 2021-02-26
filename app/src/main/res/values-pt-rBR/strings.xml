@@ -123,17 +123,17 @@
     <string name="publisher_service_details">Quando o App é executado em modo de servidor, o Intervalo do serviço de publicador define o período de tempo em que seu conteúdo será republicado no IPFS.</string>
     <string name="connection_timeout_details">O tempo limite de conexão define o tempo máximo para encontrar um Peer no IPFS.</string>
     <string name="enter_url">URL ou termo de busca</string>
-    <string name="warning">Warning</string>
-    <string name="delete_browser_data_warning">All data will be removed, this includes your provided content and all browser data like cookies, cache data, etc.</string>
+    <string name="warning">Alerta</string>
+    <string name="delete_browser_data_warning">Todos os dados serão removidos, isto inclui seu conteúdo fornecido e todos os dados do navegador como cookies, dados de cache, etc.</string>
 
 
 
-    <string name="redirect_url_support">Redirect URL Support</string>
-    <string name="redirect_index_support">Redirect Index HTML</string>
-    <string name="redirect_url_support_text">When this option is enabled, URLs which references IPFS or IPNS content, will be automatically redirected to the local IPFS node. Currently only URLs of the form https://xxx/ipfs/… or https://xxx/ipns/… will be redirected.</string>
-    <string name="redirect_index_support_text">If this option is enabled, the local node tries to find an HTML index file for a given ipfs or ipns URL if it is not specified.</string>
-    <string name="url_access">The QR-Code contains the URL</string>
-    <string name="scan_url">Scan URL</string>
+    <string name="redirect_url_support">Suporte Redirecionado de URL</string>
+    <string name="redirect_index_support">Redirecionar o índice HTML</string>
+    <string name="redirect_url_support_text">Quando esta opção estiver ativada, as URLs que referenciam o conteúdo IPFS ou IPNS, serão automaticamente redirecionadas para o nó IPFS local. Atualmente apenas as URLs do formulário https://xxx/ipfs/… ou https://xxx/ipns/… serão redirecionadas.</string>
+    <string name="redirect_index_support_text">Se esta opção estiver ativada, o nó local tenta encontrar um arquivo de índice HTML para uma determinada URL ipfs ou ipns se ela não estiver especificada.</string>
+    <string name="url_access">O QR-Code contém o URL</string>
+    <string name="scan_url">URL da varredura</string>
     <string name="enable_publisher">Habilitar Editora</string>
     <string name="cleanup_caches">Limpeza de caches internos como dados IPFS, fotos, etc.</string>
 
