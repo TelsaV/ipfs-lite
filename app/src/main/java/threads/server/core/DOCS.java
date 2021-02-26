@@ -45,6 +45,7 @@ import threads.server.magic.ContentInfoUtil;
 import threads.server.services.MimeTypeService;
 import threads.server.utils.MimeType;
 import threads.server.work.PageConnectWorker;
+import threads.server.work.PageProviderWorker;
 
 public class DOCS {
 
@@ -840,6 +841,10 @@ public class DOCS {
 
         String root = getRoot(uri, closeable);
         Objects.requireNonNull(root);
+
+        if (foreignPage(uri)) {
+            PageProviderWorker.providers(context, root);
+        }
 
         return getResponse(context, uri, root, paths, closeable);
 

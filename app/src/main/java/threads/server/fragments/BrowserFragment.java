@@ -257,7 +257,7 @@ public class BrowserFragment extends Fragment {
 
         mWebView.setWebViewClient(new WebViewClient() {
 
-
+            private final AtomicBoolean firstRun = new AtomicBoolean(true);
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
@@ -437,7 +437,13 @@ public class BrowserFragment extends Fragment {
 
                     docs.attachUri(uri);
 
-                    if(docs.foreignPage(uri)) {
+                    if (docs.foreignPage(uri)) {
+                        if (firstRun.getAndSet(false)) {
+                            docs.bootstrap();
+                        }
+                    }
+
+                    if (docs.foreignPage(uri)) {
                         docs.connectUri(mContext, uri);
                     }
 
@@ -701,6 +707,7 @@ public class BrowserFragment extends Fragment {
                     Bitmap bitmap = mCustomWebChromeClient.getFavicon(url);
 
                     String title = mCustomWebChromeClient.getTitle(url);
+
                     if (title == null) {
                         title = "" + mWebView.getTitle();
                     }
@@ -748,7 +755,7 @@ public class BrowserFragment extends Fragment {
         return inflater.inflate(R.layout.browser_view, container, false);
     }
 
-    private final AtomicBoolean firstRun = new AtomicBoolean(true);
+
 
     public void findInPage() {
         try {
@@ -763,16 +770,13 @@ public class BrowserFragment extends Fragment {
     }
 
     public void openUri(@NonNull Uri uri) {
+        long start = System.currentTimeMillis();
+
         try {
+
             mListener.updateUri(uri);
 
             mProgressBar.setVisibility(View.VISIBLE);
-
-            if (docs.foreignPage(uri)) {
-                if (firstRun.getAndSet(false)) {
-                    docs.bootstrap();
-                }
-            }
 
             if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                     Objects.equals(uri.getScheme(), Content.IPFS)) {
@@ -786,6 +790,9 @@ public class BrowserFragment extends Fragment {
             mWebView.loadUrl(uri.toString());
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
+        } finally {
+            LogUtils.info(TAG, "finish openUri [" +
+                    (System.currentTimeMillis() - start) + "]...");
         }
     }
 

@@ -38,6 +38,7 @@ import lite.LsInfoClose;
 import lite.Node;
 import lite.Peer;
 import lite.PeerInfo;
+import lite.Provider;
 import lite.Reader;
 import lite.ResolveInfo;
 import threads.LogUtils;
@@ -661,6 +662,19 @@ public class IPFS implements Listener {
                     LogUtils.error(TAG, throwable);
                 }
             }
+        }
+    }
+
+    public void dhtFindProviders(@NonNull String cid, @NonNull Provider provider, int numProvs, int timeout) {
+
+        if (!isDaemonRunning()) {
+            return;
+        }
+
+        try {
+            node.dhtFindProvsTimeout(cid, provider, numProvs, timeout);
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
         }
     }
 
