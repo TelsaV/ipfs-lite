@@ -705,10 +705,6 @@ public class BrowserFragment extends Fragment {
                         title = "" + mWebView.getTitle();
                     }
 
-                    if(title.isEmpty()){
-                        title = uri.toString();
-                    }
-
                     bookmark = books.createBookmark(uri.toString(), title);
                     if (bitmap != null) {
                         bookmark.setBitmapIcon(bitmap);
@@ -719,8 +715,14 @@ public class BrowserFragment extends Fragment {
                     Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star);
                     mActionBookmark.setImageDrawable(drawable);
 
+
+                    String msg = title;
+                    if(msg.isEmpty()){
+                        msg = uri.toString();
+                    }
+
                     EVENTS.getInstance(mContext).warning(
-                            getString(R.string.bookmark_added, title));
+                            getString(R.string.bookmark_added, msg));
                 }
             }
         } catch (Throwable throwable) {
