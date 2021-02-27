@@ -53,7 +53,7 @@ This kind of information is also not tracked by this application.</p>
                 <li>
                     <h4>Camera</h4>
                     <p>The camera permission is required to read QR codes, which contains
-                        information about peer ID's (PIDs) or content data ID's (URLs).
+                        information about peer ID's (PIDs) or content data (URLs).
                     </p>
                 </li>
                 <li>
