@@ -53,7 +53,7 @@ This kind of information is also not tracked by this application.</p>
                 <li>
                     <h4>Camera</h4>
                     <p>The camera permission is required to read QR codes, which contains
-                        information about peer ID's (PIDs) or content data ID's (CIDs).
+                        information about peer ID's (PIDs) or content data ID's (URLs).
                     </p>
                 </li>
                 <li>
@@ -61,9 +61,5 @@ This kind of information is also not tracked by this application.</p>
                     <p>The foreground service permission is required to run the IPFS node over a
                         longer period of time.
                     </p>
-                </li>
-                <li>
-                    <h4>Internet</h4>
-                    <p>Kind of precondition for running the local IPFS node.</p>
                 </li>
             </ul>
