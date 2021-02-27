@@ -42,6 +42,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
+import androidx.work.WorkManager;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
@@ -66,6 +67,8 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearBrowserDataWorker;
 import threads.server.work.DownloadContentWorker;
 import threads.server.work.DownloadFileWorker;
+import threads.server.work.PageConnectWorker;
+import threads.server.work.PageProviderWorker;
 
 
 public class BrowserFragment extends Fragment {
@@ -784,6 +787,11 @@ public class BrowserFragment extends Fragment {
             mListener.updateUri(uri);
 
             mProgressBar.setVisibility(View.VISIBLE);
+
+
+            WorkManager.getInstance(mContext).cancelAllWorkByTag(PageConnectWorker.TAG);
+            WorkManager.getInstance(mContext).cancelAllWorkByTag(PageProviderWorker.TAG);
+
 
             if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                     Objects.equals(uri.getScheme(), Content.IPFS)) {

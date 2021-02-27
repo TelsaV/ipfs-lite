@@ -22,7 +22,7 @@ import threads.server.ipfs.IPFS;
 
 public class PageProviderWorker extends Worker {
 
-    private static final String TAG = PageProviderWorker.class.getSimpleName();
+    public static final String TAG = PageProviderWorker.class.getSimpleName();
 
     private final IPFS ipfs;
 
@@ -70,10 +70,11 @@ public class PageProviderWorker extends Worker {
             ipfs.dhtFindProviders(cid, pid -> {
                 try {
                     LogUtils.error(TAG, "Found Provider " + pid);
-                    if (!ipfs.isConnected(pid)) {
+                    if (!ipfs.isConnected(pid) && !isStopped()) {
                         Executors.newSingleThreadExecutor().execute(() -> {
 
-                            boolean result = ipfs.swarmConnect(Content.P2P_PATH + pid, pid, timeout);
+                            boolean result = ipfs.swarmConnect(
+                                    Content.P2P_PATH + pid, pid, timeout);
                             LogUtils.error(TAG, "Connect " + pid + " " + result);
                         });
                     }
@@ -81,7 +82,7 @@ public class PageProviderWorker extends Worker {
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 }
-            }, 10, timeout);
+            }, 10, this::isStopped);
 
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
