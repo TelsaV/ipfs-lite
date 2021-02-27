@@ -48,6 +48,7 @@ public class SettingsFragment extends Fragment {
 
     private Context mContext;
     private TextView mSwarmKey;
+    private SwitchMaterial mPrivateNetworkMode;
     private final ActivityResultLauncher<Intent> mFileForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -85,6 +86,7 @@ public class SettingsFragment extends Fragment {
 
                                 IPFS.setSwarmKey(mContext, key);
                                 mSwarmKey.setText(key);
+                                mPrivateNetworkMode.setEnabled(!key.isEmpty());
 
                                 if (IPFS.isPrivateNetworkEnabled(mContext)) {
                                     EVENTS.getInstance(mContext).exit(
@@ -253,9 +255,9 @@ public class SettingsFragment extends Fragment {
         private_sharing_mode_text.setText(Html.fromHtml(private_sharing_mode_html, Html.FROM_HTML_MODE_LEGACY));
 
 
-        SwitchMaterial private_sharing_mode = view.findViewById(R.id.private_sharing_mode);
-        private_sharing_mode.setChecked(IPFS.isPrivateSharingEnabled(mContext));
-        private_sharing_mode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        SwitchMaterial mPrivateSharingMode = view.findViewById(R.id.private_sharing_mode);
+        mPrivateSharingMode.setChecked(IPFS.isPrivateSharingEnabled(mContext));
+        mPrivateSharingMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     try {
                         IPFS.setPrivateSharingEnabled(mContext, isChecked);
                         EVENTS.getInstance(mContext).home();
@@ -361,9 +363,12 @@ public class SettingsFragment extends Fragment {
             }
         });
 
+        String swarmKey = IPFS.getSwarmKey(mContext);
+
+
 
         mSwarmKey = view.findViewById(R.id.swarm_key);
-        mSwarmKey.setText(IPFS.getSwarmKey(mContext));
+        mSwarmKey.setText(swarmKey);
 
 
         ImageView swarm_key_action = view.findViewById(R.id.swarm_key_action);
@@ -387,9 +392,10 @@ public class SettingsFragment extends Fragment {
         });
 
 
-        SwitchMaterial enable_private_network = view.findViewById(R.id.enable_private_network);
-        enable_private_network.setChecked(IPFS.isPrivateNetworkEnabled(mContext));
-        enable_private_network.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        mPrivateNetworkMode = view.findViewById(R.id.enable_private_network);
+        mPrivateNetworkMode.setEnabled(!swarmKey.isEmpty());
+        mPrivateNetworkMode.setChecked(IPFS.isPrivateNetworkEnabled(mContext));
+        mPrivateNetworkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
             IPFS.setPrivateNetworkEnabled(mContext, isChecked);
             EVENTS.getInstance(mContext).exit(
                     getString(R.string.restart_config_changed));

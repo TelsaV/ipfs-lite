@@ -819,8 +819,9 @@ public class DOCS {
     public void bootstrap() {
 
         try {
-            ipfs.bootstrap();
-
+            if (!ipfs.isPrivateNetwork()) {
+                ipfs.bootstrap();
+            }
 
             if (ipfs.numSwarmPeers() < Settings.MIN_PEERS) {
                 List<Page> bootstraps = pages.getBootstraps(5);

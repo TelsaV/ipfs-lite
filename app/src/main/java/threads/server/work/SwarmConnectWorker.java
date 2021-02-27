@@ -57,7 +57,6 @@ public class SwarmConnectWorker extends Worker {
                 IPFS ipfs = IPFS.getInstance(getApplicationContext());
 
                 if (!ipfs.isPrivateNetwork()) {
-
                     ipfs.bootstrap();
                 }
 
