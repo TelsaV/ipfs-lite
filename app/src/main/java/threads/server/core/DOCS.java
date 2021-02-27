@@ -1,6 +1,7 @@
 package threads.server.core;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.util.Pair;
 import android.webkit.WebResourceResponse;
@@ -31,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.Settings;
+import threads.server.core.books.BOOKS;
+import threads.server.core.books.Bookmark;
 import threads.server.core.pages.PAGES;
 import threads.server.core.pages.Page;
 import threads.server.core.threads.THREADS;
@@ -55,6 +58,7 @@ public class DOCS {
     private static final HashSet<Uri> uris = new HashSet<>();
     private static DOCS INSTANCE = null;
     private final IPFS ipfs;
+    private final BOOKS books;
     private final THREADS threads;
     private final PAGES pages;
     private final String host;
@@ -67,6 +71,7 @@ public class DOCS {
         ipfs = IPFS.getInstance(context);
         threads = THREADS.getInstance(context);
         pages = PAGES.getInstance(context);
+        books = BOOKS.getInstance(context);
         host = ipfs.getHost();
         isRedirectIndex = InitApplication.isRedirectIndexEnabled(context);
         isRedirectUrl = InitApplication.isRedirectUrlEnabled(context);
@@ -83,6 +88,17 @@ public class DOCS {
             }
         }
         return INSTANCE;
+    }
+
+    public void updateBookmarkTitle(@NonNull Uri uri, @NonNull String title) {
+        books.setBookmarkTitle(uri.toString(), title);
+    }
+    public void updateBookmarkIcon(@NonNull Uri uri, @NonNull Bitmap icon) {
+        Bookmark bookmark = books.getBookmark(uri.toString());
+        if(bookmark != null) {
+            bookmark.setBitmapIcon(icon);
+            books.storeBookmark(bookmark);
+        }
     }
 
     public int numUris() {

@@ -2045,8 +2045,8 @@ public class MainActivity extends AppCompatActivity implements
                 EVENTS.getInstance(getApplicationContext()).permission(
                         getString(R.string.feature_camera_required));
             }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
     }
 

@@ -696,17 +696,24 @@ public class BrowserFragment extends Fragment {
 
                 Bookmark bookmark = books.getBookmark(uri.toString());
                 if (bookmark != null) {
-                    String name = bookmark.getTitle();
+
+                    String msg = bookmark.getTitle();
+
                     books.removeBookmark(bookmark);
+
                     Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star_outline);
                     mActionBookmark.setImageDrawable(drawable);
 
-                    EVENTS.getInstance(mContext).warning(
-                            getString(R.string.bookmark_removed, name));
-                } else {
-                    Bitmap bitmap = mCustomWebChromeClient.getFavicon(url);
+                    if(msg.isEmpty()){
+                        msg = uri.toString();
+                    }
 
-                    String title = mCustomWebChromeClient.getTitle(url);
+                    EVENTS.getInstance(mContext).warning(
+                            getString(R.string.bookmark_removed, msg));
+                } else {
+                    Bitmap bitmap = mCustomWebChromeClient.getFavicon(uri);
+
+                    String title = mCustomWebChromeClient.getTitle(uri);
 
                     if (title == null) {
                         title = "" + mWebView.getTitle();

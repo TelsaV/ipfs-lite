@@ -28,4 +28,7 @@ public interface BookmarkDao {
     @Delete
     void removeBookmark(Bookmark bookmark);
 
+
+    @Query("UPDATE Bookmark SET title = :title WHERE uri = :uri")
+    void setTitle(String uri, String title);
 }

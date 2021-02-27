@@ -11,7 +11,7 @@
     <string name="settings">Settings</string>
     <string name="action_select_all">Alle Auswählen</string>
 
-    <string name="codec_not_supported">Codec ist nicht unterstützt</string>
+    <string name="codec_not_supported">Nicht unterstützter QR-Code</string>
     <string name="peers">Peers</string>
     <string name="app_settings">Einstellungen</string>
     <string name="copy_to">Kopieren nach…</string>
@@ -131,7 +131,7 @@
     <string name="redirect_index_support">Redirect Index HTML</string>
     <string name="redirect_url_support_text">Wenn diese Option aktiviert ist, werden URLs, die auf IPFS- oder IPNS-Inhalte verweisen, automatisch auf den lokalen IPFS-Knoten umgeleitet. Derzeit werden nur URLs der Form https://xxx/ipfs/… oder https://xxx/ipns/… umgeleitet.</string>
     <string name="redirect_index_support_text">Wenn diese Option aktiviert ist, dann versucht der lokale Knoten zu einer angegeben ipfs oder ipns URL eine HTML index Datei zu finden, sofern sie nicht angeben wurde.</string>
-    <string name="url_access">Der QR-Code enthält die URL</string>
+    <string name="url_access">Der QR-Code enthält die URL der aktuellen Webseite</string>
     <string name="scan_url">Scan URL</string>
     <string name="enable_publisher">Enable Publisher</string>
     <string name="cleanup_caches">Bereinigung interner Caches wie IPFS-Daten, Bilder, etc.</string>

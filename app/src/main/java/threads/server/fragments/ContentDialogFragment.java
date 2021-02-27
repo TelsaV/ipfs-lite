@@ -99,7 +99,6 @@ public class ContentDialogFragment extends DialogFragment {
         builder.setTitle(title)
                 .setMessage(message)
                 .setView(view)
-                .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> dismiss())
                 .create();
 
         Dialog dialog = builder.create();

@@ -87,6 +87,11 @@ public class BOOKS {
     }
 
 
+    public void setBookmarkTitle(@NonNull String uri, @NonNull String title) {
+        bookmarkDatabase.bookmarkDao().setTitle(uri, title);
+    }
+
+
     static class Builder {
 
         BookmarkDatabase bookmarkDatabase = null;
