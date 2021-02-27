@@ -120,7 +120,7 @@
     <string name="refreshing">Aktualisieren…</string>
     <string name="publisher_service_details">Wenn die Anwendung im Servermodus ausgeführt wird, legt das Intervall des Veröffentlichungsdienstes den Zeitraum fest, in dem Ihre Inhalte erneut in IPFS veröffentlicht werden.</string>
     <string name="connection_timeout_details">Der Connection-Timeout definiert die maximale Zeit für das Auffinden eines Peers auf dem IPFS.</string>
-    <string name="enter_url">URL oder Sucheingabe</string>
+    <string name="enter_url">Scan-URL oder Sucheingabe</string>
     <string name="warning">Warnung</string>
     <string name="delete_browser_data_warning">Es werden alle Daten entfernt, dazu gehören Ihre bereitgestellten Inhalte und alle Browserdaten wie Cookies, Cache-Daten, etc.</string>
 

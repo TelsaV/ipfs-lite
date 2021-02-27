@@ -3,6 +3,7 @@ package threads.server;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
@@ -697,13 +698,19 @@ public class MainActivity extends AppCompatActivity implements
         return new ActionMode.Callback() {
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                mode.getMenuInflater().inflate(R.menu.menu_search_action_mode, menu);
+                mode.getMenuInflater().inflate(R.menu.menu_searchable, menu);
+                mode.setCustomView(null);
+                mode.setTitle("");
+                mode.setTitleOptionalHint(true);
 
 
+                MenuItem scanMenuItem = menu.findItem(R.id.action_scan);
+                if (!hasCamera) {
+                    scanMenuItem.setVisible(false);
+                }
                 MenuItem searchMenuItem = menu.findItem(R.id.action_search);
-
                 SearchView mSearchView = (SearchView) searchMenuItem.getActionView();
-
+                mSearchView.setMaxWidth(Integer.MAX_VALUE);
 
                 TextView textView = mSearchView.findViewById(
                         androidx.appcompat.R.id.search_src_text);
@@ -771,6 +778,37 @@ public class MainActivity extends AppCompatActivity implements
 
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                if (item.getItemId() == R.id.action_scan) {
+                    try {
+                        if (SystemClock.elapsedRealtime() - mLastClickTime < 500) {
+                            return false;
+                        }
+                        mLastClickTime = SystemClock.elapsedRealtime();
+
+
+                        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+                            return false;
+                        }
+
+                        invokeScan();
+
+                        if (hasCamera) {
+                            IntentIntegrator integrator = new IntentIntegrator(MainActivity.this);
+                            integrator.setOrientationLocked(false);
+                            Intent intent = integrator.createScanIntent();
+                            mScanRequestForResult.launch(intent);
+                        } else {
+                            EVENTS.getInstance(getApplicationContext()).permission(
+                                    getString(R.string.feature_camera_required));
+                        }
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    } finally {
+                        mode.finish();
+                    }
+                }
                 return false;
             }
 
