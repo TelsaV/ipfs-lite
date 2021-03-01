@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import threads.LogUtils;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
 import threads.server.utils.MimeType;
@@ -68,9 +69,10 @@ public class MimeTypeService {
         TextDrawable drawable = TextDrawable.builder()
                 .beginConfig().textColor(textColor).endConfig()
                 .buildRound(letter, color);
-        Bitmap bitmap = Bitmap.createBitmap(64, 64, Bitmap.Config.ARGB_8888);
+        Bitmap bitmap = Bitmap.createBitmap(Settings.BITMAP_NAME_SIZE, Settings.BITMAP_NAME_SIZE,
+                Bitmap.Config.ARGB_8888);
         canvas.setBitmap(bitmap);
-        drawable.setBounds(0, 0, 64, 64);
+        drawable.setBounds(0, 0, Settings.BITMAP_NAME_SIZE, Settings.BITMAP_NAME_SIZE);
 
         drawable.draw(canvas);
         return bitmap;

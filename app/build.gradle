@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "threads.server"
-        minSdkVersion 26
+        minSdkVersion 28
         targetSdkVersion 30
         versionCode 236
         versionName "2.3.6"

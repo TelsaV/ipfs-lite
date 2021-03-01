@@ -3,7 +3,6 @@ package threads.server;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
