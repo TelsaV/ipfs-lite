@@ -28,30 +28,43 @@ public class DaemonService extends Service {
     private static final String TAG = DaemonService.class.getSimpleName();
 
 
+    public void unRegisterNetworkCallback() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager)
+                    getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+    ConnectivityManager.NetworkCallback networkCallback;
+
+
     public void registerNetworkCallback() {
         try {
             ConnectivityManager connectivityManager = (ConnectivityManager)
                     getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
 
+            networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(Network network) {
+                    SwarmConnectWorker.dialing(getApplicationContext());
+                }
 
-            connectivityManager.registerDefaultNetworkCallback(
-                    new ConnectivityManager.NetworkCallback() {
-                        @Override
-                        public void onAvailable(Network network) {
-                            SwarmConnectWorker.dialing(getApplicationContext());
-                        }
+                @Override
+                public void onLost(Network network) {
+                }
+            };
 
-                        @Override
-                        public void onLost(Network network) {
-                        }
-                    }
 
-            );
-
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
+            connectivityManager.registerDefaultNetworkCallback( networkCallback);
+        } catch (Exception e) {
+            LogUtils.error(TAG, e);
         }
     }
+
 
     public static void start(@NonNull Context context) {
 
@@ -156,13 +169,24 @@ public class DaemonService extends Service {
 
 
     @Override
-    public void onCreate() {
+    public void onDestroy() {
+        super.onDestroy();
         try {
-            createChannel(getApplicationContext());
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+            unRegisterNetworkCallback();
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
         }
+    }
+
+    @Override
+    public void onCreate() {
         super.onCreate();
+        try {
+            registerNetworkCallback();
+            createChannel(getApplicationContext());
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
 }

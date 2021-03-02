@@ -3,12 +3,10 @@ package threads.server;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -16,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
@@ -127,13 +126,43 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String FRAG = "FRAG";
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
 
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            SwarmConnectWorker.dialing(getApplicationContext());
+    ConnectivityManager.NetworkCallback networkCallback;
+
+    public void unRegisterNetworkCallback() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager)
+                    getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
-    };
+    }
+
+    public void registerNetworkCallback() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager)
+                    getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(Network network) {
+                    SwarmConnectWorker.dialing(getApplicationContext());
+                }
+
+                @Override
+                public void onLost(Network network) {
+                }
+            };
+
+
+            connectivityManager.registerDefaultNetworkCallback(networkCallback);
+        } catch (Exception e) {
+            LogUtils.error(TAG, e);
+        }
+    }
+
     private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_browser);
 
     private final ActivityResultLauncher<Intent> mScanRequestForResult = registerForActivityResult(
@@ -360,14 +389,11 @@ public class MainActivity extends AppCompatActivity implements
         super.onDestroy();
 
         try {
-
-            unregisterReceiver(broadcastReceiver);
-
             if (mNsdManager != null) {
                 mNsdManager.unregisterService(RegistrationService.getInstance());
                 mNsdManager.stopServiceDiscovery(DiscoveryService.getInstance());
             }
-
+            unRegisterNetworkCallback();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -1988,10 +2014,7 @@ public class MainActivity extends AppCompatActivity implements
 
         });
 
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-        registerReceiver(broadcastReceiver, intentFilter);
-
+        registerNetworkCallback();
 
         try {
             if (InitApplication.isAutoDiscovery(getApplicationContext())) {
