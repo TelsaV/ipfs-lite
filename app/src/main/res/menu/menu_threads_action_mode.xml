@@ -13,7 +13,9 @@
 
     <item
         android:id="@+id/action_mode_mark_all"
+        android:icon="@drawable/select_all"
         android:orderInCategory="55"
         android:title="@string/action_select_all"
-        app:showAsAction="never" />
+        app:iconTint="?android:textColorPrimary"
+        app:showAsAction="ifRoom" />
 </menu>

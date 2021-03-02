@@ -757,7 +757,8 @@ public class MainActivity extends AppCompatActivity implements
                 mSearchView.requestFocus();
 
 
-                ListPopupWindow mPopupWindow = new ListPopupWindow(MainActivity.this) {
+                ListPopupWindow mPopupWindow = new ListPopupWindow(MainActivity.this,
+                        null, R.attr.popupMenuStyle) {
 
                     @Override
                     public boolean isInputMethodNotNeeded() {
@@ -811,23 +812,29 @@ public class MainActivity extends AppCompatActivity implements
                             BOOKS books = BOOKS.getInstance(getApplicationContext());
                             List<Bookmark> bookmarks = books.getBookmarksByQuery(newText);
 
-                            mPopupWindow.setAdapter(new BookmarksAdapter(getApplicationContext(),
-                                    new ArrayList<>(bookmarks)) {
-                                @Override
-                                public void onClick(@NonNull Bookmark bookmark) {
-                                    try {
-                                        openBrowserView(Uri.parse(bookmark.getUri()));
-                                    } catch (Throwable throwable) {
-                                        LogUtils.error(TAG, throwable);
-                                    } finally {
-                                        mPopupWindow.dismiss();
-                                        releaseActionMode();
+                            if(!bookmarks.isEmpty()) {
+                                mPopupWindow.setAdapter(new BookmarksAdapter(getApplicationContext(),
+                                        new ArrayList<>(bookmarks)) {
+                                    @Override
+                                    public void onClick(@NonNull Bookmark bookmark) {
+                                        try {
+                                            openBrowserView(Uri.parse(bookmark.getUri()));
+                                        } catch (Throwable throwable) {
+                                            LogUtils.error(TAG, throwable);
+                                        } finally {
+                                            mPopupWindow.dismiss();
+                                            releaseActionMode();
+                                        }
                                     }
-                                }
-                            });
-                            mPopupWindow.setAnchorView(mSearchView);
-                            mPopupWindow.show();
-                            return true;
+                                });
+                                mPopupWindow.setAnchorView(mSearchView);
+                                mPopupWindow.show();
+                                return true;
+                            } else {
+                                mPopupWindow.dismiss();
+                            }
+                        } else {
+                            mPopupWindow.dismiss();
                         }
 
                         return false;
@@ -1127,15 +1134,15 @@ public class MainActivity extends AppCompatActivity implements
             View menuOverflow = inflater.inflate(
                     R.layout.menu_overflow, mDrawerLayout, false);
 
-            PopupWindow mPopupWindow = new PopupWindow(
+            PopupWindow dialog = new PopupWindow(
                     MainActivity.this, null, R.attr.popupMenuStyle);
-            mPopupWindow.setContentView(menuOverflow);
-            mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
-            mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
-            mPopupWindow.setOutsideTouchable(true);
-            mPopupWindow.setFocusable(true);
+            dialog.setContentView(menuOverflow);
+            dialog.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.setOutsideTouchable(true);
+            dialog.setFocusable(true);
 
-            mPopupWindow.showAsDropDown(mActionOverflow, 0, -border(),
+            dialog.showAsDropDown(mActionOverflow, 0, -border(),
                     Gravity.TOP | Gravity.END);
 
 
@@ -1156,7 +1163,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1182,7 +1189,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1212,7 +1219,7 @@ public class MainActivity extends AppCompatActivity implements
                     String filename = docs.getFileName(uri);
                     builder.setMessage(filename);
 
-                    builder.setPositiveButton(getString(android.R.string.yes), (dialog, which) -> {
+                    builder.setPositiveButton(getString(android.R.string.yes), (dialogInterface, which) -> {
 
                         LiteService.setContentUri(getApplicationContext(), uri);
 
@@ -1225,13 +1232,13 @@ public class MainActivity extends AppCompatActivity implements
 
                     });
                     builder.setNeutralButton(getString(android.R.string.cancel),
-                            (dialog, which) -> dialog.cancel());
+                            (dialogInterface, which) -> dialogInterface.cancel());
                     builder.show();
 
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1272,7 +1279,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1301,7 +1308,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1319,18 +1326,18 @@ public class MainActivity extends AppCompatActivity implements
                     alertDialog.setTitle(getString(R.string.warning));
                     alertDialog.setMessage(getString(R.string.delete_browser_data_warning));
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(android.R.string.ok),
-                            (dialog, which) -> {
+                            (dialogInterface, which) -> {
                                 mBrowserFragment.clearBrowserData();
                                 dialog.dismiss();
                             });
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(android.R.string.cancel),
-                            (dialog, which) -> dialog.dismiss());
+                            (dialogInterface, which) -> dialog.dismiss());
                     alertDialog.show();
 
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1361,7 +1368,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1400,7 +1407,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1431,7 +1438,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1466,7 +1473,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1497,7 +1504,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1518,7 +1525,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1543,7 +1550,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
@@ -1562,7 +1569,7 @@ public class MainActivity extends AppCompatActivity implements
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 } finally {
-                    mPopupWindow.dismiss();
+                    dialog.dismiss();
                 }
 
             });
