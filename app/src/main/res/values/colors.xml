@@ -1,5 +1,6 @@
 <!--?xml version="1.0" encoding="UTF-8"?-->
 <resources>
+    <color name="colorStatus">#32787F</color>
     <color name="colorPrimary">#32787F</color>
     <color name="colorBackground">@android:color/white</color>
     <color name="colorSelectedItem">#DCDCDC</color>

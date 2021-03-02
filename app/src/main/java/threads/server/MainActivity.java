@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -887,10 +886,10 @@ public class MainActivity extends AppCompatActivity implements
 
     }
 
-    private int dpToPx(int dp) {
+    private int border() {
         float density = getApplicationContext().getResources()
                 .getDisplayMetrics().density;
-        return Math.round((float) dp * density);
+        return Math.round((float) 48 * density);
     }
 
     private boolean hasCamera;
@@ -905,7 +904,7 @@ public class MainActivity extends AppCompatActivity implements
                     android.R.color.holo_orange_dark), PorterDuff.Mode.SRC_ATOP);
         } else {
             mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
-                    R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+                    android.R.color.white), PorterDuff.Mode.SRC_ATOP);
         }
     }
 
@@ -915,10 +914,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        if (!isDarkTheme()) {
-            setLightStatusBar(this);
-        }
 
         DOCS docs = DOCS.getInstance(getApplicationContext());
 
@@ -1140,7 +1135,7 @@ public class MainActivity extends AppCompatActivity implements
             mPopupWindow.setOutsideTouchable(true);
             mPopupWindow.setFocusable(true);
 
-            mPopupWindow.showAsDropDown(mActionOverflow, 0, -dpToPx(48),
+            mPopupWindow.showAsDropDown(mActionOverflow, 0, -border(),
                     Gravity.TOP | Gravity.END);
 
 
@@ -2152,16 +2147,4 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
-    private boolean isDarkTheme() {
-        int nightModeFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
-        return nightModeFlags == Configuration.UI_MODE_NIGHT_YES;
-    }
-
-    private void setLightStatusBar(@NonNull Activity activity) {
-        int flags = activity.getWindow().getDecorView().getSystemUiVisibility(); // get current flag
-        flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;   // add LIGHT_STATUS_BAR to flag
-        activity.getWindow().getDecorView().setSystemUiVisibility(flags);
-        activity.getWindow().setStatusBarColor(Color.WHITE); // optional
-    }
 }
