@@ -767,8 +767,10 @@ public class MainActivity extends AppCompatActivity implements
                 };
                 mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
                 mPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-                mPopupWindow.setAnimationStyle(0);
                 mPopupWindow.setModal(false);
+                mPopupWindow.setAnchorView(mSearchView);
+                mPopupWindow.setAnimationStyle(android.R.style.Animation);
+
 
                 mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
@@ -827,7 +829,6 @@ public class MainActivity extends AppCompatActivity implements
                                         }
                                     }
                                 });
-                                mPopupWindow.setAnchorView(mSearchView);
                                 mPopupWindow.show();
                                 return true;
                             } else {
@@ -1580,7 +1581,7 @@ public class MainActivity extends AppCompatActivity implements
         mBrowserText = findViewById(R.id.action_browser);
         mBrowserText.setClickable(true);
         mBrowserText.setBackgroundResource(R.drawable.browser);
-        mBrowserText.getBackground().setAlpha(75);
+        mBrowserText.getBackground().setAlpha(50);
 
 
         mBrowserText.setOnClickListener(view -> {
