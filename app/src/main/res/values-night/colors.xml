@@ -3,7 +3,7 @@
     <color name="colorStatus">#333333</color>
     <color name="colorPrimary">@android:color/holo_blue_dark</color>
     <color name="colorBackground">#333333</color>
-    <color name="colorSelectedItem">#696969</color>
+    <color name="colorSelectedItem">@android:color/holo_blue_dark</color>
     <color name="colorChips">#696969</color>
     <color name="colorActiveImage">@android:color/white</color>
     <color name="colorPassiveImage">@android:color/darker_gray</color>

@@ -134,6 +134,7 @@
         app:layout_anchor="@id/navigation"
         app:layout_anchorGravity="top|end"
         app:layout_behavior="threads.server.utils.FloatingButtonBehavior"
+        app:backgroundTint="@color/colorStatus"
         app:tint="@android:color/white"
         app:srcCompat="@drawable/dots"
         app:useCompatPadding="true" />
