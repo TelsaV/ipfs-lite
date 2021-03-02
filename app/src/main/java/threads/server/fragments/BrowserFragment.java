@@ -594,8 +594,10 @@ public class BrowserFragment extends Fragment {
 
                 MenuItem action_mode_find = menu.findItem(R.id.action_mode_find);
                 EditText mFindText = (EditText) action_mode_find.getActionView();
-                mFindText.setMinWidth(200);
-                mFindText.setMaxWidth(400);
+
+
+                mFindText.setMaxWidth(Integer.MAX_VALUE);
+                mFindText.setBackgroundResource(android.R.color.transparent);
                 mFindText.setSingleLine();
                 mFindText.setTextSize(14);
                 mFindText.setHint(R.string.find_page);

@@ -43,6 +43,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.view.ActionMode;
+import androidx.appcompat.widget.ListPopupWindow;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -64,6 +65,8 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -102,6 +105,7 @@ import threads.server.services.QRCodeService;
 import threads.server.services.RegistrationService;
 import threads.server.services.UploadService;
 import threads.server.services.UserService;
+import threads.server.utils.BookmarksAdapter;
 import threads.server.utils.CodecDecider;
 import threads.server.utils.MimeType;
 import threads.server.utils.PermissionAction;
@@ -728,11 +732,25 @@ public class MainActivity extends AppCompatActivity implements
                 mSearchView.requestFocus();
 
 
+                ListPopupWindow mPopupWindow = new ListPopupWindow(MainActivity.this) {
+
+                    @Override
+                    public boolean isInputMethodNotNeeded() {
+                        return true;
+                    }
+                };
+                mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+                mPopupWindow.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
+                mPopupWindow.setAnimationStyle(0);
+                mPopupWindow.setModal(false);
+
                 mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
                     @Override
                     public boolean onQueryTextSubmit(String query) {
 
                         try {
+                            mPopupWindow.dismiss();
+
                             if (mActionMode != null) {
                                 mActionMode.finish();
                             }
@@ -763,6 +781,30 @@ public class MainActivity extends AppCompatActivity implements
 
                     @Override
                     public boolean onQueryTextChange(String newText) {
+
+                        if (!newText.isEmpty()) {
+                            BOOKS books = BOOKS.getInstance(getApplicationContext());
+                            List<Bookmark> bookmarks = books.getBookmarksByQuery(newText);
+
+                            mPopupWindow.setAdapter(new BookmarksAdapter(getApplicationContext(),
+                                    new ArrayList<>(bookmarks)) {
+                                @Override
+                                public void onClick(@NonNull Bookmark bookmark) {
+                                    try {
+                                        openBrowserView(Uri.parse(bookmark.getUri()));
+                                    } catch (Throwable throwable) {
+                                        LogUtils.error(TAG, throwable);
+                                    } finally {
+                                        mPopupWindow.dismiss();
+                                        releaseActionMode();
+                                    }
+                                }
+                            });
+                            mPopupWindow.setAnchorView(mSearchView);
+                            mPopupWindow.show();
+                            return true;
+                        }
+
                         return false;
                     }
                 });
