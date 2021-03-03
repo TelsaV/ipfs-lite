@@ -26,7 +26,18 @@ import threads.server.work.SwarmConnectWorker;
 public class DaemonService extends Service {
 
     private static final String TAG = DaemonService.class.getSimpleName();
+    ConnectivityManager.NetworkCallback networkCallback;
 
+    public static void start(@NonNull Context context) {
+
+        try {
+            Intent intent = new Intent(context, DaemonService.class);
+            intent.putExtra(Content.REFRESH, true);
+            ContextCompat.startForegroundService(context, intent);
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
+    }
 
     public void unRegisterNetworkCallback() {
         try {
@@ -38,9 +49,6 @@ public class DaemonService extends Service {
             LogUtils.error(TAG, throwable);
         }
     }
-
-    ConnectivityManager.NetworkCallback networkCallback;
-
 
     public void registerNetworkCallback() {
         try {
@@ -59,20 +67,8 @@ public class DaemonService extends Service {
             };
 
 
-            connectivityManager.registerDefaultNetworkCallback( networkCallback);
+            connectivityManager.registerDefaultNetworkCallback(networkCallback);
         } catch (Exception e) {
-            LogUtils.error(TAG, e);
-        }
-    }
-
-
-    public static void start(@NonNull Context context) {
-
-        try {
-            Intent intent = new Intent(context, DaemonService.class);
-            intent.putExtra(Content.REFRESH, true);
-            ContextCompat.startForegroundService(context, intent);
-        } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
     }
@@ -175,7 +171,7 @@ public class DaemonService extends Service {
         super.onDestroy();
         try {
             unRegisterNetworkCallback();
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
     }

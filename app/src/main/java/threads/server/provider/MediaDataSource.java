@@ -3,7 +3,6 @@ package threads.server.provider;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -35,12 +34,10 @@ public class MediaDataSource extends android.media.MediaDataSource {
                 return retriever.getFrameAtTime();
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-                bitmap = retriever.getScaledFrameAtTime(time * 1000,
-                        MediaMetadataRetriever.OPTION_CLOSEST_SYNC, 256, 256);
-            } else {
-                bitmap = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-            }
+
+            bitmap = retriever.getScaledFrameAtTime(time * 1000,
+                    MediaMetadataRetriever.OPTION_CLOSEST_SYNC, 256, 256);
+
 
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);

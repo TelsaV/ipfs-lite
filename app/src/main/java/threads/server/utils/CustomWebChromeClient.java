@@ -31,11 +31,11 @@ public class CustomWebChromeClient extends WebChromeClient {
     private final Activity mActivity;
     private final Hashtable<String, String> titles = new Hashtable<>();
     private final Hashtable<String, Bitmap> icons = new Hashtable<>();
+    private final DOCS docs;
     private View mCustomView;
     private CustomViewCallback mCustomViewCallback;
     private int mOriginalOrientation;
     private int mOriginalSystemUiVisibility;
-    private final DOCS docs;
 
     public CustomWebChromeClient(@NonNull Activity activity) {
 
@@ -133,8 +133,8 @@ public class CustomWebChromeClient extends WebChromeClient {
 
     @NonNull
     public String getTitle(@NonNull Uri uri) {
-        String title =  titles.get(uri.toString());
-        if(title == null){
+        String title = titles.get(uri.toString());
+        if (title == null) {
             return "";
         }
         return title;

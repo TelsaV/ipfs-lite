@@ -35,7 +35,6 @@ public class Settings {
     public static final String BLOCKS = "/blocks";
 
 
-
     @NonNull
     public static String getDefaultSearchEngine(@NonNull String query) {
         return "https://ipfs-search.com/#/search?search=" + query;

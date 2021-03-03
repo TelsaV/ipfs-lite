@@ -139,7 +139,6 @@ public class BrowserFragment extends Fragment {
     private ActionMode mActionMode;
 
 
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -153,12 +152,12 @@ public class BrowserFragment extends Fragment {
 
     public void goForward() {
         try {
-            if(isResumed()) {
+            if (isResumed()) {
                 mWebView.stopLoading();
                 docs.releaseThreads();
                 mWebView.goForward();
             }
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
     }
@@ -261,6 +260,7 @@ public class BrowserFragment extends Fragment {
         mWebView.setWebViewClient(new WebViewClient() {
 
             private final AtomicBoolean firstRun = new AtomicBoolean(true);
+
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
@@ -466,7 +466,7 @@ public class BrowserFragment extends Fragment {
                             return createRedirectMessage(redirectUri);
                         }
 
-                        if(docs.foreignPage(redirectUri)) {
+                        if (docs.foreignPage(redirectUri)) {
                             docs.connectUri(mContext, redirectUri);
                         }
 
@@ -520,7 +520,7 @@ public class BrowserFragment extends Fragment {
                     LogUtils.error(TAG, throwable);
                 }
             }
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
     }
@@ -693,7 +693,7 @@ public class BrowserFragment extends Fragment {
 
     public void bookmark(@NonNull Context context, @NonNull ImageButton mActionBookmark) {
         try {
-            if(isResumed()) {
+            if (isResumed()) {
                 String url = mWebView.getUrl();
                 Uri uri = docs.getOriginalUri(Uri.parse(url));
 
@@ -709,7 +709,7 @@ public class BrowserFragment extends Fragment {
                     Drawable drawable = AppCompatResources.getDrawable(context, R.drawable.star_outline);
                     mActionBookmark.setImageDrawable(drawable);
 
-                    if(msg.isEmpty()){
+                    if (msg.isEmpty()) {
                         msg = uri.toString();
                     }
 
@@ -733,7 +733,7 @@ public class BrowserFragment extends Fragment {
 
 
                     String msg = title;
-                    if(msg.isEmpty()){
+                    if (msg.isEmpty()) {
                         msg = uri.toString();
                     }
 
@@ -748,7 +748,7 @@ public class BrowserFragment extends Fragment {
 
     public void clearBrowserData() {
         try {
-            if(isResumed()) {
+            if (isResumed()) {
                 mWebView.clearHistory();
                 mWebView.clearCache(true);
 
@@ -763,7 +763,6 @@ public class BrowserFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.browser_view, container, false);
     }
-
 
 
     public void findInPage() {
@@ -812,11 +811,11 @@ public class BrowserFragment extends Fragment {
 
     public boolean canGoForward() {
         try {
-            if(isResumed()) {
+            if (isResumed()) {
                 return mWebView.canGoForward();
             }
             return false;
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
         return false;

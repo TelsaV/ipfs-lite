@@ -62,10 +62,10 @@ public class DOCS {
     private final THREADS threads;
     private final PAGES pages;
     private final String host;
-    private boolean isRedirectIndex;
-    private boolean isRedirectUrl;
     private final Hashtable<String, String> resolves = new Hashtable<>();
     private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
+    private boolean isRedirectIndex;
+    private boolean isRedirectUrl;
 
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
@@ -92,9 +92,10 @@ public class DOCS {
     public void updateBookmarkTitle(@NonNull Uri uri, @NonNull String title) {
         books.setBookmarkTitle(uri.toString(), title);
     }
+
     public void updateBookmarkIcon(@NonNull Uri uri, @NonNull Bitmap icon) {
         Bookmark bookmark = books.getBookmark(uri.toString());
-        if(bookmark != null) {
+        if (bookmark != null) {
             bookmark.setBitmapIcon(icon);
             books.storeBookmark(bookmark);
         }
@@ -1279,7 +1280,6 @@ public class DOCS {
         isRedirectIndex = InitApplication.isRedirectIndexEnabled(context);
         isRedirectUrl = InitApplication.isRedirectUrlEnabled(context);
     }
-
 
 
     public static class ContentException extends Exception {

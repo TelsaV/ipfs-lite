@@ -125,83 +125,7 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String FRAG = "FRAG";
-
-    ConnectivityManager.NetworkCallback networkCallback;
-
-    public void unRegisterNetworkCallback() {
-        try {
-            ConnectivityManager connectivityManager = (ConnectivityManager)
-                    getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            connectivityManager.unregisterNetworkCallback(networkCallback);
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-    }
-
-    public void registerNetworkCallback() {
-        try {
-            ConnectivityManager connectivityManager = (ConnectivityManager)
-                    getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            networkCallback = new ConnectivityManager.NetworkCallback() {
-                @Override
-                public void onAvailable(Network network) {
-                    SwarmConnectWorker.dialing(getApplicationContext());
-                }
-
-                @Override
-                public void onLost(Network network) {
-                }
-            };
-
-
-            connectivityManager.registerDefaultNetworkCallback(networkCallback);
-        } catch (Exception e) {
-            LogUtils.error(TAG, e);
-        }
-    }
-
     private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_browser);
-
-    private final ActivityResultLauncher<Intent> mScanRequestForResult = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                try {
-                    IntentResult resultIntent = IntentIntegrator.parseActivityResult(
-                            IntentIntegrator.REQUEST_CODE, result.getResultCode(), result.getData());
-                    if (resultIntent != null) {
-                        if (resultIntent.getContents() != null) {
-
-                            try {
-                                Uri uri = Uri.parse(resultIntent.getContents());
-                                if (uri != null) {
-                                    String scheme = uri.getScheme();
-                                    if (Objects.equals(scheme, Content.IPNS) ||
-                                            Objects.equals(scheme, Content.IPFS) ||
-                                            Objects.equals(scheme, Content.HTTP) ||
-                                            Objects.equals(scheme, Content.HTTPS)) {
-                                        openBrowserView(uri);
-                                    } else {
-                                        EVENTS.getInstance(getApplicationContext()).error(
-                                                getString(R.string.codec_not_supported));
-                                    }
-                                } else {
-                                    EVENTS.getInstance(getApplicationContext()).error(
-                                            getString(R.string.codec_not_supported));
-                                }
-                            } catch (Throwable throwable) {
-                                EVENTS.getInstance(getApplicationContext()).error(
-                                        getString(R.string.codec_not_supported));
-                            }
-                        }
-                    }
-
-                } catch (Throwable throwable) {
-                    LogUtils.error(TAG, throwable);
-                }
-
-            });
     private final ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -211,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements
                             getString(R.string.permission_camera_denied));
                 }
             });
-
     private final ActivityResultLauncher<Intent> mContentForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -351,13 +274,51 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     });
     private final AtomicBoolean downloadActive = new AtomicBoolean(false);
-
+    ConnectivityManager.NetworkCallback networkCallback;
     private long mLastClickTime = 0;
     private CoordinatorLayout mDrawerLayout;
     private BottomNavigationView mNavigation;
     private NsdManager mNsdManager;
     private FloatingActionButton mFloatingActionButton;
     private SelectionViewModel mSelectionViewModel;
+    private final ActivityResultLauncher<Intent> mScanRequestForResult = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                try {
+                    IntentResult resultIntent = IntentIntegrator.parseActivityResult(
+                            IntentIntegrator.REQUEST_CODE, result.getResultCode(), result.getData());
+                    if (resultIntent != null) {
+                        if (resultIntent.getContents() != null) {
+
+                            try {
+                                Uri uri = Uri.parse(resultIntent.getContents());
+                                if (uri != null) {
+                                    String scheme = uri.getScheme();
+                                    if (Objects.equals(scheme, Content.IPNS) ||
+                                            Objects.equals(scheme, Content.IPFS) ||
+                                            Objects.equals(scheme, Content.HTTP) ||
+                                            Objects.equals(scheme, Content.HTTPS)) {
+                                        openBrowserView(uri);
+                                    } else {
+                                        EVENTS.getInstance(getApplicationContext()).error(
+                                                getString(R.string.codec_not_supported));
+                                    }
+                                } else {
+                                    EVENTS.getInstance(getApplicationContext()).error(
+                                            getString(R.string.codec_not_supported));
+                                }
+                            } catch (Throwable throwable) {
+                                EVENTS.getInstance(getApplicationContext()).error(
+                                        getString(R.string.codec_not_supported));
+                            }
+                        }
+                    }
+
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
+                }
+
+            });
     private TextView mBrowserText;
     private ActionMode mActionMode;
     private ImageButton mActionBookmark;
@@ -366,6 +327,8 @@ public class MainActivity extends AppCompatActivity implements
     private PeersFragment mPeersFragment;
     private SwarmFragment mSwarmFragment;
     private SettingsFragment mSettingsFragment;
+    private boolean hasCamera;
+    private ImageButton mActionHome;
 
     private static long getThread(@NonNull Context context) {
 
@@ -381,6 +344,40 @@ public class MainActivity extends AppCompatActivity implements
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putLong(Content.IDX, idx);
         editor.apply();
+    }
+
+    public void unRegisterNetworkCallback() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager)
+                    getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            connectivityManager.unregisterNetworkCallback(networkCallback);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+    public void registerNetworkCallback() {
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager)
+                    getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            networkCallback = new ConnectivityManager.NetworkCallback() {
+                @Override
+                public void onAvailable(Network network) {
+                    SwarmConnectWorker.dialing(getApplicationContext());
+                }
+
+                @Override
+                public void onLost(Network network) {
+                }
+            };
+
+
+            connectivityManager.registerDefaultNetworkCallback(networkCallback);
+        } catch (Exception e) {
+            LogUtils.error(TAG, e);
+        }
     }
 
     @Override
@@ -721,7 +718,6 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-
     private ActionMode.Callback createSearchActionModeCallback() {
         return new ActionMode.Callback() {
             @Override
@@ -814,7 +810,7 @@ public class MainActivity extends AppCompatActivity implements
                             BOOKS books = BOOKS.getInstance(getApplicationContext());
                             List<Bookmark> bookmarks = books.getBookmarksByQuery(newText);
 
-                            if(!bookmarks.isEmpty()) {
+                            if (!bookmarks.isEmpty()) {
                                 mPopupWindow.setAdapter(new BookmarksAdapter(getApplicationContext(),
                                         new ArrayList<>(bookmarks)) {
                                     @Override
@@ -899,9 +895,6 @@ public class MainActivity extends AppCompatActivity implements
                 .getDisplayMetrics().density;
         return Math.round((float) 48 * density);
     }
-
-    private boolean hasCamera;
-    private ImageButton mActionHome;
 
     private void updateHome(@NonNull DOCS docs) {
         if (!InitApplication.isPublisherEnabled(getApplicationContext())) {
@@ -2034,6 +2027,7 @@ public class MainActivity extends AppCompatActivity implements
     private String prettyUri(@NonNull Uri uri, @NonNull String replace) {
         return uri.toString().replaceFirst(replace, "");
     }
+
     public void updateTitle(@NonNull Uri uri) {
 
         try {
@@ -2054,7 +2048,7 @@ public class MainActivity extends AppCompatActivity implements
                 String title = uri.toString();
                 if (bookmark != null) {
                     String bookmarkTitle = bookmark.getTitle();
-                    if(!bookmarkTitle.isEmpty()) {
+                    if (!bookmarkTitle.isEmpty()) {
                         title = bookmarkTitle;
                     }
                 }
@@ -2064,7 +2058,7 @@ public class MainActivity extends AppCompatActivity implements
                 );
                 mBrowserText.setText(title);
             }
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
     }
@@ -2103,6 +2097,24 @@ public class MainActivity extends AppCompatActivity implements
         updateDownload(uri);
     }
 
+    private void invokeScan() {
+        try {
+            PackageManager pm = getPackageManager();
+
+            if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
+                IntentIntegrator integrator = new IntentIntegrator(this);
+                integrator.setOrientationLocked(false);
+                Intent intent = integrator.createScanIntent();
+                mScanRequestForResult.launch(intent);
+            } else {
+                EVENTS.getInstance(getApplicationContext()).permission(
+                        getString(R.string.feature_camera_required));
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
     public abstract static class AppBarStateChangedListener implements AppBarLayout.OnOffsetChangedListener {
 
         private State mCurrentState = State.IDLE;
@@ -2131,25 +2143,6 @@ public class MainActivity extends AppCompatActivity implements
             EXPANDED,
             COLLAPSED,
             IDLE
-        }
-    }
-
-
-    private void invokeScan() {
-        try {
-            PackageManager pm = getPackageManager();
-
-            if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)) {
-                IntentIntegrator integrator = new IntentIntegrator(this);
-                integrator.setOrientationLocked(false);
-                Intent intent = integrator.createScanIntent();
-                mScanRequestForResult.launch(intent);
-            } else {
-                EVENTS.getInstance(getApplicationContext()).permission(
-                        getString(R.string.feature_camera_required));
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
         }
     }
 

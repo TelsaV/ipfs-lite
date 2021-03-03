@@ -8,7 +8,6 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
 import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -74,12 +73,7 @@ public class CopyFileWorker extends Worker {
     private void reportProgress(long idx, @NonNull String title, int percent) {
 
         if (!isStopped()) {
-            Notification notification;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                notification = createNotification(title, percent);
-            } else {
-                notification = createCompatNotification(title, percent);
-            }
+            Notification notification = createNotification(title, percent);
             mLastNotification.set(notification);
 
             if (mNotificationManager != null) {
@@ -115,23 +109,6 @@ public class CopyFileWorker extends Worker {
         return builder.build();
     }
 
-    private Notification createCompatNotification(@NonNull String text, int progress) {
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                getApplicationContext(), InitApplication.CHANNEL_ID);
-
-
-        builder.setContentText(text)
-                .setSubText("" + progress + "%")
-                .setProgress(100, progress, false)
-                .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.download)
-                .setCategory(Notification.CATEGORY_PROGRESS)
-                .setUsesChronometer(true)
-                .setOngoing(true);
-
-        return builder.build();
-    }
 
     @NonNull
     @Override

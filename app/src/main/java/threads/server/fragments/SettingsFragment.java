@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.DocumentsContract;
 import android.text.Html;
@@ -218,7 +217,7 @@ public class SettingsFragment extends Fragment {
         enableRedirectUrl.setChecked(InitApplication.isRedirectUrlEnabled(mContext));
         enableRedirectUrl.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     InitApplication.setRedirectUrlEnabled(mContext, isChecked);
-                    DOCS.getInstance(mContext).refreshRedirectOptions();
+                    DOCS.getInstance(mContext).refreshRedirectOptions(mContext);
                 }
         );
 
@@ -227,7 +226,7 @@ public class SettingsFragment extends Fragment {
         enableRedirectIndex.setChecked(InitApplication.isRedirectIndexEnabled(mContext));
         enableRedirectIndex.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     InitApplication.setRedirectIndexEnabled(mContext, isChecked);
-                    DOCS.getInstance(mContext).refreshRedirectOptions();
+                    DOCS.getInstance(mContext).refreshRedirectOptions(mContext);
                 }
         );
 
@@ -270,9 +269,7 @@ public class SettingsFragment extends Fragment {
         TextView publisher_service_time_text = view.findViewById(R.id.publisher_service_time_text);
         SeekBar publisher_service_time = view.findViewById(R.id.publisher_service_time);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            publisher_service_time.setMin(2);
-        }
+        publisher_service_time.setMin(2);
         publisher_service_time.setMax(12);
         int time = 0;
         int pinServiceTime = LiteService.getPublishServiceTime(mContext);
@@ -309,12 +306,12 @@ public class SettingsFragment extends Fragment {
         enablePublisher.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     InitApplication.setPublisherEnabled(mContext, isChecked);
                     publisher_service_time.setEnabled(isChecked);
-            publisher_service_time_text.setEnabled(isChecked);
-            EVENTS.getInstance(mContext).home();
+                    publisher_service_time_text.setEnabled(isChecked);
+                    EVENTS.getInstance(mContext).home();
                 }
         );
 
-        if(publisherEnabled){
+        if (publisherEnabled) {
             publisher_service_time.setEnabled(true);
             publisher_service_time_text.setEnabled(true);
         } else {
@@ -323,16 +320,11 @@ public class SettingsFragment extends Fragment {
         }
 
 
-
-
-
         TextView connection_timeout_text = view.findViewById(R.id.connection_timeout_text);
         SeekBar connection_timeout = view.findViewById(R.id.connection_timeout);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            connection_timeout.setMin(15);
-        }
+        connection_timeout.setMin(15);
         connection_timeout.setMax(120);
 
         int connectionTimeout = InitApplication.getConnectionTimeout(mContext);
@@ -361,7 +353,6 @@ public class SettingsFragment extends Fragment {
         });
 
         String swarmKey = IPFS.getSwarmKey(mContext);
-
 
 
         mSwarmKey = view.findViewById(R.id.swarm_key);

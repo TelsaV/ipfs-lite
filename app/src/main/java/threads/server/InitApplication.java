@@ -173,7 +173,6 @@ public class InitApplication extends Application {
     }
 
 
-
     public static void syncData(@NonNull Context context) {
         IPFS ipfs = IPFS.getInstance(context);
         PEERS peers = PEERS.getInstance(context);

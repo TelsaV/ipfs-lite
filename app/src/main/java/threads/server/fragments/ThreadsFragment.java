@@ -229,7 +229,7 @@ public class ThreadsFragment extends Fragment implements
 
     public void findInPage() {
         try {
-            if(isResumed()) {
+            if (isResumed()) {
                 mActionMode = ((AppCompatActivity)
                         mActivity).startSupportActionMode(
                         createSearchActionModeCallback());
