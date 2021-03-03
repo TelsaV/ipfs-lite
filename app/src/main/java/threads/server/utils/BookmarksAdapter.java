@@ -42,9 +42,9 @@ public abstract class BookmarksAdapter extends ArrayAdapter<Bookmark> {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(R.layout.bookmarks, parent, false);
-            viewHolder.title = (TextView) convertView.findViewById(R.id.bookmark_title);
-            viewHolder.uri = (TextView) convertView.findViewById(R.id.bookmark_uri);
-            viewHolder.image = (ImageView) convertView.findViewById(R.id.bookmark_image);
+            viewHolder.title = convertView.findViewById(R.id.bookmark_title);
+            viewHolder.uri = convertView.findViewById(R.id.bookmark_uri);
+            viewHolder.image = convertView.findViewById(R.id.bookmark_image);
             viewHolder.view = convertView;
 
             convertView.setTag(viewHolder);

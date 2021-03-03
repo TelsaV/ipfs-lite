@@ -232,7 +232,6 @@
             android:layout_marginEnd="16dp" />
 
         <TextView
-            android:id="@+id/publisher_service_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
@@ -288,7 +287,6 @@
             android:layout_marginEnd="16dp" />
 
         <TextView
-            android:id="@+id/connection_timeout_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
