@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import lite.Peer;
 import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.Settings;
@@ -47,8 +48,6 @@ import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
 import threads.server.services.MimeTypeService;
 import threads.server.utils.MimeType;
-import threads.server.work.PageConnectWorker;
-import threads.server.work.PageProviderWorker;
 
 public class DOCS {
 
@@ -87,6 +86,104 @@ public class DOCS {
             }
         }
         return INSTANCE;
+    }
+
+
+    private void pageProvider(@NonNull String cid, @NonNull Closeable closeable) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            long start = System.currentTimeMillis();
+            try {
+                ipfs.dhtFindProviders(cid, pid -> {
+                    try {
+                        LogUtils.error(TAG, "Found Provider " + pid);
+                        if (!ipfs.isConnected(pid)) {
+                            Executors.newSingleThreadExecutor().execute(() -> {
+                                try {
+                                    boolean result = ipfs.swarmConnect(
+                                            Content.P2P_PATH + pid, pid, closeable);
+                                    LogUtils.error(TAG, "Connect " + pid + " " + result);
+                                } catch (Throwable throwable) {
+                                    LogUtils.error(TAG, throwable.getMessage());
+                                }
+                            });
+                        }
+
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    }
+                }, 10, closeable);
+
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable.getMessage());
+            } finally {
+                LogUtils.info(TAG, "Finish " + cid +
+                        " onStart [" + (System.currentTimeMillis() - start) + "]...");
+            }
+        });
+    }
+
+    private void pageConnect(@NonNull String pid, @NonNull Closeable closeable) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+
+                Page page = pages.getPage(pid);
+                boolean connected = ipfs.isConnected(pid);
+                if (!connected) {
+                    if (page != null) {
+                        String address = page.getAddress();
+                        if (!address.isEmpty()) {
+                            connected = ipfs.swarmConnect(
+                                    address.concat(Content.P2P_PATH).concat(page.getPid()),
+                                    page.getPid(), closeable);
+                        }
+                    }
+                    if (!connected) {
+                        connected = ipfs.swarmConnect(Content.P2P_PATH + pid,
+                                pid, closeable);
+                    }
+                }
+
+                if (page != null) {
+                    Peer info = ipfs.swarmPeer(pid);
+                    if (info != null) {
+                        String address = info.getAddress();
+                        if (!address.isEmpty() && !address.contains(Content.CIRCUIT)) {
+                            if (!Objects.equals(address, page.getAddress())) {
+                                pages.setPageAddress(pid, address);
+                                pages.resetBootstrap(pid);
+                            } else {
+                                pages.incrementRating(pid);
+                                // success here, same address
+                                if (!page.isBootstrap()) {
+                                    pages.setBootstrap(pid);
+                                }
+                            }
+                        } else {
+                            if (!page.getAddress().isEmpty()) {
+                                pages.setPageAddress(pid, "");
+                            }
+                            if (page.isBootstrap()) {
+                                pages.resetBootstrap(pid);
+                            }
+                        }
+                    } else {
+                        if (!page.getAddress().isEmpty()) {
+                            pages.setPageAddress(pid, "");
+                        }
+                        if (page.isBootstrap()) {
+                            pages.resetBootstrap(pid);
+                        }
+                    }
+
+                }
+
+                LogUtils.error(TAG, "Connect " + pid + " " + connected);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable.getMessage());
+            } finally {
+                LogUtils.info(TAG, " finish onStart ...");
+            }
+        });
     }
 
     public void updateBookmarkTitle(@NonNull Uri uri, @NonNull String title) {
@@ -860,7 +957,7 @@ public class DOCS {
         Objects.requireNonNull(root);
 
         if (foreignPage(uri)) {
-            PageProviderWorker.providers(context, root);
+            pageProvider(root, closeable);
         }
 
         return getResponse(context, uri, root, paths, closeable);
@@ -1055,10 +1152,6 @@ public class DOCS {
                 } else {
                     if (link.startsWith(Content.IPFS_PATH)) {
                         String cid = link.replaceFirst(Content.IPFS_PATH, "");
-
-                        PageProviderWorker.providers(context, cid);
-
-
                         Uri.Builder builder = new Uri.Builder();
                         builder.scheme(Content.IPFS)
                                 .authority(cid);
@@ -1212,14 +1305,14 @@ public class DOCS {
         return null;
     }
 
-    public void connectUri(@NonNull Context context, @NonNull Uri uri) {
+    public void connectUri(@NonNull Uri uri, @NonNull Closeable closeable) {
 
         try {
             String host = getHost(uri);
             if (host != null && !Objects.equals(getHost(), host)) {
                 String pid = ipfs.decodeName(host);
                 if (!pid.isEmpty()) {
-                    PageConnectWorker.connect(context, pid);
+                    pageConnect(pid, closeable);
                 }
             }
         } catch (Throwable throwable) {

@@ -67,8 +67,6 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.ClearBrowserDataWorker;
 import threads.server.work.DownloadContentWorker;
 import threads.server.work.DownloadFileWorker;
-import threads.server.work.PageConnectWorker;
-import threads.server.work.PageProviderWorker;
 
 
 public class BrowserFragment extends Fragment {
@@ -446,15 +444,18 @@ public class BrowserFragment extends Fragment {
                         }
                     }
 
-                    if (docs.foreignPage(uri)) {
-                        docs.connectUri(mContext, uri);
-                    }
+
 
                     Thread thread = Thread.currentThread();
 
                     docs.attachThread(thread.getId());
 
                     Closeable closeable = () -> !docs.shouldRun(thread.getId());
+
+                    if (docs.foreignPage(uri)) {
+                        docs.connectUri(uri, closeable);
+                    }
+
                     try {
 
                         Pair<Uri, Boolean> result = docs.redirectUri(mContext, uri, closeable);
@@ -467,7 +468,7 @@ public class BrowserFragment extends Fragment {
                         }
 
                         if (docs.foreignPage(redirectUri)) {
-                            docs.connectUri(mContext, redirectUri);
+                            docs.connectUri(redirectUri, closeable);
                         }
 
                         return docs.getResponse(mContext, redirectUri, closeable);
@@ -785,11 +786,6 @@ public class BrowserFragment extends Fragment {
             mListener.updateUri(uri);
 
             mProgressBar.setVisibility(View.VISIBLE);
-
-
-            WorkManager.getInstance(mContext).cancelAllWorkByTag(PageConnectWorker.TAG);
-            WorkManager.getInstance(mContext).cancelAllWorkByTag(PageProviderWorker.TAG);
-
 
             if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                     Objects.equals(uri.getScheme(), Content.IPFS)) {

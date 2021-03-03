@@ -664,17 +664,19 @@ public class IPFS implements Listener {
         }
     }
 
-    public void dhtFindProviders(@NonNull String cid, @NonNull Provider provider, int numProvs,
-                                 @NonNull lite.Closeable closeable) {
 
+    public void dhtFindProviders(@NonNull String cid, @NonNull Provider provider, int numProvs,
+                                 @NonNull Closeable closeable) throws ClosedException {
         if (!isDaemonRunning()) {
             return;
         }
-
         try {
-            node.dhtFindProvs(cid, provider, numProvs, closeable);
+            node.dhtFindProvs(cid, provider, numProvs, closeable::isClosed);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
+        }
+        if (closeable.isClosed()) {
+            throw new ClosedException();
         }
     }
 
@@ -733,18 +735,22 @@ public class IPFS implements Listener {
         }
     }
 
-    public boolean connect(@NonNull String multiAddress, @Nullable String pid,
-                           @NonNull lite.Closeable closeable) {
+    public boolean swarmConnect(@NonNull String multiAddress, @Nullable String pid,
+                                @NonNull Closeable closeable) throws ClosedException {
         if (!isDaemonRunning()) {
             return false;
         }
+
+        if (pid != null) {
+            swarmEnhance(pid);
+        }
         try {
-            if (pid != null) {
-                swarmEnhance(pid);
-            }
-            return node.swarmConnect(multiAddress, closeable);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, multiAddress + " " + e.getLocalizedMessage());
+            return node.swarmConnect(multiAddress, closeable::isClosed);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, multiAddress + " connection failed");
+        }
+        if (closeable.isClosed()) {
+            throw new ClosedException();
         }
         return false;
     }
