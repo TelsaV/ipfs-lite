@@ -62,8 +62,8 @@ public class DOCS {
     private final THREADS threads;
     private final PAGES pages;
     private final String host;
-    private final boolean isRedirectIndex;
-    private final boolean isRedirectUrl;
+    private boolean isRedirectIndex;
+    private boolean isRedirectUrl;
     private final Hashtable<String, String> resolves = new Hashtable<>();
     private final Hashtable<Uri, Uri> redirects = new Hashtable<>();
 
@@ -73,8 +73,7 @@ public class DOCS {
         pages = PAGES.getInstance(context);
         books = BOOKS.getInstance(context);
         host = ipfs.getHost();
-        isRedirectIndex = InitApplication.isRedirectIndexEnabled(context);
-        isRedirectUrl = InitApplication.isRedirectUrlEnabled(context);
+        refreshRedirectOptions(context);
         initPinsPage();
     }
 
@@ -1035,7 +1034,7 @@ public class DOCS {
 
 
     @NonNull
-    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable)
+    public Pair<Uri, Boolean> redirectUri(@NonNull Context context, @NonNull Uri uri, @NonNull Closeable closeable)
             throws ResolveNameException, InvalidNameException, ClosedException {
 
 
@@ -1055,6 +1054,10 @@ public class DOCS {
                 } else {
                     if (link.startsWith(Content.IPFS_PATH)) {
                         String cid = link.replaceFirst(Content.IPFS_PATH, "");
+
+                        PageProviderWorker.providers(context, cid);
+
+
                         Uri.Builder builder = new Uri.Builder();
                         builder.scheme(Content.IPFS)
                                 .authority(cid);
@@ -1083,7 +1086,7 @@ public class DOCS {
                                 for (String path : paths) {
                                     builder.appendPath(path);
                                 }
-                                return redirectUri(builder.build(), closeable);
+                                return redirectUri(context, builder.build(), closeable);
                             }
 
                         }
@@ -1098,7 +1101,7 @@ public class DOCS {
                             for (String path : paths) {
                                 builder.appendPath(path);
                             }
-                            return redirectUri(builder.build(), closeable);
+                            return redirectUri(context, builder.build(), closeable);
                         }
 
                     }
@@ -1271,6 +1274,13 @@ public class DOCS {
     public boolean isPrivateNetwork(@NonNull Context context) {
         return ipfs.isPrivateNetwork() || IPFS.isPrivateSharingEnabled(context);
     }
+
+    public void refreshRedirectOptions(@NonNull Context context) {
+        isRedirectIndex = InitApplication.isRedirectIndexEnabled(context);
+        isRedirectUrl = InitApplication.isRedirectUrlEnabled(context);
+    }
+
+
 
     public static class ContentException extends Exception {
 

@@ -457,7 +457,7 @@ public class BrowserFragment extends Fragment {
                     Closeable closeable = () -> !docs.shouldRun(thread.getId());
                     try {
 
-                        Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
+                        Pair<Uri, Boolean> result = docs.redirectUri(mContext, uri, closeable);
                         Uri redirectUri = result.first;
                         if (!Objects.equals(uri, redirectUri)) {
                             docs.storeRedirect(redirectUri, uri);
@@ -720,9 +720,6 @@ public class BrowserFragment extends Fragment {
 
                     String title = mCustomWebChromeClient.getTitle(uri);
 
-                    if (title == null) {
-                        title = "" + mWebView.getTitle();
-                    }
 
                     bookmark = books.createBookmark(uri.toString(), title);
                     if (bitmap != null) {

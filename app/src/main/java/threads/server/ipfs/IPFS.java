@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ipns.pb.IpnsEntryProtos;
-import lite.DhtClose;
 import lite.Listener;
 import lite.Loader;
 import lite.LsInfoClose;
@@ -666,7 +665,7 @@ public class IPFS implements Listener {
     }
 
     public void dhtFindProviders(@NonNull String cid, @NonNull Provider provider, int numProvs,
-                                 @NonNull DhtClose closeable) {
+                                 @NonNull lite.Closeable closeable) {
 
         if (!isDaemonRunning()) {
             return;
@@ -697,7 +696,7 @@ public class IPFS implements Listener {
         return providers;
     }
 
-    public void dhtPublish(@NonNull String cid, @NonNull DhtClose closable) {
+    public void dhtPublish(@NonNull String cid, @NonNull lite.Closeable closable) {
 
         if (!isDaemonRunning()) {
             return;
@@ -734,6 +733,22 @@ public class IPFS implements Listener {
         }
     }
 
+    public boolean connect(@NonNull String multiAddress, @Nullable String pid,
+                           @NonNull lite.Closeable closeable) {
+        if (!isDaemonRunning()) {
+            return false;
+        }
+        try {
+            if (pid != null) {
+                swarmEnhance(pid);
+            }
+            return node.swarmConnect(multiAddress, closeable);
+        } catch (Throwable e) {
+            LogUtils.error(TAG, multiAddress + " " + e.getLocalizedMessage());
+        }
+        return false;
+    }
+
     public boolean swarmConnect(@NonNull String multiAddress, @Nullable String pid, int timeout) {
         if (!isDaemonRunning()) {
             return false;
@@ -742,7 +757,7 @@ public class IPFS implements Listener {
             if (pid != null) {
                 swarmEnhance(pid);
             }
-            return node.swarmConnect(multiAddress, timeout);
+            return node.swarmConnectTimeout(multiAddress, timeout);
         } catch (Throwable e) {
             LogUtils.error(TAG, multiAddress + " " + e.getLocalizedMessage());
         }
@@ -1397,6 +1412,7 @@ public class IPFS implements Listener {
 
     @Override
     public boolean blockHas(String key) {
+        //LogUtils.error(TAG, "has " + key);
         return blocks.hasBlock(Settings.BLOCKS + key);
     }
 

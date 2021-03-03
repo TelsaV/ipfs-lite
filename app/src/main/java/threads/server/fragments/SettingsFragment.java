@@ -33,6 +33,7 @@ import java.util.Objects;
 import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.R;
+import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
 import threads.server.ipfs.IPFS;
@@ -217,9 +218,7 @@ public class SettingsFragment extends Fragment {
         enableRedirectUrl.setChecked(InitApplication.isRedirectUrlEnabled(mContext));
         enableRedirectUrl.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     InitApplication.setRedirectUrlEnabled(mContext, isChecked);
-
-                    EVENTS.getInstance(mContext).exit(
-                            getString(R.string.restart_config_changed));
+                    DOCS.getInstance(mContext).refreshRedirectOptions();
                 }
         );
 
@@ -228,9 +227,7 @@ public class SettingsFragment extends Fragment {
         enableRedirectIndex.setChecked(InitApplication.isRedirectIndexEnabled(mContext));
         enableRedirectIndex.setOnCheckedChangeListener((buttonView, isChecked) -> {
                     InitApplication.setRedirectIndexEnabled(mContext, isChecked);
-
-                    EVENTS.getInstance(mContext).exit(
-                            getString(R.string.restart_config_changed));
+                    DOCS.getInstance(mContext).refreshRedirectOptions();
                 }
         );
 

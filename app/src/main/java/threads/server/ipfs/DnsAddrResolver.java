@@ -45,8 +45,8 @@ public class DnsAddrResolver {
                 if (txtRecord.startsWith(Settings.DNS_LINK)) {
                     return txtRecord.replaceFirst(Settings.DNS_LINK, "");
                 }
-            } catch (Throwable e) {
-                LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
             }
         }
         return "";
@@ -64,8 +64,8 @@ public class DnsAddrResolver {
                 TXT text = (TXT) record.getPayload();
                 txtRecords.add(text.getText());
             }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
         return txtRecords;
     }
@@ -103,8 +103,8 @@ public class DnsAddrResolver {
                         }
                     }
                 }
-            } catch (Throwable e) {
-                LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
             }
         }
         return result;
@@ -123,8 +123,8 @@ public class DnsAddrResolver {
                 TXT text = (TXT) record.getPayload();
                 txtRecords.add(text.getText());
             }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
         return txtRecords;
     }

@@ -16,7 +16,6 @@ import java.util.Objects;
 import java.util.concurrent.Executors;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
 
@@ -66,16 +65,17 @@ public class PageProviderWorker extends Worker {
 
         try {
 
-            final int timeout = InitApplication.getConnectionTimeout(getApplicationContext());
+            LogUtils.error(TAG, "Valid CID " + ipfs.isValidCID(cid));
             ipfs.dhtFindProviders(cid, pid -> {
                 try {
                     LogUtils.error(TAG, "Found Provider " + pid);
                     if (!ipfs.isConnected(pid) && !isStopped()) {
                         Executors.newSingleThreadExecutor().execute(() -> {
 
-                            boolean result = ipfs.swarmConnect(
-                                    Content.P2P_PATH + pid, pid, timeout);
-                            LogUtils.error(TAG, "Connect " + pid + " " + result);
+                            boolean result = ipfs.connect(
+                                    Content.P2P_PATH + pid, pid, this::isStopped);
+                            LogUtils.error(TAG, "Connect " + pid + " " + result + " "
+                                    + getId().toString());
                         });
                     }
 
