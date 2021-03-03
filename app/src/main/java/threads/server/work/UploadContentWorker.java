@@ -7,11 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.DocumentsContract;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.work.Data;
@@ -100,12 +98,7 @@ public class UploadContentWorker extends Worker {
 
     @NonNull
     private ForegroundInfo createForegroundInfo(@NonNull String title, int progress) {
-        Notification notification;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notification = createNotification(title, progress);
-        } else {
-            notification = createCompatNotification(title, progress);
-        }
+        Notification notification = createNotification(title, progress);
         mLastNotification.set(notification);
         return new ForegroundInfo(getId().hashCode(), notification);
     }
@@ -458,13 +451,7 @@ public class UploadContentWorker extends Worker {
     private void reportProgress(@NonNull String info, int percent) {
 
         if (!isStopped()) {
-            Notification notification;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                notification = createNotification(info, percent);
-            } else {
-                notification = createCompatNotification(info, percent);
-            }
-
+            Notification notification = createNotification(info, percent);
             if (mNotificationManager != null) {
                 mNotificationManager.notify(getId().hashCode(), notification);
             }
@@ -472,8 +459,6 @@ public class UploadContentWorker extends Worker {
         }
     }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private Notification createNotification(@NonNull String title, int progress) {
 
         Notification.Builder builder;
@@ -496,46 +481,11 @@ public class UploadContentWorker extends Worker {
 
         int requestID = (int) System.currentTimeMillis();
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
+                main, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Notification.Action action = new Notification.Action.Builder(
                 Icon.createWithResource(getApplicationContext(), R.drawable.pause), cancel,
                 intent).build();
-
-        builder.setContentTitle(title)
-                .setSubText("" + progress + "%")
-                .setContentIntent(pendingIntent)
-                .setProgress(100, progress, false)
-                .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.download)
-                .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPrimary))
-                .setCategory(Notification.CATEGORY_PROGRESS)
-                .setUsesChronometer(true)
-                .setOngoing(true);
-
-        return builder.build();
-    }
-
-    private Notification createCompatNotification(@NonNull String title, int progress) {
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                getApplicationContext(), InitApplication.CHANNEL_ID);
-
-
-        PendingIntent intent = WorkManager.getInstance(getApplicationContext())
-                .createCancelPendingIntent(getId());
-        String cancel = getApplicationContext().getString(android.R.string.cancel);
-
-        Intent main = new Intent(getApplicationContext(), MainActivity.class);
-
-        int requestID = (int) System.currentTimeMillis();
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Action action = new NotificationCompat.Action.Builder(
-                R.drawable.pause, cancel, intent).build();
 
         builder.setContentTitle(title)
                 .setSubText("" + progress + "%")

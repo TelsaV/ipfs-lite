@@ -177,7 +177,8 @@ public class UploadFileWorker extends Worker {
         Intent defaultIntent = new Intent(getApplicationContext(), MainActivity.class);
         int requestID = (int) System.currentTimeMillis();
         PendingIntent defaultPendingIntent = PendingIntent.getActivity(
-                getApplicationContext(), requestID, defaultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                getApplicationContext(), requestID, defaultIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         builder.setContentIntent(defaultPendingIntent);
         Notification notification = builder.build();

@@ -122,14 +122,16 @@ public class DaemonService extends Service {
                 Intent notifyIntent = new Intent(getApplicationContext(), MainActivity.class);
                 int viewID = (int) System.currentTimeMillis();
                 PendingIntent viewIntent = PendingIntent.getActivity(getApplicationContext(),
-                        viewID, notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        viewID, notifyIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
 
                 Intent stopIntent = new Intent(getApplicationContext(), DaemonService.class);
                 stopIntent.putExtra(Content.REFRESH, false);
                 int requestID = (int) System.currentTimeMillis();
                 PendingIntent stopPendingIntent = PendingIntent.getService(
-                        getApplicationContext(), requestID, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                        getApplicationContext(), requestID, stopIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
                 String cancel = getApplicationContext().getString(android.R.string.cancel);
                 NotificationCompat.Action action = new NotificationCompat.Action.Builder(

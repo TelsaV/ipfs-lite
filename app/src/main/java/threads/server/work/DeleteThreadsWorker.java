@@ -34,6 +34,7 @@ public class DeleteThreadsWorker extends Worker {
 
     private static final String TAG = DeleteThreadsWorker.class.getSimpleName();
     private final NotificationManager mNotificationManager;
+
     @SuppressWarnings("WeakerAccess")
     public DeleteThreadsWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
@@ -94,7 +95,7 @@ public class DeleteThreadsWorker extends Worker {
 
     private Notification createNotification() {
 
-        Notification.Builder builder= new Notification.Builder(getApplicationContext(),
+        Notification.Builder builder = new Notification.Builder(getApplicationContext(),
                 InitApplication.CHANNEL_ID);
 
 
@@ -106,7 +107,7 @@ public class DeleteThreadsWorker extends Worker {
 
         int requestID = (int) System.currentTimeMillis();
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
+                main, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Notification.Action action = new Notification.Action.Builder(
                 Icon.createWithResource(getApplicationContext(), R.drawable.pause), cancel,

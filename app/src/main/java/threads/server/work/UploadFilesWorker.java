@@ -7,11 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.work.Data;
 import androidx.work.ForegroundInfo;
@@ -84,12 +81,8 @@ public class UploadFilesWorker extends Worker {
     @NonNull
     private ForegroundInfo createForegroundInfo(@NonNull String title) {
 
-        Notification notification;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notification = createNotification(title, 0, 0, 0);
-        } else {
-            notification = createCompatNotification(title, 0, 0, 0);
-        }
+        Notification notification = createNotification(title, 0, 0, 0);
+
         mLastNotification.set(notification);
         return new ForegroundInfo(UTW, notification);
     }
@@ -232,19 +225,13 @@ public class UploadFilesWorker extends Worker {
 
         if (!isStopped()) {
 
-            Notification notification;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                notification = createNotification(info, percent, index, maxIndex);
-            } else {
-                notification = createCompatNotification(info, percent, index, maxIndex);
-            }
+            Notification notification = createNotification(info, percent, index, maxIndex);
             if (mNotificationManager != null) {
                 mNotificationManager.notify(UTW, notification);
             }
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     private Notification createNotification(@NonNull String title, int progress, int index, int maxIndex) {
 
         Notification.Builder builder;
@@ -267,7 +254,7 @@ public class UploadFilesWorker extends Worker {
 
         int requestID = (int) System.currentTimeMillis();
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
+                main, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Notification.Action action = new Notification.Action.Builder(
                 Icon.createWithResource(getApplicationContext(), R.drawable.pause), cancel,
@@ -289,38 +276,4 @@ public class UploadFilesWorker extends Worker {
         return builder.build();
     }
 
-    private Notification createCompatNotification(@NonNull String title, int progress, int index, int maxIndex) {
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                getApplicationContext(), InitApplication.CHANNEL_ID);
-
-
-        PendingIntent intent = WorkManager.getInstance(getApplicationContext())
-                .createCancelPendingIntent(getId());
-        String cancel = getApplicationContext().getString(android.R.string.cancel);
-
-        Intent main = new Intent(getApplicationContext(), MainActivity.class);
-
-        int requestID = (int) System.currentTimeMillis();
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Action action = new NotificationCompat.Action.Builder(
-                R.drawable.pause, cancel, intent).build();
-
-        builder.setContentTitle(title)
-                .setSubText("" + index + "/" + maxIndex)
-                .setContentIntent(pendingIntent)
-                .setProgress(100, progress, false)
-                .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.download)
-                .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPrimary))
-                .setCategory(Notification.CATEGORY_PROGRESS)
-                .setUsesChronometer(true)
-                .setOngoing(true);
-
-        return builder.build();
-    }
 }

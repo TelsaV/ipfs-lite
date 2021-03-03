@@ -225,7 +225,8 @@ public class DownloadFileWorker extends Worker {
 
         int requestID = (int) System.currentTimeMillis();
         PendingIntent defaultPendingIntent = PendingIntent.getActivity(
-                getApplicationContext(), requestID, defaultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                getApplicationContext(), requestID, defaultIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         builder.setContentIntent(defaultPendingIntent);
         builder.setAutoCancel(true);
@@ -275,7 +276,7 @@ public class DownloadFileWorker extends Worker {
 
         int requestID = (int) System.currentTimeMillis();
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
+                main, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Notification.Action action = new Notification.Action.Builder(
                 Icon.createWithResource(getApplicationContext(), R.drawable.pause), cancel,

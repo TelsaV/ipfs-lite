@@ -22,10 +22,10 @@ import androidx.work.WorkerParameters;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import threads.server.R;
 import threads.LogUtils;
 import threads.server.InitApplication;
 import threads.server.MainActivity;
+import threads.server.R;
 import threads.server.core.DOCS;
 import threads.server.core.blocks.BLOCKS;
 import threads.server.core.events.EVENTS;
@@ -37,6 +37,7 @@ public class ClearBrowserDataWorker extends Worker {
 
     private static final String TAG = ClearBrowserDataWorker.class.getSimpleName();
     private final NotificationManager mNotificationManager;
+
     @SuppressWarnings("WeakerAccess")
     public ClearBrowserDataWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
@@ -53,82 +54,10 @@ public class ClearBrowserDataWorker extends Worker {
 
     }
 
-
-
-    private Notification createNotification() {
-
-        Notification.Builder builder= new Notification.Builder(getApplicationContext(),
-                InitApplication.CHANNEL_ID);
-
-
-        PendingIntent intent = WorkManager.getInstance(getApplicationContext())
-                .createCancelPendingIntent(getId());
-        String cancel = getApplicationContext().getString(android.R.string.cancel);
-
-        Intent main = new Intent(getApplicationContext(), MainActivity.class);
-
-        int requestID = (int) System.currentTimeMillis();
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Notification.Action action = new Notification.Action.Builder(
-                Icon.createWithResource(getApplicationContext(), R.drawable.pause), cancel,
-                intent).build();
-
-        builder.setContentTitle(getApplicationContext().getString(R.string.delete_browser_data))
-                .setContentIntent(pendingIntent)
-                .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.refresh)
-                .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black))
-                .setCategory(Notification.CATEGORY_MESSAGE)
-                .setUsesChronometer(true);
-
-        return builder.build();
-    }
-
-    @NonNull
-    private ForegroundInfo createForegroundInfo() {
-        Notification notification = createNotification();
-        return new ForegroundInfo(getId().hashCode(), notification);
-    }
-
-
-    @Override
-    public void onStopped() {
-        closeNotification();
-    }
-
-    private void closeNotification() {
-        if (mNotificationManager != null) {
-            mNotificationManager.cancel(getId().hashCode());
-        }
-    }
-
-    private void createChannel(@NonNull Context context) {
-
-        try {
-            CharSequence name = context.getString(R.string.channel_name);
-            String description = context.getString(R.string.channel_description);
-            NotificationChannel mChannel = new NotificationChannel(InitApplication.CHANNEL_ID, name,
-                    NotificationManager.IMPORTANCE_HIGH);
-            mChannel.setDescription(description);
-
-            if (mNotificationManager != null) {
-                mNotificationManager.createNotificationChannel(mChannel);
-            }
-
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-
-    }
-
     public static void clearCache(@NonNull Context context) {
         WorkManager.getInstance(context).enqueueUniqueWork(
                 TAG, ExistingWorkPolicy.REPLACE, getWork());
     }
-
 
     public static void deleteCache(@NonNull Context context) {
         try {
@@ -142,7 +71,7 @@ public class ClearBrowserDataWorker extends Worker {
     public static boolean deleteDir(@Nullable File dir) {
         if (dir != null && dir.isDirectory()) {
             String[] children = dir.list();
-            if(children != null) {
+            if (children != null) {
                 for (String child : children) {
                     boolean success = deleteDir(new File(dir, child));
                     if (!success) {
@@ -177,6 +106,74 @@ public class ClearBrowserDataWorker extends Worker {
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
+    }
+
+    private Notification createNotification() {
+
+        Notification.Builder builder = new Notification.Builder(getApplicationContext(),
+                InitApplication.CHANNEL_ID);
+
+
+        PendingIntent intent = WorkManager.getInstance(getApplicationContext())
+                .createCancelPendingIntent(getId());
+        String cancel = getApplicationContext().getString(android.R.string.cancel);
+
+        Intent main = new Intent(getApplicationContext(), MainActivity.class);
+
+        int requestID = (int) System.currentTimeMillis();
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
+                main, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Notification.Action action = new Notification.Action.Builder(
+                Icon.createWithResource(getApplicationContext(), R.drawable.pause), cancel,
+                intent).build();
+
+        builder.setContentTitle(getApplicationContext().getString(R.string.delete_browser_data))
+                .setContentIntent(pendingIntent)
+                .setOnlyAlertOnce(true)
+                .setSmallIcon(R.drawable.refresh)
+                .addAction(action)
+                .setColor(ContextCompat.getColor(getApplicationContext(), android.R.color.black))
+                .setCategory(Notification.CATEGORY_MESSAGE)
+                .setUsesChronometer(true);
+
+        return builder.build();
+    }
+
+    @NonNull
+    private ForegroundInfo createForegroundInfo() {
+        Notification notification = createNotification();
+        return new ForegroundInfo(getId().hashCode(), notification);
+    }
+
+    @Override
+    public void onStopped() {
+        closeNotification();
+    }
+
+    private void closeNotification() {
+        if (mNotificationManager != null) {
+            mNotificationManager.cancel(getId().hashCode());
+        }
+    }
+
+    private void createChannel(@NonNull Context context) {
+
+        try {
+            CharSequence name = context.getString(R.string.channel_name);
+            String description = context.getString(R.string.channel_description);
+            NotificationChannel mChannel = new NotificationChannel(InitApplication.CHANNEL_ID, name,
+                    NotificationManager.IMPORTANCE_HIGH);
+            mChannel.setDescription(description);
+
+            if (mNotificationManager != null) {
+                mNotificationManager.createNotificationChannel(mChannel);
+            }
+
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
+
     }
 
     @NonNull

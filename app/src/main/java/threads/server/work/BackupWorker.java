@@ -11,7 +11,6 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.work.Data;
@@ -86,12 +85,7 @@ public class BackupWorker extends Worker {
     private void reportProgress(@NonNull String title, int percent) {
 
         if (!isStopped()) {
-            Notification notification;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                notification = createNotification(title, percent);
-            } else {
-                notification = createCompatNotification(title, percent);
-            }
+            Notification notification = createNotification(title, percent);
             if (mNotificationManager != null) {
                 mNotificationManager.notify(mNote, notification);
             }
@@ -121,46 +115,11 @@ public class BackupWorker extends Worker {
 
         int requestID = (int) System.currentTimeMillis();
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
+                main, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         Notification.Action action = new Notification.Action.Builder(
                 Icon.createWithResource(getApplicationContext(), R.drawable.pause), cancel,
                 intent).build();
-
-        builder.setContentTitle(title)
-                .setContentIntent(pendingIntent)
-                .setProgress(100, progress, false)
-                .setOnlyAlertOnce(true)
-                .setSmallIcon(R.drawable.download)
-                .addAction(action)
-                .setColor(ContextCompat.getColor(getApplicationContext(),
-                        R.color.colorPrimary))
-                .setCategory(Notification.CATEGORY_PROGRESS)
-                .setUsesChronometer(true)
-                .setOngoing(true);
-
-        return builder.build();
-    }
-
-    private Notification createCompatNotification(@NonNull String title, int progress) {
-
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                getApplicationContext(), InitApplication.CHANNEL_ID);
-
-
-        PendingIntent intent = WorkManager.getInstance(getApplicationContext())
-                .createCancelPendingIntent(getId());
-        String cancel = getApplicationContext().getString(android.R.string.cancel);
-
-        Intent main = new Intent(getApplicationContext(), MainActivity.class);
-
-        int requestID = (int) System.currentTimeMillis();
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), requestID,
-                main, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Action action = new NotificationCompat.Action.Builder(
-                R.drawable.pause, cancel, intent).build();
 
         builder.setContentTitle(title)
                 .setContentIntent(pendingIntent)
@@ -248,12 +207,7 @@ public class BackupWorker extends Worker {
 
     @NonNull
     private ForegroundInfo createForegroundInfo(@NonNull String title) {
-        Notification notification;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notification = createNotification(title, 0);
-        } else {
-            notification = createCompatNotification(title, 0);
-        }
+        Notification notification = createNotification(title, 0);
         mLastNotification.set(notification);
         return new ForegroundInfo(mNote, notification);
     }

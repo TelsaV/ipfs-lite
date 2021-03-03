@@ -24,8 +24,8 @@ import threads.server.ipfs.IPFS;
 
 public class PageConnectWorker extends Worker {
 
-    private static final String WID = "PCW";
     public static final String TAG = PageConnectWorker.class.getSimpleName();
+    private static final String WID = "PCW";
 
 
     @SuppressWarnings("WeakerAccess")
