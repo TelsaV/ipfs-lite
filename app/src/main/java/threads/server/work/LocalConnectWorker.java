@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import lite.PeerInfo;
 import threads.LogUtils;
-import threads.server.InitApplication;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
@@ -84,7 +84,7 @@ public class LocalConnectWorker extends Worker {
                 }
                 String multiAddress = pre + host + "/tcp/" + port + "/p2p/" + pid;
 
-                int timeout = InitApplication.getConnectionTimeout(getApplicationContext());
+                int timeout = Settings.getConnectionTimeout(getApplicationContext());
                 ipfs.swarmConnect(multiAddress, pid, timeout);
             }
 

@@ -28,9 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.ipfs.IPFS;
 import threads.server.ipfs.ReaderProgress;
@@ -79,7 +79,7 @@ public class DownloadFileWorker extends Worker {
         try {
             CharSequence name = context.getString(R.string.channel_name);
             String description = context.getString(R.string.channel_description);
-            NotificationChannel mChannel = new NotificationChannel(InitApplication.CHANNEL_ID, name,
+            NotificationChannel mChannel = new NotificationChannel(Settings.CHANNEL_ID, name,
                     NotificationManager.IMPORTANCE_HIGH);
             mChannel.setDescription(description);
 
@@ -217,7 +217,7 @@ public class DownloadFileWorker extends Worker {
     private void buildFailedNotification(@NonNull String name) {
 
         Notification.Builder builder = new Notification.Builder(
-                getApplicationContext(), InitApplication.CHANNEL_ID);
+                getApplicationContext(), Settings.CHANNEL_ID);
 
         builder.setContentTitle(getApplicationContext().getString(R.string.download_failed, name));
         builder.setSmallIcon(R.drawable.download);
@@ -265,7 +265,7 @@ public class DownloadFileWorker extends Worker {
             builder.setSubText("" + progress + "%");
             return builder.build();
         } else {
-            builder = new Notification.Builder(getApplicationContext(), InitApplication.CHANNEL_ID);
+            builder = new Notification.Builder(getApplicationContext(), Settings.CHANNEL_ID);
         }
 
         PendingIntent intent = WorkManager.getInstance(getApplicationContext())

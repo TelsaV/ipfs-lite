@@ -57,9 +57,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import threads.LogUtils;
 import threads.server.ExoPlayerActivity;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
@@ -323,7 +323,7 @@ public class ThreadsFragment extends Fragment implements
                     scrollView.setVisibility(View.VISIBLE);
                 }
 
-                SortOrder sortOrder = InitApplication.getSortOrder(mContext);
+                SortOrder sortOrder = Settings.getSortOrder(mContext);
 
                 updateDirectory(threadIdx,
                         mSelectionViewModel.getQuery().getValue(), sortOrder, false);
@@ -338,7 +338,7 @@ public class ThreadsFragment extends Fragment implements
 
             if (query != null) {
                 Long parent = mSelectionViewModel.getParentThread().getValue();
-                SortOrder sortOrder = InitApplication.getSortOrder(mContext);
+                SortOrder sortOrder = Settings.getSortOrder(mContext);
                 updateDirectory(parent, query, sortOrder, false);
             }
 

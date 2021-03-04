@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.webkit.CookieManager;
+import android.webkit.WebViewDatabase;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,9 +24,9 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.DOCS;
 import threads.server.core.blocks.BLOCKS;
 import threads.server.core.events.EVENTS;
@@ -111,7 +112,7 @@ public class ClearBrowserDataWorker extends Worker {
     private Notification createNotification() {
 
         Notification.Builder builder = new Notification.Builder(getApplicationContext(),
-                InitApplication.CHANNEL_ID);
+                Settings.CHANNEL_ID);
 
 
         PendingIntent intent = WorkManager.getInstance(getApplicationContext())
@@ -162,7 +163,7 @@ public class ClearBrowserDataWorker extends Worker {
         try {
             CharSequence name = context.getString(R.string.channel_name);
             String description = context.getString(R.string.channel_description);
-            NotificationChannel mChannel = new NotificationChannel(InitApplication.CHANNEL_ID, name,
+            NotificationChannel mChannel = new NotificationChannel(Settings.CHANNEL_ID, name,
                     NotificationManager.IMPORTANCE_HIGH);
             mChannel.setDescription(description);
 
@@ -191,6 +192,10 @@ public class ClearBrowserDataWorker extends Worker {
             // Clear all the cookies
             CookieManager.getInstance().removeAllCookies(null);
             CookieManager.getInstance().flush();
+
+            // clears passwords
+            WebViewDatabase.getInstance(getApplicationContext()).clearHttpAuthUsernamePassword();
+
 
             // Clear local data
             FileProvider fileProvider = FileProvider.getInstance(getApplicationContext());

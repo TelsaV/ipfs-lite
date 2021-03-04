@@ -31,7 +31,6 @@ import java.util.concurrent.TimeUnit;
 
 import lite.Peer;
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.Settings;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
@@ -1370,8 +1369,8 @@ public class DOCS {
     }
 
     public void refreshRedirectOptions(@NonNull Context context) {
-        isRedirectIndex = InitApplication.isRedirectIndexEnabled(context);
-        isRedirectUrl = InitApplication.isRedirectUrlEnabled(context);
+        isRedirectIndex = Settings.isRedirectIndexEnabled(context);
+        isRedirectUrl = Settings.isRedirectUrlEnabled(context);
     }
 
 

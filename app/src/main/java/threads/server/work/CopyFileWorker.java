@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
@@ -94,7 +94,7 @@ public class CopyFileWorker extends Worker {
             builder.setSubText("" + progress + "%");
             return builder.build();
         } else {
-            builder = new Notification.Builder(getApplicationContext(), InitApplication.CHANNEL_ID);
+            builder = new Notification.Builder(getApplicationContext(), Settings.CHANNEL_ID);
         }
 
         builder.setContentText(text)
@@ -152,7 +152,7 @@ public class CopyFileWorker extends Worker {
 
                         long time = System.currentTimeMillis();
                         long diff = time - refresh.get();
-                        boolean doProgress = (diff > InitApplication.REFRESH);
+                        boolean doProgress = (diff > Settings.REFRESH);
                         if (doProgress) {
                             refresh.set(time);
                         }

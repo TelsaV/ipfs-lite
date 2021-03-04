@@ -14,7 +14,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
@@ -36,7 +36,7 @@ public class ConnectService {
             }
             long start = System.currentTimeMillis();
 
-            int timeout = InitApplication.getConnectionTimeout(context);
+            int timeout = Settings.getConnectionTimeout(context);
             List<Future<Boolean>> result = executor.invokeAll(tasks, timeout, TimeUnit.SECONDS);
             for (Future<Boolean> future : result) {
                 LogUtils.error(TAG, "Success " + future.isDone());
@@ -64,7 +64,7 @@ public class ConnectService {
                 return true;
             }
         }
-        int timeout = InitApplication.getConnectionTimeout(context);
+        int timeout = Settings.getConnectionTimeout(context);
 
         return ipfs.swarmConnect(Content.P2P_PATH + pid, null, timeout);
 

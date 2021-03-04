@@ -22,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
@@ -122,7 +122,7 @@ public class UploadFileWorker extends Worker {
                         public boolean doProgress() {
                             long time = System.currentTimeMillis();
                             long diff = time - refresh.get();
-                            boolean doProgress = (diff > InitApplication.REFRESH);
+                            boolean doProgress = (diff > Settings.REFRESH);
                             if (doProgress) {
                                 refresh.set(time);
                             }
@@ -170,7 +170,7 @@ public class UploadFileWorker extends Worker {
     private void buildFailedNotification(@NonNull String name) {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(
-                getApplicationContext(), InitApplication.CHANNEL_ID);
+                getApplicationContext(), Settings.CHANNEL_ID);
 
         builder.setContentTitle(getApplicationContext().getString(R.string.download_failed, name));
         builder.setSmallIcon(R.drawable.download);

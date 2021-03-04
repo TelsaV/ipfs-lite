@@ -19,7 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.pages.Page;
@@ -76,7 +76,7 @@ public class PageWorker extends Worker {
 
         try {
 
-            if (InitApplication.isPublisherEnabled(getApplicationContext())) {
+            if (Settings.isPublisherEnabled(getApplicationContext())) {
 
                 if (!ipfs.isPrivateNetwork()) {
                     ipfs.bootstrap();
@@ -146,9 +146,9 @@ public class PageWorker extends Worker {
 
                 LogUtils.error(TAG, "Start publish name " + content);
 
-                int seq = IPFS.getSequence(getApplicationContext());
+                int seq = Settings.getSequence(getApplicationContext());
                 seq++;
-                IPFS.setSequence(getApplicationContext(), seq);
+                Settings.setSequence(getApplicationContext(), seq);
 
                 publishSequence(content, seq);
 

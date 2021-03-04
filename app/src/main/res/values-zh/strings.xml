@@ -135,4 +135,8 @@
     <string name="scan_url">扫描URL</string>
     <string name="enable_publisher">启用出版商</string>
     <string name="cleanup_caches">清理内部缓存，如IPFS数据、图片等。</string>
+
+    <string name="authentication">认证</string>
+    <string name="password">密码</string>
+    <string name="user_name">帳號</string>
 </resources>

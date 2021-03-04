@@ -29,9 +29,6 @@ class TestEnv {
 
     public static IPFS getTestInstance(@NonNull Context context) {
 
-        IPFS.logBaseDir(context);
-        IPFS.cleanCacheDir(context);
-
         long time = System.currentTimeMillis();
         IPFS ipfs = IPFS.getInstance(context);
 

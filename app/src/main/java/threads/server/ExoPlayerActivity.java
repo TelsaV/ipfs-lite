@@ -162,7 +162,7 @@ public class ExoPlayerActivity extends Activity {
                         if (progress > 95) {
                             threads.setThreadPosition(idx, 0);
                         } else {
-                            thumbnail = InitApplication.SUPPORT_VIDEO_UPDATE_THUMBNAIL;
+                            thumbnail = Settings.SUPPORT_VIDEO_UPDATE_THUMBNAIL;
                             threads.setThreadPosition(idx, playbackPosition);
                         }
                         threads.setThreadProgress(idx, progress);

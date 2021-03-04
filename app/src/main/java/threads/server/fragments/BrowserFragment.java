@@ -24,6 +24,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebViewDatabase;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -42,14 +43,12 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.webkit.WebSettingsCompat;
 import androidx.webkit.WebViewFeature;
-import androidx.work.WorkManager;
 
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -271,11 +270,64 @@ public class BrowserFragment extends Fragment {
             public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
 
                 try {
-                    EVENTS.getInstance(mContext).warning(
-                            "Login mechanism not yet implemented");
+
+                    WebViewDatabase database = WebViewDatabase.getInstance(mContext);
+                    String[] data = database.getHttpAuthUsernamePassword(host, realm);
+
+
+                    String storedName = null;
+                    String storedPass = null;
+
+                    if (data != null) {
+                        storedName = data[0];
+                        storedPass = data[1];
+                    }
+
+                    LayoutInflater inflater = (LayoutInflater)
+                            mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    final View form = inflater.inflate(R.layout.http_auth_request, null);
+
+
+                    final EditText usernameInput = form.findViewById(R.id.user_name);
+                    final EditText passwordInput = form.findViewById(R.id.password);
+
+                    if (storedName != null) {
+                        usernameInput.setText(storedName);
+                    }
+
+                    if (storedPass != null) {
+                        passwordInput.setText(storedPass);
+                    }
+
+                    AlertDialog.Builder authDialog = new AlertDialog
+                            .Builder(mActivity)
+                            .setTitle(R.string.authentication)
+                            .setView(form)
+                            .setCancelable(false)
+                            .setPositiveButton(android.R.string.ok, (dialog, whichButton) -> {
+
+                                String username = usernameInput.getText().toString();
+                                String password = passwordInput.getText().toString();
+
+                                database.setHttpAuthUsernamePassword(host, realm, username, password);
+
+                                handler.proceed(username, password);
+                                dialog.dismiss();
+                            })
+
+                            .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> {
+                                dialog.dismiss();
+                                view.stopLoading();
+                                handler.cancel();
+                            });
+
+
+                    authDialog.show();
+                    return;
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 }
+
                 super.onReceivedHttpAuthRequest(view, handler, host, realm);
             }
 
@@ -445,7 +497,6 @@ public class BrowserFragment extends Fragment {
                     }
 
 
-
                     Thread thread = Thread.currentThread();
 
                     docs.attachThread(thread.getId());
@@ -542,7 +593,7 @@ public class BrowserFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
-                    Uri.parse(InitApplication.DOWNLOADS));
+                    Uri.parse(Settings.DOWNLOADS));
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mFileForResult.launch(intent);
             mProgressBar.setVisibility(View.GONE);
@@ -571,7 +622,7 @@ public class BrowserFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
-                    Uri.parse(InitApplication.DOWNLOADS));
+                    Uri.parse(Settings.DOWNLOADS));
             intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mContentForResult.launch(intent);
 

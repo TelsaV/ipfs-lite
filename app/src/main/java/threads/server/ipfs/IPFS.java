@@ -53,13 +53,9 @@ public class IPFS implements Listener {
     private static final String PID_KEY = "pidKey";
     private static final String PRIVATE_NETWORK_KEY = "privateNetworkKey";
     private static final String PRIVATE_SHARING_KEY = "privateSharingKey";
-    private static final String HIGH_WATER_KEY = "highWaterKey";
-    private static final String LOW_WATER_KEY = "lowWaterKey";
-    private static final String GRACE_PERIOD_KEY = "gracePeriodKey";
     private static final String SWARM_KEY = "swarmKey";
     private static final String SWARM_PORT_KEY = "swarmPortKey";
     private static final String PUBLIC_KEY = "publicKey";
-    private static final String SEQUENCE = "sequence";
     private static final String PRIVATE_KEY = "privateKey";
     private static final String TAG = IPFS.class.getSimpleName();
     private static IPFS INSTANCE = null;
@@ -111,9 +107,9 @@ public class IPFS implements Listener {
         node.setPort(IPFS.getSwarmPort(context));
 
         node.setConcurrency(15);
-        node.setGracePeriod(getGracePeriod(context));
-        node.setHighWater(getHighWater(context));
-        node.setLowWater(getLowWater(context));
+        node.setGracePeriod(Settings.GRACE_PERIOD);
+        node.setHighWater(Settings.HIGH_WATER);
+        node.setLowWater(Settings.LOW_WATER);
         node.setResponsive(200);
 
     }
@@ -221,40 +217,6 @@ public class IPFS implements Listener {
         return sharedPref.getString(PID_KEY, null);
     }
 
-    public static void setLowWater(@NonNull Context context, int lowWater) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(LOW_WATER_KEY, lowWater);
-        editor.apply();
-    }
-
-
-    public static int getSequence(@NonNull Context context) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        return sharedPref.getInt(SEQUENCE, 1000);
-    }
-
-    public static void setSequence(@NonNull Context context, int sequence) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(SEQUENCE, sequence);
-        editor.apply();
-    }
-
-
-    private static int getLowWater(@NonNull Context context) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        return sharedPref.getInt(LOW_WATER_KEY, 20);
-    }
-
     public static void setPrivateNetworkEnabled(@NonNull Context context, boolean privateNetwork) {
 
         SharedPreferences sharedPref = context.getSharedPreferences(
@@ -285,40 +247,6 @@ public class IPFS implements Listener {
         SharedPreferences sharedPref = context.getSharedPreferences(
                 PREF_KEY, Context.MODE_PRIVATE);
         return sharedPref.getBoolean(PRIVATE_SHARING_KEY, false);
-    }
-
-    @NonNull
-    private static String getGracePeriod(@NonNull Context context) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        return Objects.requireNonNull(sharedPref.getString(GRACE_PERIOD_KEY, "30s"));
-    }
-
-    public static void setGracePeriod(@NonNull Context context, @NonNull String gracePeriod) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(GRACE_PERIOD_KEY, gracePeriod);
-        editor.apply();
-
-    }
-
-    public static void setHighWater(@NonNull Context context, int highWater) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(HIGH_WATER_KEY, highWater);
-        editor.apply();
-    }
-
-    private static int getHighWater(@NonNull Context context) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(
-                PREF_KEY, Context.MODE_PRIVATE);
-        return sharedPref.getInt(HIGH_WATER_KEY, 100);
     }
 
     @NonNull
@@ -354,115 +282,6 @@ public class IPFS implements Listener {
             return true;
         } catch (IOException e) {
             return false;
-        }
-    }
-
-    public static void logCacheDir(@NonNull Context context) {
-        try {
-            File[] files = context.getCacheDir().listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    LogUtils.error(TAG, "" + file.length() + " " + file.getAbsolutePath());
-                    if (file.isDirectory()) {
-                        File[] children = file.listFiles();
-                        if (children != null) {
-                            for (File child : children) {
-                                LogUtils.error(TAG, "" + child.length() + " " + child.getAbsolutePath());
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
-
-    public static void logBaseDir(@NonNull Context context) {
-        try {
-            File[] files = context.getFilesDir().listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    LogUtils.warning(TAG, "" + file.length() + " " + file.getAbsolutePath());
-                    if (file.isDirectory()) {
-                        logDir(file);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
-
-    public static void logDir(File file) {
-        File[] children = file.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                LogUtils.warning(TAG, "" + child.length() + " " + child.getAbsolutePath());
-                if (child.isDirectory()) {
-                    logDir(child);
-                }
-            }
-        }
-    }
-
-    private static void deleteFile(@NonNull File root) {
-        try {
-            if (root.isDirectory()) {
-                File[] files = root.listFiles();
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.isDirectory()) {
-                            deleteFile(file);
-                            boolean result = file.delete();
-                            if (!result) {
-                                LogUtils.error(TAG, "File " + file.getName() + " not deleted");
-                            }
-                        } else {
-                            boolean result = file.delete();
-                            if (!result) {
-                                LogUtils.error(TAG, "File " + file.getName() + " not deleted");
-                            }
-                        }
-                    }
-                }
-                boolean result = root.delete();
-                if (!result) {
-                    LogUtils.error(TAG, "File " + root.getName() + " not deleted");
-                }
-            } else {
-                boolean result = root.delete();
-                if (!result) {
-                    LogUtils.error(TAG, "File " + root.getName() + " not deleted");
-                }
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
-
-    static void cleanCacheDir(@NonNull Context context) {
-
-        try {
-            File[] files = context.getCacheDir().listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        deleteFile(file);
-                        boolean result = file.delete();
-                        if (!result) {
-                            LogUtils.error(TAG, "File not deleted.");
-                        }
-                    } else {
-                        boolean result = file.delete();
-                        if (!result) {
-                            LogUtils.error(TAG, "File not deleted.");
-                        }
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
         }
     }
 

@@ -126,15 +126,6 @@ public class MainActivity extends AppCompatActivity implements
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String FRAG = "FRAG";
     private final AtomicInteger currentFragment = new AtomicInteger(R.id.navigation_browser);
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    invokeScan();
-                } else {
-                    EVENTS.getInstance(getApplicationContext()).permission(
-                            getString(R.string.permission_camera_denied));
-                }
-            });
     private final ActivityResultLauncher<Intent> mContentForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -319,6 +310,15 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
             });
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    invokeScan();
+                } else {
+                    EVENTS.getInstance(getApplicationContext()).permission(
+                            getString(R.string.permission_camera_denied));
+                }
+            });
     private TextView mBrowserText;
     private ActionMode mActionMode;
     private ImageButton mActionBookmark;
@@ -464,7 +464,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void setSortOrder(@NonNull SortOrder sortOrder) {
-        InitApplication.setSortOrder(getApplicationContext(), sortOrder);
+        Settings.setSortOrder(getApplicationContext(), sortOrder);
     }
 
     private void clickFilesAdd() {
@@ -897,7 +897,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void updateHome(@NonNull DOCS docs) {
-        if (!InitApplication.isPublisherEnabled(getApplicationContext())) {
+        if (!Settings.isPublisherEnabled(getApplicationContext())) {
             mActionHome.setColorFilter(ContextCompat.getColor(getApplicationContext(),
                     android.R.color.holo_red_dark), PorterDuff.Mode.SRC_ATOP);
         } else if (docs.isPrivateNetwork(getApplicationContext())) {
@@ -1031,7 +1031,7 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 mLastClickTime = SystemClock.elapsedRealtime();
 
-                SortOrder sortOrder = InitApplication.getSortOrder(getApplicationContext());
+                SortOrder sortOrder = Settings.getSortOrder(getApplicationContext());
                 PopupMenu popup = new PopupMenu(MainActivity.this, v);
                 popup.inflate(R.menu.popup_sorting);
 
@@ -1218,7 +1218,7 @@ public class MainActivity extends AppCompatActivity implements
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         intent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                         intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI,
-                                Uri.parse(InitApplication.DOWNLOADS));
+                                Uri.parse(Settings.DOWNLOADS));
                         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                         mContentForResult.launch(intent);
 
@@ -2011,7 +2011,7 @@ public class MainActivity extends AppCompatActivity implements
         registerNetworkCallback();
 
         try {
-            if (InitApplication.isAutoDiscovery(getApplicationContext())) {
+            if (Settings.isAutoDiscovery(getApplicationContext())) {
                 IPFS ipfs = IPFS.getInstance(getApplicationContext());
                 registerService((int) ipfs.getSwarmPort());
             }

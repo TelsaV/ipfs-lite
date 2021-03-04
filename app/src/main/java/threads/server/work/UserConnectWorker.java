@@ -15,7 +15,7 @@ import java.util.Objects;
 import lite.Peer;
 import lite.PeerInfo;
 import threads.LogUtils;
-import threads.server.InitApplication;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
@@ -112,7 +112,7 @@ public class UserConnectWorker extends Worker {
 
     private void connect(@NonNull String pid) {
 
-        int timeout = InitApplication.getConnectionTimeout(getApplicationContext());
+        int timeout = Settings.getConnectionTimeout(getApplicationContext());
 
         ipfs.swarmEnhance(pid);
 

@@ -30,8 +30,8 @@ import java.io.InputStream;
 import java.util.Objects;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
@@ -214,18 +214,18 @@ public class SettingsFragment extends Fragment {
 
         SwitchMaterial enableRedirectUrl = view.findViewById(R.id.enable_redirect_url);
         Objects.requireNonNull(enableRedirectUrl);
-        enableRedirectUrl.setChecked(InitApplication.isRedirectUrlEnabled(mContext));
+        enableRedirectUrl.setChecked(Settings.isRedirectUrlEnabled(mContext));
         enableRedirectUrl.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    InitApplication.setRedirectUrlEnabled(mContext, isChecked);
+                    Settings.setRedirectUrlEnabled(mContext, isChecked);
                     DOCS.getInstance(mContext).refreshRedirectOptions(mContext);
                 }
         );
 
         SwitchMaterial enableRedirectIndex = view.findViewById(R.id.enable_redirect_index);
         Objects.requireNonNull(enableRedirectIndex);
-        enableRedirectIndex.setChecked(InitApplication.isRedirectIndexEnabled(mContext));
+        enableRedirectIndex.setChecked(Settings.isRedirectIndexEnabled(mContext));
         enableRedirectIndex.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    InitApplication.setRedirectIndexEnabled(mContext, isChecked);
+                    Settings.setRedirectIndexEnabled(mContext, isChecked);
                     DOCS.getInstance(mContext).refreshRedirectOptions(mContext);
                 }
         );
@@ -238,9 +238,9 @@ public class SettingsFragment extends Fragment {
         automatic_discovery_mode_text.setText(Html.fromHtml(auto_discovery_html, Html.FROM_HTML_MODE_LEGACY));
 
         SwitchMaterial automatic_discovery_mode = view.findViewById(R.id.automatic_discovery_mode);
-        automatic_discovery_mode.setChecked(InitApplication.isAutoDiscovery(mContext));
+        automatic_discovery_mode.setChecked(Settings.isAutoDiscovery(mContext));
         automatic_discovery_mode.setOnCheckedChangeListener((buttonView, isChecked) ->
-                InitApplication.setAutoDiscovery(mContext, isChecked)
+                Settings.setAutoDiscovery(mContext, isChecked)
         );
 
 
@@ -299,12 +299,12 @@ public class SettingsFragment extends Fragment {
             }
         });
 
-        boolean publisherEnabled = InitApplication.isPublisherEnabled(mContext);
+        boolean publisherEnabled = Settings.isPublisherEnabled(mContext);
         SwitchMaterial enablePublisher = view.findViewById(R.id.enable_publisher);
         Objects.requireNonNull(enablePublisher);
         enablePublisher.setChecked(publisherEnabled);
         enablePublisher.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                    InitApplication.setPublisherEnabled(mContext, isChecked);
+                    Settings.setPublisherEnabled(mContext, isChecked);
                     publisher_service_time.setEnabled(isChecked);
                     publisher_service_time_text.setEnabled(isChecked);
                     EVENTS.getInstance(mContext).home();
@@ -327,7 +327,7 @@ public class SettingsFragment extends Fragment {
         connection_timeout.setMin(15);
         connection_timeout.setMax(120);
 
-        int connectionTimeout = InitApplication.getConnectionTimeout(mContext);
+        int connectionTimeout = Settings.getConnectionTimeout(mContext);
 
         connection_timeout_text.setText(getString(R.string.connection_timeout,
                 String.valueOf(connectionTimeout)));
@@ -336,7 +336,7 @@ public class SettingsFragment extends Fragment {
 
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 
-                InitApplication.setConnectionTimeout(mContext, progress);
+                Settings.setConnectionTimeout(mContext, progress);
                 connection_timeout_text.setText(
                         getString(R.string.connection_timeout,
                                 String.valueOf(progress)));

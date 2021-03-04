@@ -137,4 +137,7 @@
     <string name="enable_publisher">Habilitar Editora</string>
     <string name="cleanup_caches">Limpeza de caches internos como dados IPFS, fotos, etc.</string>
 
+    <string name="authentication">Autenticação</string>
+    <string name="password">Senha</string>
+    <string name="user_name">Nome de usuário</string>
 </resources>

@@ -26,9 +26,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
@@ -114,7 +114,7 @@ public class UploadFolderWorker extends Worker {
             builder.setSubText("" + index + "/" + maxIndex);
             return builder.build();
         } else {
-            builder = new Notification.Builder(getApplicationContext(), InitApplication.CHANNEL_ID);
+            builder = new Notification.Builder(getApplicationContext(), Settings.CHANNEL_ID);
         }
 
         PendingIntent intent = WorkManager.getInstance(getApplicationContext())
@@ -283,7 +283,7 @@ public class UploadFolderWorker extends Worker {
                 public boolean doProgress() {
                     long time = System.currentTimeMillis();
                     long diff = time - refresh.get();
-                    boolean doProgress = (diff > InitApplication.REFRESH);
+                    boolean doProgress = (diff > Settings.REFRESH);
                     if (doProgress) {
                         refresh.set(time);
                     }

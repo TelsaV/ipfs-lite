@@ -698,7 +698,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         Objects.requireNonNull(context);
         appName = context.getString(R.string.app_name);
         rootDir = context.getString(R.string.ipfs);
-        InitApplication.runUpdatesIfNecessary(context);
         threads = THREADS.getInstance(context);
         ipfs = IPFS.getInstance(context);
         docs = DOCS.getInstance(context);

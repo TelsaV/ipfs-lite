@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Objects;
 
 import threads.LogUtils;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
+import threads.server.Settings;
 import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.provider.FileDocumentsProvider;
@@ -79,7 +79,7 @@ public class DeleteThreadsWorker extends Worker {
         try {
             CharSequence name = context.getString(R.string.channel_name);
             String description = context.getString(R.string.channel_description);
-            NotificationChannel mChannel = new NotificationChannel(InitApplication.CHANNEL_ID, name,
+            NotificationChannel mChannel = new NotificationChannel(Settings.CHANNEL_ID, name,
                     NotificationManager.IMPORTANCE_HIGH);
             mChannel.setDescription(description);
 
@@ -96,7 +96,7 @@ public class DeleteThreadsWorker extends Worker {
     private Notification createNotification() {
 
         Notification.Builder builder = new Notification.Builder(getApplicationContext(),
-                InitApplication.CHANNEL_ID);
+                Settings.CHANNEL_ID);
 
 
         PendingIntent intent = WorkManager.getInstance(getApplicationContext())
