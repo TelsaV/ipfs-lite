@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 
 import java.util.Objects;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;

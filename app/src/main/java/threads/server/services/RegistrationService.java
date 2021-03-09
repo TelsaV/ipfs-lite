@@ -3,7 +3,7 @@ package threads.server.services;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 
 public class RegistrationService implements NsdManager.RegistrationListener {
     private static final String TAG = RegistrationService.class.getSimpleName();

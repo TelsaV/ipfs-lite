@@ -3,8 +3,8 @@
 
 package ipns.pb;
 
-public final class IpnsEntryProtos {
-  private IpnsEntryProtos() {}
+public final class IpnsProtos {
+  private IpnsProtos() {}
   public static void registerAllExtensions(
       com.google.protobuf.ExtensionRegistryLite registry) {
   }
@@ -49,7 +49,7 @@ public final class IpnsEntryProtos {
      * <code>optional .ipns.pb.IpnsEntry.ValidityType validityType = 3;</code>
      * @return The validityType.
      */
-    ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType getValidityType();
+    IpnsProtos.IpnsEntry.ValidityType getValidityType();
 
     /**
      * <code>optional bytes validity = 4;</code>
@@ -173,7 +173,7 @@ public final class IpnsEntryProtos {
             case 24: {
               int rawValue = input.readEnum();
                 @SuppressWarnings("deprecation")
-              ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType value = ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType.valueOf(rawValue);
+              IpnsProtos.IpnsEntry.ValidityType value = IpnsProtos.IpnsEntry.ValidityType.valueOf(rawValue);
               if (value == null) {
                 unknownFields.mergeVarintField(3, rawValue);
               } else {
@@ -223,15 +223,15 @@ public final class IpnsEntryProtos {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return ipns.pb.IpnsEntryProtos.internal_static_ipns_pb_IpnsEntry_descriptor;
+      return IpnsProtos.internal_static_ipns_pb_IpnsEntry_descriptor;
     }
 
     @java.lang.Override
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return ipns.pb.IpnsEntryProtos.internal_static_ipns_pb_IpnsEntry_fieldAccessorTable
+      return IpnsProtos.internal_static_ipns_pb_IpnsEntry_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              ipns.pb.IpnsEntryProtos.IpnsEntry.class, ipns.pb.IpnsEntryProtos.IpnsEntry.Builder.class);
+              IpnsProtos.IpnsEntry.class, IpnsProtos.IpnsEntry.Builder.class);
     }
 
     /**
@@ -306,7 +306,7 @@ public final class IpnsEntryProtos {
       }
       public static final com.google.protobuf.Descriptors.EnumDescriptor
           getDescriptor() {
-        return ipns.pb.IpnsEntryProtos.IpnsEntry.getDescriptor().getEnumTypes().get(0);
+        return IpnsProtos.IpnsEntry.getDescriptor().getEnumTypes().get(0);
       }
 
       private static final ValidityType[] VALUES = values();
@@ -381,10 +381,10 @@ public final class IpnsEntryProtos {
      * <code>optional .ipns.pb.IpnsEntry.ValidityType validityType = 3;</code>
      * @return The validityType.
      */
-    @java.lang.Override public ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType getValidityType() {
+    @java.lang.Override public IpnsProtos.IpnsEntry.ValidityType getValidityType() {
       @SuppressWarnings("deprecation")
-      ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType result = ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType.valueOf(validityType_);
-      return result == null ? ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType.EOL : result;
+      IpnsProtos.IpnsEntry.ValidityType result = IpnsProtos.IpnsEntry.ValidityType.valueOf(validityType_);
+      return result == null ? IpnsProtos.IpnsEntry.ValidityType.EOL : result;
     }
 
     public static final int VALIDITY_FIELD_NUMBER = 4;
@@ -567,10 +567,10 @@ public final class IpnsEntryProtos {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof ipns.pb.IpnsEntryProtos.IpnsEntry)) {
+      if (!(obj instanceof IpnsProtos.IpnsEntry)) {
         return super.equals(obj);
       }
-      ipns.pb.IpnsEntryProtos.IpnsEntry other = (ipns.pb.IpnsEntryProtos.IpnsEntry) obj;
+      IpnsProtos.IpnsEntry other = (IpnsProtos.IpnsEntry) obj;
 
       if (hasValue() != other.hasValue()) return false;
       if (hasValue()) {
@@ -652,69 +652,69 @@ public final class IpnsEntryProtos {
       return hash;
     }
 
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(byte[] data)
+    public static IpnsProtos.IpnsEntry parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(java.io.InputStream input)
+    public static IpnsProtos.IpnsEntry parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseDelimitedFrom(java.io.InputStream input)
+    public static IpnsProtos.IpnsEntry parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseDelimitedFrom(
+    public static IpnsProtos.IpnsEntry parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry parseFrom(
+    public static IpnsProtos.IpnsEntry parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -727,7 +727,7 @@ public final class IpnsEntryProtos {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(ipns.pb.IpnsEntryProtos.IpnsEntry prototype) {
+    public static Builder newBuilder(IpnsProtos.IpnsEntry prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @java.lang.Override
@@ -748,18 +748,18 @@ public final class IpnsEntryProtos {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:ipns.pb.IpnsEntry)
-        ipns.pb.IpnsEntryProtos.IpnsEntryOrBuilder {
+        IpnsProtos.IpnsEntryOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return ipns.pb.IpnsEntryProtos.internal_static_ipns_pb_IpnsEntry_descriptor;
+        return IpnsProtos.internal_static_ipns_pb_IpnsEntry_descriptor;
       }
 
       @java.lang.Override
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return ipns.pb.IpnsEntryProtos.internal_static_ipns_pb_IpnsEntry_fieldAccessorTable
+        return IpnsProtos.internal_static_ipns_pb_IpnsEntry_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                ipns.pb.IpnsEntryProtos.IpnsEntry.class, ipns.pb.IpnsEntryProtos.IpnsEntry.Builder.class);
+                IpnsProtos.IpnsEntry.class, IpnsProtos.IpnsEntry.Builder.class);
       }
 
       // Construct using ipns.pb.IpnsEntryProtos.IpnsEntry.newBuilder()
@@ -800,17 +800,17 @@ public final class IpnsEntryProtos {
       @java.lang.Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return ipns.pb.IpnsEntryProtos.internal_static_ipns_pb_IpnsEntry_descriptor;
+        return IpnsProtos.internal_static_ipns_pb_IpnsEntry_descriptor;
       }
 
       @java.lang.Override
-      public ipns.pb.IpnsEntryProtos.IpnsEntry getDefaultInstanceForType() {
-        return ipns.pb.IpnsEntryProtos.IpnsEntry.getDefaultInstance();
+      public IpnsProtos.IpnsEntry getDefaultInstanceForType() {
+        return IpnsProtos.IpnsEntry.getDefaultInstance();
       }
 
       @java.lang.Override
-      public ipns.pb.IpnsEntryProtos.IpnsEntry build() {
-        ipns.pb.IpnsEntryProtos.IpnsEntry result = buildPartial();
+      public IpnsProtos.IpnsEntry build() {
+        IpnsProtos.IpnsEntry result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -818,8 +818,8 @@ public final class IpnsEntryProtos {
       }
 
       @java.lang.Override
-      public ipns.pb.IpnsEntryProtos.IpnsEntry buildPartial() {
-        ipns.pb.IpnsEntryProtos.IpnsEntry result = new ipns.pb.IpnsEntryProtos.IpnsEntry(this);
+      public IpnsProtos.IpnsEntry buildPartial() {
+        IpnsProtos.IpnsEntry result = new IpnsProtos.IpnsEntry(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         if (((from_bitField0_ & 0x00000001) != 0)) {
@@ -889,16 +889,16 @@ public final class IpnsEntryProtos {
       }
       @java.lang.Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof ipns.pb.IpnsEntryProtos.IpnsEntry) {
-          return mergeFrom((ipns.pb.IpnsEntryProtos.IpnsEntry)other);
+        if (other instanceof IpnsProtos.IpnsEntry) {
+          return mergeFrom((IpnsProtos.IpnsEntry)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(ipns.pb.IpnsEntryProtos.IpnsEntry other) {
-        if (other == ipns.pb.IpnsEntryProtos.IpnsEntry.getDefaultInstance()) return this;
+      public Builder mergeFrom(IpnsProtos.IpnsEntry other) {
+        if (other == IpnsProtos.IpnsEntry.getDefaultInstance()) return this;
         if (other.hasValue()) {
           setValue(other.getValue());
         }
@@ -941,11 +941,11 @@ public final class IpnsEntryProtos {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        ipns.pb.IpnsEntryProtos.IpnsEntry parsedMessage = null;
+        IpnsProtos.IpnsEntry parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (ipns.pb.IpnsEntryProtos.IpnsEntry) e.getUnfinishedMessage();
+          parsedMessage = (IpnsProtos.IpnsEntry) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1053,17 +1053,17 @@ public final class IpnsEntryProtos {
        * @return The validityType.
        */
       @java.lang.Override
-      public ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType getValidityType() {
+      public IpnsProtos.IpnsEntry.ValidityType getValidityType() {
         @SuppressWarnings("deprecation")
-        ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType result = ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType.valueOf(validityType_);
-        return result == null ? ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType.EOL : result;
+        IpnsProtos.IpnsEntry.ValidityType result = IpnsProtos.IpnsEntry.ValidityType.valueOf(validityType_);
+        return result == null ? IpnsProtos.IpnsEntry.ValidityType.EOL : result;
       }
       /**
        * <code>optional .ipns.pb.IpnsEntry.ValidityType validityType = 3;</code>
        * @param value The validityType to set.
        * @return This builder for chaining.
        */
-      public Builder setValidityType(ipns.pb.IpnsEntryProtos.IpnsEntry.ValidityType value) {
+      public Builder setValidityType(IpnsProtos.IpnsEntry.ValidityType value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -1289,12 +1289,12 @@ public final class IpnsEntryProtos {
     }
 
     // @@protoc_insertion_point(class_scope:ipns.pb.IpnsEntry)
-    private static final ipns.pb.IpnsEntryProtos.IpnsEntry DEFAULT_INSTANCE;
+    private static final IpnsProtos.IpnsEntry DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new ipns.pb.IpnsEntryProtos.IpnsEntry();
+      DEFAULT_INSTANCE = new IpnsProtos.IpnsEntry();
     }
 
-    public static ipns.pb.IpnsEntryProtos.IpnsEntry getDefaultInstance() {
+    public static IpnsProtos.IpnsEntry getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1319,7 +1319,7 @@ public final class IpnsEntryProtos {
     }
 
     @java.lang.Override
-    public ipns.pb.IpnsEntryProtos.IpnsEntry getDefaultInstanceForType() {
+    public IpnsProtos.IpnsEntry getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;

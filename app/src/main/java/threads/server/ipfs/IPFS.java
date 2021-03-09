@@ -30,7 +30,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import ipns.pb.IpnsEntryProtos;
+
+import io.ipfs.Closeable;
+import io.ipfs.LogUtils;
+import ipns.pb.IpnsProtos;
 import lite.Listener;
 import lite.Loader;
 import lite.LsInfoClose;
@@ -40,7 +43,6 @@ import lite.PeerInfo;
 import lite.Provider;
 import lite.Reader;
 import lite.ResolveInfo;
-import threads.LogUtils;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.blocks.BLOCKS;
@@ -703,7 +705,7 @@ public class IPFS implements Listener {
                 public void resolved(byte[] data) {
 
                     try {
-                        IpnsEntryProtos.IpnsEntry entry = IpnsEntryProtos.IpnsEntry.parseFrom(data);
+                        IpnsProtos.IpnsEntry entry = IpnsProtos.IpnsEntry.parseFrom(data);
                         Objects.requireNonNull(entry);
                         String hash = entry.getValue().toStringUtf8();
                         long seq = entry.getSequence();

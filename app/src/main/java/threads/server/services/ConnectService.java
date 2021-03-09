@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;

@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.BuildConfig;
 import threads.server.ipfs.IPFS;
 

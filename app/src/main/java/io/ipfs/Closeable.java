@@ -1,4 +1,4 @@
-package threads.server.ipfs;
+package io.ipfs;
 
 
 public interface Closeable {

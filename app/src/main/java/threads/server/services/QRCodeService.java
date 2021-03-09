@@ -16,7 +16,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.BuildConfig;
 
 

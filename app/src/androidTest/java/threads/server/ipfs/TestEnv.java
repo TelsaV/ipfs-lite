@@ -6,7 +6,7 @@ import android.net.NetworkCapabilities;
 
 import androidx.annotation.NonNull;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 
 class TestEnv {
     private static final String TAG = TestEnv.class.getSimpleName();

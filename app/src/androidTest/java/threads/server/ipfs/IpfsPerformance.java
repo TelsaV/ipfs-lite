@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -42,7 +42,7 @@ public class IpfsPerformance {
 
     @NonNull
     public File createCacheFile() throws IOException {
-        return File.createTempFile("temp", ".cid", context.getCacheDir());
+        return File.createTempFile("temp", ".io.ipfs.cid", context.getCacheDir());
     }
 
     @Test

@@ -19,7 +19,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import java.util.Comparator;
 import java.util.Objects;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.R;
 import threads.server.core.books.Bookmark;
 import threads.server.core.books.BookmarkViewModel;

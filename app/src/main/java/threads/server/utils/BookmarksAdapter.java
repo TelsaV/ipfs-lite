@@ -15,7 +15,7 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.util.ArrayList;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.R;
 import threads.server.core.books.Bookmark;
 

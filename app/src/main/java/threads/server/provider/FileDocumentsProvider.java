@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.R;

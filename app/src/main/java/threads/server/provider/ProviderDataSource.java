@@ -35,6 +35,13 @@ public class ProviderDataSource extends BaseDataSource {
 
     private int readIntern(byte[] buffer, int offset, int size) throws IOException {
         try {
+            /* TODO activate
+             byte[] data = fileReader.load(size);
+             System.arraycopy(data, 0, buffer, offset, data.length);
+
+            return (int) data.length;
+             */
+
             fileReader.load(size);
             long read = fileReader.getRead();
             if (read > 0) {

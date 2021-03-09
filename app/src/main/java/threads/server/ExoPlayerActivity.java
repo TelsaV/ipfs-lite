@@ -18,7 +18,7 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 
 import java.io.IOException;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.core.threads.THREADS;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;

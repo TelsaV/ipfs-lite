@@ -13,8 +13,8 @@ import org.junit.runner.RunWith;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.ipfs.LogUtils;
 import lite.PeerInfo;
-import threads.LogUtils;
 import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertEquals;

@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertNotNull;

@@ -19,7 +19,7 @@ import java.io.FileOutputStream;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;

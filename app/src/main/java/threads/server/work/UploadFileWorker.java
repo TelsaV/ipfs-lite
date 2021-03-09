@@ -21,7 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;

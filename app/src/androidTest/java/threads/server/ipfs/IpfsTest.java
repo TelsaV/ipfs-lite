@@ -14,8 +14,8 @@ import org.junit.runner.RunWith;
 import java.util.List;
 import java.util.Objects;
 
+import io.ipfs.LogUtils;
 import lite.PeerInfo;
-import threads.LogUtils;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;

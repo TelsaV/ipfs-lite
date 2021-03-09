@@ -17,7 +17,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.Settings;
 
 public class DnsAddrResolver {

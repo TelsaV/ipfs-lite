@@ -12,9 +12,9 @@ import org.junit.runner.RunWith;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.ipfs.LogUtils;
 import lite.Peer;
 import lite.PeerInfo;
-import threads.LogUtils;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;

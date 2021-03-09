@@ -11,7 +11,7 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.ipfs.IPFS;
 import threads.server.services.ConnectService;
 

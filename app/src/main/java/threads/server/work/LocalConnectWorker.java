@@ -14,7 +14,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import lite.PeerInfo;
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;

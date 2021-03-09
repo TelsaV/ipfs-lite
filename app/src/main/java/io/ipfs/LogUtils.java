@@ -1,4 +1,4 @@
-package threads;
+package io.ipfs;
 
 import android.util.Log;
 
@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import threads.server.BuildConfig;
+
 
 public class LogUtils {
 

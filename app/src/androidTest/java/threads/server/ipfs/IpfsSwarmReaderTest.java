@@ -10,7 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertNotNull;

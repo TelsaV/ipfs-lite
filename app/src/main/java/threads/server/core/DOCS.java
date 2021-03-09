@@ -30,7 +30,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import lite.Peer;
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.Settings;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
@@ -38,7 +38,7 @@ import threads.server.core.pages.PAGES;
 import threads.server.core.pages.Page;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.Closeable;
+import io.ipfs.Closeable;
 import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.DnsAddrResolver;
 import threads.server.ipfs.IPFS;

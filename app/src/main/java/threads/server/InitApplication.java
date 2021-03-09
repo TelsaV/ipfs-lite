@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.pages.PAGES;
 import threads.server.core.peers.PEERS;

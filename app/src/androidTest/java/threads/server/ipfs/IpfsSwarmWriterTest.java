@@ -15,8 +15,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
+import io.ipfs.LogUtils;
 import lite.PeerInfo;
-import threads.LogUtils;
 import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertNotNull;
@@ -78,7 +78,7 @@ public class IpfsSwarmWriterTest {
     }
 
     public File createCacheFile() throws IOException {
-        return File.createTempFile("temp", ".cid", context.getCacheDir());
+        return File.createTempFile("temp", ".io.ipfs.cid", context.getCacheDir());
     }
 
     private File createRandomFile() throws Exception {

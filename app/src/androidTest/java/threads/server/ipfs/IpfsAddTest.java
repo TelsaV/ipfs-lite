@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -46,7 +46,7 @@ public class IpfsAddTest {
 
     @NonNull
     public File createCacheFile() throws IOException {
-        return File.createTempFile("temp", ".cid", context.getCacheDir());
+        return File.createTempFile("temp", ".io.ipfs.cid", context.getCacheDir());
     }
 
     @Test

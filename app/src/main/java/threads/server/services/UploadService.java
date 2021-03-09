@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.R;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;

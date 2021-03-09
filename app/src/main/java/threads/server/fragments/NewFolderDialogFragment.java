@@ -25,7 +25,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;

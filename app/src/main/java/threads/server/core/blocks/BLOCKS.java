@@ -8,8 +8,11 @@ import androidx.room.Room;
 
 import java.util.List;
 
-public class BLOCKS {
+import io.ipfs.Storage;
+import threads.server.Settings;
 
+public class BLOCKS implements Storage {
+    private static final String TAG = BLOCKS.class.getSimpleName();
     private static BLOCKS INSTANCE = null;
     private final BlocksDatabase blocksDatabase;
 
@@ -57,28 +60,29 @@ public class BLOCKS {
     @NonNull
     private Block createBlock(@NonNull String id, @NonNull byte[] data) {
 
-        return Block.createBlock(id, data);
+        return Block.createBlock(Settings.BLOCKS + id, data);
     }
 
     private void storeBlock(@NonNull Block block) {
-
         getBlocksDatabase().blockDao().insertBlock(block);
     }
 
     public void deleteBlock(@NonNull String id) {
-        getBlocksDatabase().blockDao().deleteBlock(id);
+        //LogUtils.error(TAG, "deleteBlock " +  id);
+        getBlocksDatabase().blockDao().deleteBlock(Settings.BLOCKS + id);
     }
 
     public void insertBlock(@NonNull String id, @NonNull byte[] bytes) {
-        storeBlock(createBlock(id, bytes));
+        //LogUtils.error(TAG, "insertBlock " +  id);
+        storeBlock(createBlock( id, bytes));
     }
 
     public boolean hasBlock(@NonNull String id) {
-        return getBlocksDatabase().blockDao().hasBlock(id);
+        return getBlocksDatabase().blockDao().hasBlock(Settings.BLOCKS + id);
     }
 
     public long getBlockSize(@NonNull String id) {
-        return getBlocksDatabase().blockDao().getBlockSize(id);
+        return getBlocksDatabase().blockDao().getBlockSize(Settings.BLOCKS + id);
     }
 
     public List<Block> getBlocks() {
@@ -87,7 +91,8 @@ public class BLOCKS {
 
     @Nullable
     public Block getBlock(@NonNull String id) {
-        return getBlocksDatabase().blockDao().getBlock(id);
+        //LogUtils.error(TAG, "getBlock " +  id);
+        return getBlocksDatabase().blockDao().getBlock(Settings.BLOCKS + id);
     }
 
     static class Builder {

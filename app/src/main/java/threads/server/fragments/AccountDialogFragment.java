@@ -23,7 +23,7 @@ import com.bumptech.glide.Glide;
 
 import java.util.Objects;
 
-import threads.LogUtils;
+import io.ipfs.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
