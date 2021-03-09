@@ -338,7 +338,7 @@ public class IPFS implements Listener {
 
     @Override
     public void blockPut(String key, byte[] bytes) {
-        blocks.insertBlock(Settings.BLOCKS + key, bytes);
+        blocks.insertBlock(key, bytes);
     }
 
 
@@ -359,7 +359,7 @@ public class IPFS implements Listener {
     @Override
     public long blockSize(String key) {
         //LogUtils.error(TAG, "size " + key);
-        Block block = blocks.getBlock(Settings.BLOCKS + key);
+        Block block = blocks.getBlock(key);
         if (block != null) {
             return block.getSize();
         }
@@ -1216,7 +1216,7 @@ public class IPFS implements Listener {
     public void blockDelete(String key) {
         // LogUtils.error(TAG, "del " + key);
 
-        blocks.deleteBlock(Settings.BLOCKS + key);
+        blocks.deleteBlock(key);
 
     }
 
@@ -1230,7 +1230,7 @@ public class IPFS implements Listener {
     @Override
     public byte[] blockGet(String key) {
         //LogUtils.error(TAG, "get " + key);
-        Block block = blocks.getBlock(Settings.BLOCKS + key);
+        Block block = blocks.getBlock( key);
         if (block != null) {
             return block.getData();
         }
@@ -1240,7 +1240,7 @@ public class IPFS implements Listener {
     @Override
     public boolean blockHas(String key) {
         //LogUtils.error(TAG, "has " + key);
-        return blocks.hasBlock(Settings.BLOCKS + key);
+        return blocks.hasBlock(key);
     }
 
     @Override

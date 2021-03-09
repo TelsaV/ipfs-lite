@@ -29,9 +29,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import io.ipfs.utils.Deleter;
 import lite.Peer;
 import io.ipfs.LogUtils;
 import threads.server.Settings;
+import threads.server.core.blocks.BLOCKS;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
 import threads.server.core.pages.PAGES;
@@ -58,6 +60,7 @@ public class DOCS {
     private final IPFS ipfs;
     private final BOOKS books;
     private final THREADS threads;
+    private final BLOCKS blocks;
     private final PAGES pages;
     private final String host;
     private final Hashtable<String, String> resolves = new Hashtable<>();
@@ -68,6 +71,7 @@ public class DOCS {
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
         threads = THREADS.getInstance(context);
+        blocks = BLOCKS.getInstance(context);
         pages = PAGES.getInstance(context);
         books = BOOKS.getInstance(context);
         host = ipfs.getHost();
@@ -306,7 +310,8 @@ public class DOCS {
                     threads.removeThread(thread);
                     if (cid != null) {
                         if (!threads.isReferenced(cid)) {
-                            ipfs.rm(cid, true);
+                            Deleter.rm(blocks, cid, true);
+                            //ipfs.rm(cid, true);
                         }
                     }
                 }

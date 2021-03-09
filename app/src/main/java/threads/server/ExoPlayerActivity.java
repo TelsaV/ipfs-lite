@@ -19,6 +19,8 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 import java.io.IOException;
 
 import io.ipfs.LogUtils;
+import io.ipfs.Storage;
+import threads.server.core.blocks.BLOCKS;
 import threads.server.core.threads.THREADS;
 import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
@@ -194,14 +196,14 @@ public class ExoPlayerActivity extends Activity {
     private MediaSource buildMediaSource() {
 
         THREADS threads = THREADS.getInstance(getApplicationContext());
-        IPFS ipfs = IPFS.getInstance(getApplicationContext());
+        Storage storage = BLOCKS.getInstance(getApplicationContext());
 
 
         if (idx > 0) {
             String content = threads.getThreadContent(idx);
             if (content != null) {
                 DataSpec dataSpec = new DataSpec(uri);
-                final ProviderDataSource fileDataSource = new ProviderDataSource(ipfs, content);
+                final ProviderDataSource fileDataSource = new ProviderDataSource(storage, content);
                 try {
                     fileDataSource.open(dataSpec);
                 } catch (IOException e) {

@@ -12,12 +12,14 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 import java.io.EOFException;
 import java.io.IOException;
 
-import lite.Reader;
-import threads.server.ipfs.IPFS;
+
+import io.ipfs.Storage;
+import io.ipfs.utils.Reader;
 
 public class ProviderDataSource extends BaseDataSource {
 
-    private final IPFS ipfs;
+
+    private final Storage storage;
     private final String cid;
     private Reader fileReader;
     @Nullable
@@ -26,29 +28,21 @@ public class ProviderDataSource extends BaseDataSource {
     private boolean opened;
 
 
-    public ProviderDataSource(@NonNull IPFS ipfs, @NonNull String cid) {
+    public ProviderDataSource(@NonNull Storage storage, @NonNull String cid) {
         super(false);
         this.cid = cid;
-        this.ipfs = ipfs;
+        this.storage = storage;
     }
 
 
     private int readIntern(byte[] buffer, int offset, int size) throws IOException {
         try {
-            /* TODO activate
+
              byte[] data = fileReader.load(size);
              System.arraycopy(data, 0, buffer, offset, data.length);
 
             return (int) data.length;
-             */
 
-            fileReader.load(size);
-            long read = fileReader.getRead();
-            if (read > 0) {
-                byte[] data = fileReader.getData();
-                System.arraycopy(data, 0, buffer, offset, data.length);
-            }
-            return (int) read;
         } catch (Throwable e) {
             throw new IOException(e);
         }
@@ -64,7 +58,7 @@ public class ProviderDataSource extends BaseDataSource {
 
 
             if (fileReader == null) {
-                fileReader = ipfs.getReader(cid);
+                fileReader = Reader.getReader(storage, cid);
             }
 
             fileReader.seek(dataSpec.position);

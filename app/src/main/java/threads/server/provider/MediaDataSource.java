@@ -9,17 +9,18 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 
 import io.ipfs.LogUtils;
-import lite.Reader;
 
-import threads.server.ipfs.IPFS;
+import io.ipfs.Storage;
+import io.ipfs.utils.Reader;
+import threads.server.core.blocks.BLOCKS;
 
 public class MediaDataSource extends android.media.MediaDataSource {
     private static final String TAG = MediaDataSource.class.getSimpleName();
     private Reader fileReader;
 
 
-    public MediaDataSource(@NonNull IPFS ipfs, @NonNull String cid) throws Exception {
-        this.fileReader = ipfs.getReader(cid);
+    public MediaDataSource(@NonNull Storage storage, @NonNull String cid) {
+        this.fileReader = Reader.getReader(storage, cid);
     }
 
     public static Bitmap getVideoFrame(@NonNull Context context, @NonNull String cid, long time) {
@@ -29,7 +30,7 @@ public class MediaDataSource extends android.media.MediaDataSource {
 
         try {
 
-            retriever.setDataSource(new MediaDataSource(IPFS.getInstance(context), cid));
+            retriever.setDataSource(new MediaDataSource(BLOCKS.getInstance(context), cid));
 
             if (time <= 0) {
                 return retriever.getFrameAtTime();
@@ -74,13 +75,12 @@ public class MediaDataSource extends android.media.MediaDataSource {
     @Override
     public int readAt(long position, byte[] buffer, int offset, int size) throws IOException {
         try {
-            fileReader.readAt(position, size);
-            long read = fileReader.getRead();
-            if (read > 0) {
-                byte[] data = fileReader.getData();
-                System.arraycopy(data, 0, buffer, offset, data.length);
-            }
-            return (int) read;
+
+            byte[] data = fileReader.readAt(position, size);
+            System.arraycopy(data, 0, buffer, offset, data.length);
+
+            return (int) data.length;
+
         } catch (Throwable throwable) {
             throw new IOException(throwable);
         }
