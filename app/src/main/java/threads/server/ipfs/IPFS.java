@@ -786,7 +786,8 @@ public class IPFS implements Listener {
     @Nullable
     public String rmLinkFromDir(String dir, String name) {
         try {
-            return node.removeLinkFromDir(dir, name);
+            return Stream.RemoveLinkFromDir(blocks, ()-> false, dir, name);
+            //return node.removeLinkFromDir(dir, name);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }

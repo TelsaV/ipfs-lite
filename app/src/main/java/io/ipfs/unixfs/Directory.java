@@ -1,6 +1,7 @@
 package io.ipfs.unixfs;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import io.ipfs.Closeable;
 import io.ipfs.cid.Builder;
@@ -18,21 +19,24 @@ public interface Directory {
         return new BasicDirectory(dagService, Unixfs.EmptyDirNode());
     }
 
-    static Directory NewDirectoryFromNode(@NonNull DagService dserv, @NonNull Node node) {
+    @Nullable
+    static Directory NewDirectoryFromNode(@NonNull DagService dagService, @NonNull Node node) {
         ProtoNode protoNode = (ProtoNode) node;
         FSNode fsNode = FSNode.FSNodeFromBytes(protoNode.getData());
 
         if (fsNode.Type() == UnixfsProtos.Data.DataType.Directory) {
-            return new BasicDirectory(dserv, (ProtoNode) protoNode.Copy());
+            return new BasicDirectory(dagService, (ProtoNode) protoNode.Copy());
         }
-        throw new RuntimeException();
+        return null;
     }
 
     void SetCidBuilder(@NonNull Builder cidBuilder);
 
     Node GetNode();
 
-    void AddChild(Closeable closeable, String name, Node link);
+    void AddChild(@NonNull Closeable closeable, @NonNull String name, @NonNull Node link);
+
+    void RemoveChild(@NonNull Closeable closeable, @NonNull String name);
 
     class BasicDirectory implements Directory {
         private final ProtoNode protoNode;
@@ -57,6 +61,11 @@ public interface Directory {
         public void AddChild(@NonNull Closeable closeable, @NonNull String name, @NonNull Node link) {
             protoNode.RemoveNodeLink(name);
             protoNode.AddNodeLink(name, link);
+        }
+
+        @Override
+        public void RemoveChild(@NonNull Closeable closeable, @NonNull String name) {
+            protoNode.RemoveNodeLink(name);
         }
     }
 

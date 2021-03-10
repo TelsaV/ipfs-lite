@@ -7,6 +7,7 @@ import com.google.protobuf.ByteString;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,7 +18,7 @@ import merkledag.pb.MerkledagProtos;
 
 public class ProtoNode implements Node {
     private static final String TAG = ProtoNode.class.getSimpleName();
-    private final List<Link> links = new ArrayList<>();
+    private final List<Link> links = Collections.synchronizedList(new ArrayList<>());
     public Cid cached;
     private byte[] data;
     private byte[] encoded;
@@ -68,7 +69,7 @@ public class ProtoNode implements Node {
     public long Size() {
         byte[] b = EncodeProtobuf(false);
         long size = b.length;
-        for (Link link:links) {
+        for (Link link : links) {
             size += link.getSize();
         }
         return size;
@@ -76,7 +77,7 @@ public class ProtoNode implements Node {
 
     @Override
     public List<Link> getLinks() {
-        return links;
+        return new ArrayList<>(links);
     }
 
     @Override
@@ -113,17 +114,19 @@ public class ProtoNode implements Node {
 
         links.sort((o1, o2) -> o1.getName().compareTo(o2.getName()));// keep links sorted
 
-        for (Link link : links) {
+        synchronized (links) {
+            for (Link link : links) {
 
-            MerkledagProtos.PBLink.Builder lnb = MerkledagProtos.PBLink.newBuilder().setName(link.getName())
-                    .setTsize(link.getSize());
+                MerkledagProtos.PBLink.Builder lnb = MerkledagProtos.PBLink.newBuilder().setName(link.getName())
+                        .setTsize(link.getSize());
 
-            if (link.getCid().Defined()) {
-                ByteString hash = ByteString.copyFrom(link.getCid().Bytes());
-                lnb.setHash(hash);
+                if (link.getCid().Defined()) {
+                    ByteString hash = ByteString.copyFrom(link.getCid().Bytes());
+                    lnb.setHash(hash);
+                }
+
+                pbn.addLinks(lnb.build());
             }
-
-            pbn.addLinks(lnb.build());
         }
         if (this.data.length > 0) {
             pbn.setData(ByteString.copyFrom(this.data));
@@ -165,10 +168,11 @@ public class ProtoNode implements Node {
         nnode.data = Arrays.copyOf(getData(), getData().length);
 
 
-        if (links.size() > 0) {
-            nnode.getLinks().addAll(links);
+        synchronized (links) {
+            if (links.size() > 0) {
+                nnode.links.addAll(links);
+            }
         }
-
         nnode.mBuilder = mBuilder;
 
         return nnode;
@@ -178,19 +182,12 @@ public class ProtoNode implements Node {
 
     public void RemoveNodeLink(@NonNull String name) {
         encoded = null;
-
-        boolean found = false;
-        List<Link> copy = new ArrayList<>(links);
-        for (Link link:links) {
-            if(Objects.equals(link.getName(), name)){
-                copy.remove(link);
-                found = true;
-            }
-        }
-        if(found){
-            synchronized (this){
-                links.clear();
-                links.addAll(copy);
+        synchronized (links) {
+            for (Link link : links) {
+                if (Objects.equals(link.getName(), name)) {
+                    links.remove(link);
+                    break;
+                }
             }
         }
     }
@@ -208,7 +205,7 @@ public class ProtoNode implements Node {
     private void AddRawLink(@NonNull String name, @NonNull Link link) {
         encoded = null;
 
-        synchronized (this) {
+        synchronized (links) {
             links.add(link);
         }
     }

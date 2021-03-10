@@ -55,13 +55,9 @@ public class Stream {
         DagService dagService = new DagService(blockservice);
 
         io.ipfs.format.Node node = Resolver.ResolveNode(closeable, dagService, Path.New(path));
-        try {
-            Directory dir = Directory.NewDirectoryFromNode(dagService, node);
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-            return false;
-        }
-        return true;
+
+        Directory dir = Directory.NewDirectoryFromNode(dagService, node);
+        return dir != null;
     }
 
     public static String CreateEmptyDir(@NonNull Storage storage, @NonNull Closeable closeable) {
@@ -90,4 +86,22 @@ public class Stream {
         return nd.Cid().String();
 
     }
+
+    public static String RemoveLinkFromDir(@NonNull Storage storage, @NonNull Closeable closeable,
+                                      @NonNull String dir, @NonNull String name) {
+
+        Adder fileAdder = getFileAdder(storage, closeable);
+
+        Blockstore bs = Blockstore.NewBlockstore(storage);
+        Interface exchange = new Exchange(bs);
+        BlockService blockservice = BlockService.New(bs, exchange);
+        DagService dagService = new DagService(blockservice);
+
+        io.ipfs.format.Node dirNode = Resolver.ResolveNode(closeable, dagService, Path.New(dir));
+
+        Node nd = fileAdder.RemoveChild(dirNode, name);
+        return nd.Cid().String();
+
+    }
+
 }

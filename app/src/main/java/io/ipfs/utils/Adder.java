@@ -1,6 +1,9 @@
 package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import java.util.Objects;
 
 import io.ipfs.Closeable;
 import io.ipfs.cid.Builder;
@@ -43,8 +46,19 @@ public class Adder {
 
     public Node AddLinkToDir(@NonNull Node dirNode, @NonNull String name, @NonNull Node link) {
         Directory dir = Directory.NewDirectoryFromNode(dagService, dirNode);
+        Objects.requireNonNull(dir);
         dir.SetCidBuilder(CidBuilder);
         dir.AddChild(closeable, name, link);
+        Node fnd = dir.GetNode();
+        dagService.Add(closeable, fnd);
+        return fnd;
+    }
+
+    public Node RemoveChild(@NonNull Node dirNode, @NonNull String name) {
+        Directory dir = Directory.NewDirectoryFromNode(dagService, dirNode);
+        Objects.requireNonNull(dir);
+        dir.SetCidBuilder(CidBuilder);
+        dir.RemoveChild(closeable, name);
         Node fnd = dir.GetNode();
         dagService.Add(closeable, fnd);
         return fnd;
