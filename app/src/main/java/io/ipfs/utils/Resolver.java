@@ -65,6 +65,7 @@ public class Resolver {
             }
         };
     }
+
     public static io.ipfs.format.Node ResolveNode(@NonNull Closeable closeable,
                                                   @NonNull NodeGetter nodeGetter,
                                                   @NonNull Path path) {

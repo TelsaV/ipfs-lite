@@ -17,10 +17,11 @@
 package io.ipfs.multibase;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Charsets required of every implementation of the Java platform.
- *
+ * <p>
  * From the Java documentation <a href="http://docs.oracle.com/javase/6/docs/api/java/nio/charset/Charset.html">Standard
  * charsets</a>:
  * <p>
@@ -44,7 +45,7 @@ import java.nio.charset.Charset;
  * Sixteen-bit Unicode Transformation Format, byte order specified by a mandatory initial byte-order mark (either order
  * accepted on input, big-endian used on output.)</li>
  * </ul>
- *
+ * <p>
  * This perhaps would best belong in the Commons Lang project. Even if a similar class is defined in Commons Lang, it is
  * not foreseen that Commons Codec would be made to depend on Commons Lang.
  *
@@ -52,9 +53,9 @@ import java.nio.charset.Charset;
  * This class is immutable and thread-safe.
  * </p>
  *
+ * @version $Id: CharEncoding.java 1173287 2011-09-20 18:16:19Z ggregory $
  * @see <a href="http://docs.oracle.com/javase/6/docs/api/java/nio/charset/Charset.html">Standard charsets</a>
  * @since 1.7
- * @version $Id: CharEncoding.java 1173287 2011-09-20 18:16:19Z ggregory $
  */
 public class Charsets {
 
@@ -74,7 +75,7 @@ public class Charsets {
      *
      * @see <a href="http://docs.oracle.com/javase/6/docs/api/java/nio/charset/Charset.html">Standard charsets</a>
      */
-    public static final Charset US_ASCII = Charset.forName(CharEncoding.US_ASCII);
+    public static final Charset US_ASCII = StandardCharsets.US_ASCII;
 
     /**
      * Eight-bit Unicode Transformation Format.
@@ -87,5 +88,5 @@ public class Charsets {
      *
      * @see <a href="http://docs.oracle.com/javase/6/docs/api/java/nio/charset/Charset.html">Standard charsets</a>
      */
-    public static final Charset UTF_8 = Charset.forName(CharEncoding.UTF_8);
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 }

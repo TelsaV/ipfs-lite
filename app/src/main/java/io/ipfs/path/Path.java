@@ -9,18 +9,19 @@ import io.ipfs.cid.Cid;
 
 public class Path {
     private final String path;
-    public Path(@NonNull String path){
+
+    public Path(@NonNull String path) {
         this.path = path;
     }
 
-    public static Path New(@NonNull String p){
+    public static Path New(@NonNull String p) {
         return ParsePath(p);
     }
 
 
     // ParseCidToPath takes a CID in string form and returns a valid ipfs Path.
     public static Path ParseCidToPath(String txt) {
-        if( txt.isEmpty()) {
+        if (txt.isEmpty()) {
             throw new RuntimeException("path is empty");
         }
 
@@ -35,10 +36,10 @@ public class Path {
         return new Path("/ipfs/" + cid.String());
     }
 
-    public static Path ParsePath(@NonNull String txt){
+    public static Path ParsePath(@NonNull String txt) {
         String[] parts = txt.split("/");
 
-        if( parts.length == 1 ) {
+        if (parts.length == 1) {
             return ParseCidToPath(txt);
         }
         /*
@@ -79,16 +80,17 @@ public class Path {
     }
 
 
-    public List<String> Segments(){
+    public List<String> Segments() {
         String[] spits = path.split("/");
         List<String> result = new ArrayList<>();
-        for (String split:spits) {
-            if(!split.isEmpty()){
+        for (String split : spits) {
+            if (!split.isEmpty()) {
                 result.add(split);
             }
         }
         return result;
     }
+
     public String String() {
         return path;
     }

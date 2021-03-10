@@ -1,6 +1,6 @@
 package io.ipfs.multibase;
 
-import java.math.*;
+import java.math.BigInteger;
 
 public class Base36 {
 
@@ -16,7 +16,7 @@ public class Base36 {
         String withoutLeadingZeroes = new BigInteger(1, in).toString(36);
         int zeroPrefixLength = zeroPrefixLength(in);
         StringBuilder b = new StringBuilder();
-        for (int i=0; i < zeroPrefixLength; i++)
+        for (int i = 0; i < zeroPrefixLength; i++)
             b.append("0");
         b.append(withoutLeadingZeroes);
         return b.toString();

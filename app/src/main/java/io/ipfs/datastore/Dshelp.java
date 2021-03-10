@@ -9,8 +9,8 @@ import io.ipfs.cid.Cid;
 public class Dshelp {
 
     public static Key NewKeyFromBinary(@NonNull byte[] rawKey) {
-        return Key.RawKey( "/" +
-                BaseEncoding.base32().encode(rawKey).replaceAll("=", "") );
+        return Key.RawKey("/" +
+                BaseEncoding.base32().encode(rawKey).replaceAll("=", ""));
 
     }
 

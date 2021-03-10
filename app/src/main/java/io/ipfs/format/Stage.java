@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 public class Stage {
     private final NavigableNode node;
     private int index;
+
     Stage(@NonNull NavigableNode node) {
         this.node = node;
         this.index = 0;

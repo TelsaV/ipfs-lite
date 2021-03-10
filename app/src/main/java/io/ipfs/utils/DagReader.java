@@ -153,7 +153,7 @@ public class DagReader implements java.io.Closeable {
 
             while (true) {
                 NavigableNode visitedNode = dagWalker.Next(ctx, visitor);
-                if(visitedNode == null){
+                if (visitedNode == null) {
                     return null;
                 }
 

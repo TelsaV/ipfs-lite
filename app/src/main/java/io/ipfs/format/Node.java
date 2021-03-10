@@ -13,15 +13,6 @@ import io.ipfs.multihash.Multihash;
 public interface Node extends Block {
     Prefix v0CidPrefix = new Prefix(
             Cid.DagProtobuf, -1, Multihash.Type.sha2_256.index, 0);
-
-    List<Link> getLinks();
-
-    Cid Cid();
-
-    byte[] getData();
-
-    byte[] RawData();
-
     Prefix v1CidPrefix = new Prefix(
             Cid.DagProtobuf, -1, Multihash.Type.sha2_256.index, 1);
 
@@ -40,6 +31,14 @@ public interface Node extends Block {
     static ProtoNode NodeWithData(byte[] data) {
         return new ProtoNode(data);
     }
+
+    List<Link> getLinks();
+
+    Cid Cid();
+
+    byte[] getData();
+
+    byte[] RawData();
 
     void SetCidBuilder(@Nullable Builder builder);
 

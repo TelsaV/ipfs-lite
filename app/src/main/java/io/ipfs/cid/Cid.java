@@ -160,17 +160,16 @@ public class Cid {
         int s = 0;
 
 
-
-        for (int i = 0; i < buf.length ; i++) {
+        for (int i = 0; i < buf.length; i++) {
             int b = buf[i];
-            if((i == 8 && b >= 0x80) || i >= 9) {
+            if ((i == 8 && b >= 0x80) || i >= 9) {
                 // this is the 9th and last byte we're willing to read, but it
                 // signals there's more (1 in MSB).
                 // or this is the >= 10th byte, and for some reason we're still here.
                 throw new RuntimeException("overflow");
             }
-            if( b < 0x80) {
-                if( b == 0 && s > 0) {
+            if (b < 0x80) {
+                if (b == 0 && s > 0) {
                     throw new RuntimeException("overflow");
                 }
                 return Pair.create((x | (b) << s), i + 1);
@@ -261,7 +260,7 @@ public class Cid {
 
     // Type returns the multicodec-packed content type of a Cid.
     public long Type() {
-        if( Version() == 0) {
+        if (Version() == 0) {
             return DagProtobuf;
         }
 
@@ -271,14 +270,14 @@ public class Cid {
             Multihash.readVarint(is);
             type = Multihash.readVarint(is);
             is.close();
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
         return type;
     }
 
     public byte[] Bytes() {
-        if( Version() == 0) {
+        if (Version() == 0) {
             return multihash;
         } else {
             return multihash;

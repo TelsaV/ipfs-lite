@@ -19,10 +19,11 @@ public class RefWriter {
     private final Closeable closeable;
     private final Hashtable<String, Integer> seen = new Hashtable<>();
     private final List<Cid> cids = new ArrayList<>();
-    private boolean unique;
-    private int maxDepth;
+    private final boolean unique;
+    private final int maxDepth;
+
     public RefWriter(@NonNull Closeable closeable, @NonNull DagService dagService, boolean
-                     unique, int maxDepth){
+            unique, int maxDepth) {
         this.closeable = closeable;
         this.dagService = dagService;
         this.unique = unique;
@@ -33,57 +34,56 @@ public class RefWriter {
         evalRefsRecursive(top, 0);
     }
 
-    public List<Cid> getCids(){
+    public List<Cid> getCids() {
         return cids;
     }
 
 
-   public int evalRefsRecursive(@NonNull Node n, int depth) {
+    public int evalRefsRecursive(@NonNull Node n, int depth) {
         // TODO Cid nc = n.Cid();
 
-       int count = 0;
-       List<Link> links = n.getLinks();
-       for (Link link:links) {
-           Cid lc = link.getCid();
-           Pair<Boolean, Boolean> visited = visit(lc, depth + 1); // The children are at depth+1
-           boolean goDeeper = visited.first;
-           boolean shouldWrite = visited.second;
+        int count = 0;
+        List<Link> links = n.getLinks();
+        for (Link link : links) {
+            Cid lc = link.getCid();
+            Pair<Boolean, Boolean> visited = visit(lc, depth + 1); // The children are at depth+1
+            boolean goDeeper = visited.first;
+            boolean shouldWrite = visited.second;
 
-           // Avoid "Get()" on the node and continue with next Link.
-           // We can do this if:
-           // - We printed it before (thus it was already seen and
-           //   fetched with Get()
-           // - AND we must not go deeper.
-           // This is an optimization for pruned branches which have been
-           // visited before.
-           if(!shouldWrite && !goDeeper) {
-               continue;
-           }
+            // Avoid "Get()" on the node and continue with next Link.
+            // We can do this if:
+            // - We printed it before (thus it was already seen and
+            //   fetched with Get()
+            // - AND we must not go deeper.
+            // This is an optimization for pruned branches which have been
+            // visited before.
+            if (!shouldWrite && !goDeeper) {
+                continue;
+            }
 
-           // We must Get() the node because:
-           // - it is new (never written)
-           // - OR we need to go deeper.
-           // This ensures printed refs are always fetched.
+            // We must Get() the node because:
+            // - it is new (never written)
+            // - OR we need to go deeper.
+            // This ensures printed refs are always fetched.
 
 
+            // Write this node if not done before (or !Unique)
+            if (shouldWrite) {
+                cids.add(lc);
+                count++;
+            }
 
-           // Write this node if not done before (or !Unique)
-           if(shouldWrite) {
-               cids.add(lc);
-               count++;
-           }
-
-           // Keep going deeper. This happens:
-           // - On unexplored branches
-           // - On branches not explored deep enough
-           // Note when !Unique, branches are always considered
-           // unexplored and only depth limits apply.
+            // Keep going deeper. This happens:
+            // - On unexplored branches
+            // - On branches not explored deep enough
+            // Note when !Unique, branches are always considered
+            // unexplored and only depth limits apply.
            /*
            if(goDeeper) {
                int c = evalRefsRecursive(nd, depth + 1, enc);
                count += c;
            }*/
-       }
+        }
 
         /* // TODO
         for i, ng := range .GetDAG(rw.Ctx, rw.DAG, n) {
@@ -102,22 +102,22 @@ public class RefWriter {
 // prune already visited branches at the cost of keeping as set of visited
 // CIDs in memory.
 
-   public Pair<Boolean, Boolean> visit(Cid c, int depth) {
-       boolean atMaxDepth = maxDepth >= 0 && depth == maxDepth;
-       boolean overMaxDepth = maxDepth >= 0 && depth > maxDepth;
+    public Pair<Boolean, Boolean> visit(Cid c, int depth) {
+        boolean atMaxDepth = maxDepth >= 0 && depth == maxDepth;
+        boolean overMaxDepth = maxDepth >= 0 && depth > maxDepth;
 
         // Shortcut when we are over max depth. In practice, this
         // only applies when calling refs with --maxDepth=0, as root's
         // children are already over max depth. Otherwise nothing should
         // hit this.
-        if( overMaxDepth) {
+        if (overMaxDepth) {
             return Pair.create(false, false);
         }
 
         // We can shortcut right away if we don't need unique output:
         //   - we keep traversing when not atMaxDepth
         //   - always print
-        if( !unique) {
+        if (!unique) {
             return Pair.create(!atMaxDepth, true);
         }
 
@@ -128,7 +128,7 @@ public class RefWriter {
         int oldDepth = 0;
         Integer value = seen.get(key);
         boolean ok = false;
-        if(value != null){
+        if (value != null) {
             ok = true;
             oldDepth = value;
         }
@@ -142,7 +142,7 @@ public class RefWriter {
         //   - We saw it higher (smaller depth) in the DAG (means we must have
         //     explored deep enough before)
         // Because we saw the CID, we don't print it again.
-        if( ok && (maxDepth < 0 || oldDepth <= depth)) {
+        if (ok && (maxDepth < 0 || oldDepth <= depth)) {
             return Pair.create(false, false);
         }
 

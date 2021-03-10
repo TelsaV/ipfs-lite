@@ -5,9 +5,9 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ipfs.Storage;
-import io.ipfs.LogUtils;
 import io.ipfs.Closeable;
+import io.ipfs.LogUtils;
+import io.ipfs.Storage;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;
@@ -19,7 +19,7 @@ import io.ipfs.path.Path;
 public class Deleter {
     private static final String TAG = Deleter.class.getSimpleName();
 
-    public static void rm(@NonNull Storage storage, @NonNull String cid, boolean recursively){
+    public static void rm(@NonNull Storage storage, @NonNull String cid, boolean recursively) {
         try {
             Cid m = Cid.Decode(cid);
             LogUtils.error(TAG, m.String());

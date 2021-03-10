@@ -6,6 +6,7 @@ import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
 import io.ipfs.format.ProtoNode;
 import io.ipfs.merkledag.DagService;
+import unixfs.pb.UnixfsProtos;
 
 
 public interface Directory {
@@ -16,33 +17,18 @@ public interface Directory {
         return new BasicDirectory(dagService, Unixfs.EmptyDirNode());
     }
 
-    // NewDirectoryFromNode loads a unixfs directory from the given IPLD node and
-// DAGService.
     static Directory NewDirectoryFromNode(DagService dserv, Node node) {
         ProtoNode protoNode = (ProtoNode) node;
         if (protoNode == null) {
-            throw new RuntimeException("errNotADir");
+            throw new RuntimeException();
         }
         FSNode fsNode = FSNode.FSNodeFromBytes(protoNode.getData());
 
 
-        switch (fsNode.Type()) {
-            case Directory:
-                return new BasicDirectory(dserv, (ProtoNode) protoNode.Copy());
+        if (fsNode.Type() == UnixfsProtos.Data.DataType.Directory) {
+            return new BasicDirectory(dserv, (ProtoNode) protoNode.Copy());
         }
-            /*
-            case format.THAMTShard:
-                shard, err := hamt.NewHamtFromDag(dserv, node)
-                if err != nil {
-                return nil, err
-            }
-            return &HAMTDirectory{
-                dserv: dserv,
-                        shard: shard,
-            }, nil*/
-
-
-        throw new RuntimeException("eerNotADir");
+        throw new RuntimeException();
     }
 
     void SetCidBuilder(@NonNull Builder cidBuilder);

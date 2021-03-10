@@ -5,9 +5,9 @@ import androidx.annotation.Nullable;
 
 import java.nio.ByteBuffer;
 
-import io.ipfs.Storage;
-import io.ipfs.LogUtils;
 import io.ipfs.Closeable;
+import io.ipfs.LogUtils;
+import io.ipfs.Storage;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.exchange.Interface;
@@ -18,13 +18,15 @@ import io.ipfs.path.Path;
 public class Reader implements java.io.Closeable {
     private static final String TAG = Reader.class.getSimpleName();
     private final DagReader dagReader;
+    private int position = 0;
+    private byte[] data = null;
 
 
     private Reader(@NonNull DagReader dagReader) {
         this.dagReader = dagReader;
     }
 
-    public static Reader getReader(@NonNull Storage storage, @NonNull String cid){
+    public static Reader getReader(@NonNull Storage storage, @NonNull String cid) {
 
 
         Closeable closeable = () -> false;
@@ -39,14 +41,10 @@ public class Reader implements java.io.Closeable {
         return new Reader(dagReader);
     }
 
-
-    public long getSize(){
+    public long getSize() {
         return dagReader.getSize();
     }
 
-
-    private int position = 0;
-    private byte[] data = null;
     public int read() {
 
         try {
@@ -95,10 +93,10 @@ public class Reader implements java.io.Closeable {
 
         for (int i = 0; i < size; i++) {
             int val = read();
-            if(val < 0){
+            if (val < 0) {
                 break;
             }
-            buf.put((byte)(val & 0xff));
+            buf.put((byte) (val & 0xff));
         }
         return buf.array();
     }
@@ -107,7 +105,7 @@ public class Reader implements java.io.Closeable {
     public void close() {
         try {
             this.dagReader.close();
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
     }

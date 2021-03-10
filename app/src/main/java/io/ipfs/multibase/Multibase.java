@@ -1,46 +1,12 @@
 package io.ipfs.multibase;
 
-import io.ipfs.multibase.binary.*;
+import java.util.Map;
+import java.util.TreeMap;
+
+import io.ipfs.multibase.binary.Base32;
 import io.ipfs.multibase.binary.Base64;
 
-import java.util.*;
-
 public class Multibase {
-
-    public enum Base {
-        Base1('1'),
-        Base2('0'),
-        Base8('7'),
-        Base10('9'),
-        Base16('f'),
-        Base32('b'),
-        Base32Upper('B'),
-        Base32Hex('v'),
-        Base32HexUpper('V'),
-        Base36('k'),
-        Base58Flickr('Z'),
-        Base58BTC('z'),
-        Base64('m'),
-        Base64Pad('M');
-
-        public char prefix;
-
-        Base(char prefix) {
-            this.prefix = prefix;
-        }
-
-        private static Map<Character, Base> lookup = new TreeMap<>();
-        static {
-            for (Base b: Base.values())
-                lookup.put(b.prefix, b);
-        }
-
-        public static Base lookup(char p) {
-            if (!lookup.containsKey(p))
-                throw new IllegalStateException("Unknown Multibase type: " + p);
-            return lookup.get(p);
-        }
-    }
 
     public static String encode(Base b, byte[] data) {
         switch (b) {
@@ -94,6 +60,42 @@ public class Multibase {
                 return Base64.decodeBase64(rest);
             default:
                 throw new IllegalStateException("Unsupported base encoding: " + b.name());
+        }
+    }
+
+    public enum Base {
+        Base1('1'),
+        Base2('0'),
+        Base8('7'),
+        Base10('9'),
+        Base16('f'),
+        Base32('b'),
+        Base32Upper('B'),
+        Base32Hex('v'),
+        Base32HexUpper('V'),
+        Base36('k'),
+        Base58Flickr('Z'),
+        Base58BTC('z'),
+        Base64('m'),
+        Base64Pad('M');
+
+        private static final Map<Character, Base> lookup = new TreeMap<>();
+
+        static {
+            for (Base b : Base.values())
+                lookup.put(b.prefix, b);
+        }
+
+        public char prefix;
+
+        Base(char prefix) {
+            this.prefix = prefix;
+        }
+
+        public static Base lookup(char p) {
+            if (!lookup.containsKey(p))
+                throw new IllegalStateException("Unknown Multibase type: " + p);
+            return lookup.get(p);
         }
     }
 }

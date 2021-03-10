@@ -12,16 +12,15 @@ import io.ipfs.datastore.Dshelp;
 
 public interface Blockstore {
     String TAG = Blockstore.class.getSimpleName();
-    Block Get(@NonNull Cid cid);
 
-    static Blockstore NewBlockstore(@NonNull final Storage storage){
+    static Blockstore NewBlockstore(@NonNull final Storage storage) {
         return new Blockstore() {
             @Override
-            public Block Get(@NonNull Cid cid)  {
+            public Block Get(@NonNull Cid cid) {
 
                 String key = Dshelp.CidToDsKey(cid).String();
                 threads.server.core.blocks.Block bdata = storage.getBlock(key);
-                if(bdata == null) {
+                if (bdata == null) {
                     return null;
                 }
                 /*
@@ -60,6 +59,8 @@ public interface Blockstore {
 
         };
     }
+
+    Block Get(@NonNull Cid cid);
 
     void DeleteBlock(@NonNull Cid cid);
 

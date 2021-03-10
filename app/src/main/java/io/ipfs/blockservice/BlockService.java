@@ -59,9 +59,7 @@ public interface BlockService extends BlockGetter {
         }*/
 
                 Block block = bs.Get(c);
-                if (block != null) {
-                    return block;
-                }
+                return block;
         /*
         if err == blockstore.ErrNotFound && fget != nil {
 
@@ -85,7 +83,6 @@ public interface BlockService extends BlockGetter {
         }
 
         return nil, err*/
-                return null;
             }
         };
     }
