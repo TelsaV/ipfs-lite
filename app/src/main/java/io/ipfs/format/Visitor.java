@@ -6,7 +6,7 @@ import java.util.Stack;
 
 public class Visitor {
     private final Stack<Stage> stack = new Stack<>();
-    private boolean rootVisited = false;
+    private boolean rootVisited;
 
     public Visitor(@NonNull NavigableNode root) {
         rootVisited = false;
