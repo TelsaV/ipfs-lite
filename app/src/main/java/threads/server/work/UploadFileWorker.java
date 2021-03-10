@@ -141,12 +141,13 @@ public class UploadFileWorker extends Worker {
                         docs.finishDocument(idx);
 
                     }
-                } catch (Throwable e) {
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable);
                     if (!isStopped()) {
                         threads.setThreadsDeleting(idx);
                         buildFailedNotification(thread.getName());
                     }
-                    throw e;
+                    throw throwable;
                 } finally {
                     if (threads.isThreadLeaching(idx)) {
                         threads.resetThreadLeaching(idx);

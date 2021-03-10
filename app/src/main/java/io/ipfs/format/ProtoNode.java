@@ -210,4 +210,9 @@ public class ProtoNode implements Node {
         }
     }
 
+    public void SetData(byte[] fileData) {
+        encoded = null;
+        cached = Cid.Undef();
+        data = fileData;
+    }
 }

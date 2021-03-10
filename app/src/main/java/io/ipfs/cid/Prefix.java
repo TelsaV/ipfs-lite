@@ -4,10 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 
+import io.ipfs.LogUtils;
 import io.ipfs.multihash.Multihash;
 
 public class Prefix implements Builder {
-
+    private final static String TAG = Prefix.class.getSimpleName();
 
     // Prefix represents all the metadata of a Cid,
     // that is, the Version, the Codec, the Multihash type
@@ -43,8 +44,8 @@ public class Prefix implements Builder {
         if (MhType != Multihash.Type.sha2_256.index) {
             throw new RuntimeException("todo");
         }
-
         try {
+
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = Encode(digest.digest(data), MhType);
 
@@ -56,6 +57,7 @@ public class Prefix implements Builder {
                 default:
                     throw new RuntimeException("invalid cid version");
             }
+
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }

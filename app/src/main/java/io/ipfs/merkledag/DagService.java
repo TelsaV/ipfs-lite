@@ -31,7 +31,7 @@ public class DagService implements NodeGetter, NodeAdder {
     }
 
 
-    public void Add(@NonNull Closeable ctx, @NonNull Node nd) {
+    public void Add(@Nullable Closeable ctx, @NonNull Node nd) {
         blockservice.AddBlock(nd);
     }
 

@@ -1,37 +1,37 @@
 package io.ipfs.utils;
 
+
 import androidx.annotation.NonNull;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import io.ipfs.Closeable;
 import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
+import io.ipfs.format.Reader;
+import io.ipfs.merkledag.DagBuilderHelper;
+import io.ipfs.merkledag.DagBuilderParams;
 import io.ipfs.merkledag.DagService;
 import io.ipfs.unixfs.Directory;
+import io.ipfs.unixfs.Trickle;
+import threads.server.Settings;
 
 public class Adder {
     @NonNull
     private final Closeable closeable;
     @NonNull
     private final DagService dagService;
-    public boolean Trickle;
     public boolean RawLeaves;
-    public boolean NoCopy;
-    @NonNull
-    public String Chunker;
     public Builder CidBuilder;
 
-    private Adder(@NonNull Closeable closeable, @NonNull DagService dagService,
-                  boolean trickle, @NonNull String chunker) {
+    private Adder(@NonNull Closeable closeable, @NonNull DagService dagService) {
         this.closeable = closeable;
         this.dagService = dagService;
-        this.Trickle = trickle;
-        this.Chunker = chunker;
     }
 
     public static Adder NewAdder(@NonNull Closeable closeable, @NonNull DagService dagService) {
-        return new Adder(closeable, dagService, false, "");
+        return new Adder(closeable, dagService);
     }
 
 
@@ -62,4 +62,45 @@ public class Adder {
         dagService.Add(closeable, fnd);
         return fnd;
     }
+
+
+    public Node AddReader(@NonNull final ReaderStream reader) {
+
+        Splitter splitter = new Splitter() {
+
+            @Override
+            public Reader Reader() {
+                return reader;
+            }
+
+            @Override
+            public byte[] NextBytes() {
+
+                int size = Settings.CHUNK_SIZE;
+                byte[] buf = new byte[size];
+                int read = reader.Read(buf);
+                if (read < 0) {
+                    return null;
+                } else if (read < size) {
+                    return Arrays.copyOfRange(buf, 0, read);
+                } else {
+                    return buf;
+                }
+            }
+
+            @Override
+            public boolean Done() {
+                return reader.Done();
+            }
+        };
+
+
+        DagBuilderParams params = new DagBuilderParams(dagService,
+                CidBuilder, RawLeaves);
+
+        DagBuilderHelper db = params.New(splitter);
+
+        return Trickle.Layout(db);
+    }
+
 }

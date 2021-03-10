@@ -3,6 +3,7 @@ package io.ipfs.utils;
 import androidx.annotation.NonNull;
 
 import java.util.List;
+import java.util.Objects;
 
 import io.ipfs.Closeable;
 import io.ipfs.Storage;
@@ -44,9 +45,7 @@ public class Stream {
         prefix.MhType = Multihash.Type.sha2_256.index;
         prefix.MhLength = -1;
 
-        fileAdder.Chunker = "size-262144";
         fileAdder.RawLeaves = false;
-        fileAdder.NoCopy = false;
         fileAdder.CidBuilder = prefix;
 
 
@@ -63,7 +62,7 @@ public class Stream {
         DagService dagService = new DagService(blockservice);
 
         io.ipfs.format.Node node = Resolver.ResolveNode(closeable, dagService, Path.New(path));
-
+        Objects.requireNonNull(node);
         Directory dir = Directory.NewDirectoryFromNode(dagService, node);
         return dir != null;
     }
@@ -88,8 +87,9 @@ public class Stream {
         DagService dagService = new DagService(blockservice);
 
         io.ipfs.format.Node dirNode = Resolver.ResolveNode(closeable, dagService, Path.New(dir));
+        Objects.requireNonNull(dirNode);
         io.ipfs.format.Node linkNode = Resolver.ResolveNode(closeable, dagService, Path.New(link));
-
+        Objects.requireNonNull(linkNode);
         Node nd = fileAdder.AddLinkToDir(dirNode, name, linkNode);
         return nd.Cid().String();
 
@@ -106,7 +106,7 @@ public class Stream {
         DagService dagService = new DagService(blockservice);
 
         io.ipfs.format.Node dirNode = Resolver.ResolveNode(closeable, dagService, Path.New(dir));
-
+        Objects.requireNonNull(dirNode);
         Node nd = fileAdder.RemoveChild(dirNode, name);
         return nd.Cid().String();
 
@@ -123,7 +123,7 @@ public class Stream {
 
 
         io.ipfs.format.Node node = Resolver.ResolveNode(closeable, dagService, Path.New(path));
-
+        Objects.requireNonNull(node);
         Directory dir = Directory.NewDirectoryFromNode(dagService, node);
 
         if (dir == null) {
@@ -132,6 +132,16 @@ public class Stream {
             lsFromLinksAsync(closeable, dagService, dir, resolveChildren);
         }
 
+    }
+
+
+    public static String Write(@NonNull Storage storage,
+                               @NonNull Closeable closeable,
+                               @NonNull ReaderStream readerStream) {
+
+        Adder fileAdder = getFileAdder(storage, closeable);
+        Node node = fileAdder.AddReader(readerStream);
+        return node.Cid().String();
     }
 
     private static void lsFromLinksAsync(@NonNull LinkCloseable closeable,

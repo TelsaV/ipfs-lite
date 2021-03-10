@@ -35,6 +35,7 @@ import io.ipfs.LogUtils;
 import io.ipfs.cid.Cid;
 import io.ipfs.utils.Deleter;
 import io.ipfs.utils.LinkCloseable;
+import io.ipfs.utils.ReaderStream;
 import io.ipfs.utils.Stream;
 import ipns.pb.IpnsProtos;
 import lite.Listener;
@@ -1006,7 +1007,7 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    public io.ipfs.utils.Reader getReader(@NonNull String cid) throws Exception {
+    public io.ipfs.utils.Reader getReader(@NonNull String cid) {
         return io.ipfs.utils.Reader.getReader(blocks, cid);
         // return node.getReader(cid);
     }
@@ -1129,7 +1130,8 @@ public class IPFS implements Listener {
 
         String res = "";
         try {
-            res = node.stream(new WriterStream(inputStream, progress, size));
+            res = Stream.Write(blocks, ()-> false, new ReaderStream(inputStream, progress, size));
+            //res = node.stream(new WriterStream(inputStream, progress, size));
         } catch (Throwable e) {
             if (!progress.isClosed()) {
                 LogUtils.error(TAG, e);

@@ -1,6 +1,7 @@
 package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.List;
 
@@ -66,6 +67,7 @@ public class Resolver {
         };
     }
 
+    @Nullable
     public static io.ipfs.format.Node ResolveNode(@NonNull Closeable closeable,
                                                   @NonNull NodeGetter nodeGetter,
                                                   @NonNull Path path) {
