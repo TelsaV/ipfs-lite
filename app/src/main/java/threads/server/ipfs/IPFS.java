@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
+import io.ipfs.utils.Deleter;
 import ipns.pb.IpnsProtos;
 import lite.Listener;
 import lite.Loader;
@@ -748,7 +749,8 @@ public class IPFS implements Listener {
     public void rm(@NonNull String cid, boolean recursively) {
 
         try {
-            node.rm(cid, recursively);
+            Deleter.rm(blocks, cid, recursively);
+            // node.rm(cid, recursively);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }

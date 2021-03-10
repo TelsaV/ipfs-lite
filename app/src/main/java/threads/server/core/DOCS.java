@@ -310,8 +310,7 @@ public class DOCS {
                     threads.removeThread(thread);
                     if (cid != null) {
                         if (!threads.isReferenced(cid)) {
-                            Deleter.rm(blocks, cid, true);
-                            //ipfs.rm(cid, true);
+                            ipfs.rm(cid, true);
                         }
                     }
                 }
