@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import io.ipfs.Closeable;
 import io.ipfs.cid.Cid;
 
 public class Link {
@@ -28,6 +29,13 @@ public class Link {
         return new Link(cid, name, size);
     }
 
+    // MakeLink creates a link to the given node
+    public static Link MakeLink(@NonNull Node node, @NonNull String name) {
+        long size = node.Size();
+
+        return new Link(node.Cid(), name, size);
+    }
+
     @NonNull
     public Cid getCid() {
         return cid;
@@ -42,8 +50,6 @@ public class Link {
         return name;
     }
 
-
-
     @NonNull
     @Override
     public String toString() {
@@ -54,14 +60,8 @@ public class Link {
                 '}';
     }
 
-
-
-
-    // MakeLink creates a link to the given node
-    public static Link MakeLink(@NonNull Node node, @NonNull String name){
-        long size = node.Size();
-
-        return new Link(node.Cid(), name, size);
+    public Node GetNode(@NonNull Closeable ctx, @NonNull NodeGetter serv) {
+        return serv.Get(ctx, getCid());
     }
 
 }

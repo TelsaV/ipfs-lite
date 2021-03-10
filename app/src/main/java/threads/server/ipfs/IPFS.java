@@ -30,16 +30,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-
 import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
 import io.ipfs.cid.Cid;
 import io.ipfs.utils.Deleter;
+import io.ipfs.utils.LinkCloseable;
 import io.ipfs.utils.Stream;
 import ipns.pb.IpnsProtos;
 import lite.Listener;
 import lite.Loader;
-import lite.LsInfoClose;
 import lite.Node;
 import lite.Peer;
 import lite.PeerInfo;
@@ -786,7 +785,7 @@ public class IPFS implements Listener {
     @Nullable
     public String rmLinkFromDir(String dir, String name) {
         try {
-            return Stream.RemoveLinkFromDir(blocks, ()-> false, dir, name);
+            return Stream.RemoveLinkFromDir(blocks, () -> false, dir, name);
             //return node.removeLinkFromDir(dir, name);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -797,7 +796,7 @@ public class IPFS implements Listener {
     @Nullable
     public String addLinkToDir(@NonNull String dir, @NonNull String name, @NonNull String link) {
         try {
-            return Stream.AddLinkToDir(blocks, ()-> false, dir, name, link);
+            return Stream.AddLinkToDir(blocks, () -> false, dir, name, link);
             //return node.addLinkToDir(dir, name, link);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -808,7 +807,7 @@ public class IPFS implements Listener {
     @Nullable
     public String createEmptyDir() {
         try {
-            return Stream.CreateEmptyDir(blocks, ()-> false);
+            return Stream.CreateEmptyDir(blocks, () -> false);
             //return node.createEmptyDir();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -860,7 +859,8 @@ public class IPFS implements Listener {
         }
         boolean result;
         try {
-            result = Stream.IsDir(blocks, ()-> false, cid);;
+            result = Stream.IsDir(blocks, () -> false, cid);
+            ;
             //result = node.isDir(cid, closeable::isClosed);
 
         } catch (Throwable e) {
@@ -935,20 +935,19 @@ public class IPFS implements Listener {
         }
         List<Link> infoList = new ArrayList<>();
         try {
-
-            node.ls(cid, new LsInfoClose() {
+            Stream.Ls(blocks, new LinkCloseable() {
                 @Override
-                public boolean close() {
-                    return closeable.isClosed();
-                }
-
-                @Override
-                public void lsInfo(String name, String hash, long size, int type) {
+                public void info(@NonNull String name, @NonNull String hash, long size, int type) {
                     Link info = Link.create(name, hash);
                     infoList.add(info);
                     LogUtils.error(TAG, info.toString());
                 }
-            }, false);
+
+                @Override
+                public boolean isClosed() {
+                    return closeable.isClosed();
+                }
+            }, cid, false);
 
         } catch (Throwable e) {
             if (closeable.isClosed()) {
@@ -970,19 +969,19 @@ public class IPFS implements Listener {
         }
         List<LinkInfo> infoList = new ArrayList<>();
         try {
+            Stream.Ls(blocks, new LinkCloseable() {
 
-            node.ls(cid, new LsInfoClose() {
                 @Override
-                public boolean close() {
+                public boolean isClosed() {
                     return closeable.isClosed();
                 }
 
                 @Override
-                public void lsInfo(String name, String hash, long size, int type) {
+                public void info(@NonNull String name, @NonNull String hash, long size, int type) {
                     LinkInfo info = LinkInfo.create(name, hash, size, type);
                     infoList.add(info);
                 }
-            }, true);
+            }, cid, true);
 
         } catch (Throwable e) {
             if (closeable.isClosed()) {
@@ -1050,7 +1049,7 @@ public class IPFS implements Listener {
         long totalRead = 0L;
         int remember = 0;
 
-        try(io.ipfs.utils.Reader reader = getReader(cid)) {
+        try (io.ipfs.utils.Reader reader = getReader(cid)) {
             byte[] buf = reader.loadNextData();
             while (buf != null && buf.length > 0) {
 
@@ -1081,7 +1080,7 @@ public class IPFS implements Listener {
 
     public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, int blockSize) throws Exception {
 
-        try(io.ipfs.utils.Reader reader = getReader(cid)) {
+        try (io.ipfs.utils.Reader reader = getReader(cid)) {
             byte[] buf = reader.loadNextData();
             while (buf != null && buf.length > 0) {
 
@@ -1226,7 +1225,7 @@ public class IPFS implements Listener {
     @Override
     public byte[] blockGet(String key) {
         //LogUtils.error(TAG, "get " + key);
-        Block block = blocks.getBlock( key);
+        Block block = blocks.getBlock(key);
         if (block != null) {
             return block.getData();
         }

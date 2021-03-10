@@ -34,8 +34,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import lite.Peer;
 import io.ipfs.LogUtils;
+import lite.Peer;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;

@@ -12,7 +12,6 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 import java.io.EOFException;
 import java.io.IOException;
 
-
 import io.ipfs.Storage;
 import io.ipfs.utils.Reader;
 
@@ -38,8 +37,8 @@ public class ProviderDataSource extends BaseDataSource {
     private int readIntern(byte[] buffer, int offset, int size) throws IOException {
         try {
 
-             byte[] data = fileReader.load(size);
-             System.arraycopy(data, 0, buffer, offset, data.length);
+            byte[] data = fileReader.load(size);
+            System.arraycopy(data, 0, buffer, offset, data.length);
 
             return data.length;
 

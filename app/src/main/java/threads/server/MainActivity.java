@@ -265,6 +265,15 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     });
     private final AtomicBoolean downloadActive = new AtomicBoolean(false);
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    invokeScan();
+                } else {
+                    EVENTS.getInstance(getApplicationContext()).permission(
+                            getString(R.string.permission_camera_denied));
+                }
+            });
     ConnectivityManager.NetworkCallback networkCallback;
     private long mLastClickTime = 0;
     private CoordinatorLayout mDrawerLayout;
@@ -309,15 +318,6 @@ public class MainActivity extends AppCompatActivity implements
                     LogUtils.error(TAG, throwable);
                 }
 
-            });
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    invokeScan();
-                } else {
-                    EVENTS.getInstance(getApplicationContext()).permission(
-                            getString(R.string.permission_camera_denied));
-                }
             });
     private TextView mBrowserText;
     private ActionMode mActionMode;

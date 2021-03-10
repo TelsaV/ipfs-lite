@@ -8,7 +8,6 @@ import androidx.room.Room;
 
 import java.util.List;
 
-import io.ipfs.LogUtils;
 import io.ipfs.Storage;
 import threads.server.Settings;
 
@@ -75,7 +74,7 @@ public class BLOCKS implements Storage {
 
     public void insertBlock(@NonNull String id, @NonNull byte[] bytes) {
         // LogUtils.error(TAG, "insertBlock " +  id);
-        storeBlock(createBlock( id, bytes));
+        storeBlock(createBlock(id, bytes));
     }
 
     public boolean hasBlock(@NonNull String id) {

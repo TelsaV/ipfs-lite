@@ -17,6 +17,7 @@ public class Multihash {
     public static final int MAX_IDENTITY_HASH_LENGTH = 1024 * 1024;
     private final Type type;
     private final byte[] hash;
+
     public Multihash(Type type, byte[] hash) {
         if (hash.length > 127 && type != Type.id)
             throw new IllegalStateException("Unsupported hash size: " + hash.length);

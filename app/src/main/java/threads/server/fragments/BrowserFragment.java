@@ -48,6 +48,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
@@ -57,7 +58,6 @@ import threads.server.core.DOCS;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
 import threads.server.core.events.EVENTS;
-import io.ipfs.Closeable;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;

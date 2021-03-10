@@ -12,9 +12,9 @@ import androidx.work.WorkerParameters;
 
 import java.util.Objects;
 
+import io.ipfs.LogUtils;
 import lite.Peer;
 import lite.PeerInfo;
-import io.ipfs.LogUtils;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;

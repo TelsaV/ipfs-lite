@@ -22,7 +22,6 @@ import io.ipfs.LogUtils;
 import io.ipfs.Storage;
 import threads.server.core.blocks.BLOCKS;
 import threads.server.core.threads.THREADS;
-import threads.server.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.ProviderDataSource;
 import threads.server.work.VideoImageWorker;

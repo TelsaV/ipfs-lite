@@ -19,8 +19,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.util.List;
 import java.util.Objects;
 
-import lite.Peer;
 import io.ipfs.LogUtils;
+import lite.Peer;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.events.EVENTS;
