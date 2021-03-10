@@ -8,13 +8,11 @@ import java.util.List;
 import io.ipfs.Closeable;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.NodeGetter;
-import io.ipfs.path.Path;
-import io.ipfs.path.Resolved;
 
 public class Resolver {
 
 
-    public static Resolved ResolvePath(@NonNull Closeable ctx, @NonNull NodeGetter dag, @NonNull Path p) {
+    public static Cid ResolvePath(@NonNull Closeable ctx, @NonNull NodeGetter dag, @NonNull Path p) {
         /*
         if _, ok := p.(path.Resolved); ok {
             return p.(path.Resolved), nil
@@ -56,24 +54,17 @@ public class Resolver {
 
          */
 
-        Cid cid = Cid.Decode(content);
-
         // return path.NewResolvedPath(ipath, node, root, gopath.Join(rest...))
-        return new Resolved() {
-            @Override
-            public Cid Cid() {
-                return cid;
-            }
-        };
+        return Cid.Decode(content);
     }
 
     @Nullable
     public static io.ipfs.format.Node ResolveNode(@NonNull Closeable closeable,
                                                   @NonNull NodeGetter nodeGetter,
                                                   @NonNull Path path) {
-        Resolved rp = ResolvePath(closeable, nodeGetter, path);
+        Cid cid = ResolvePath(closeable, nodeGetter, path);
 
-        return nodeGetter.Get(closeable, rp.Cid());
+        return nodeGetter.Get(closeable, cid);
     }
 
 }

@@ -8,24 +8,20 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 
-import io.ipfs.Closeable;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Link;
 import io.ipfs.format.Node;
-import io.ipfs.merkledag.DagService;
+
 
 public class RefWriter {
-    private final DagService dagService;
-    private final Closeable closeable;
+
+
     private final Hashtable<String, Integer> seen = new Hashtable<>();
     private final List<Cid> cids = new ArrayList<>();
     private final boolean unique;
     private final int maxDepth;
 
-    public RefWriter(@NonNull Closeable closeable, @NonNull DagService dagService, boolean
-            unique, int maxDepth) {
-        this.closeable = closeable;
-        this.dagService = dagService;
+    public RefWriter(boolean unique, int maxDepth) {
         this.unique = unique;
         this.maxDepth = maxDepth;
     }

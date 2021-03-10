@@ -13,7 +13,6 @@ import io.ipfs.blockstore.Blockstore;
 import io.ipfs.exchange.Interface;
 import io.ipfs.merkledag.DagService;
 import io.ipfs.offline.Exchange;
-import io.ipfs.path.Path;
 
 public class Reader implements java.io.Closeable {
     private static final String TAG = Reader.class.getSimpleName();

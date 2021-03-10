@@ -29,7 +29,6 @@ public class Link {
         return new Link(cid, name, size);
     }
 
-    // MakeLink creates a link to the given node
     public static Link MakeLink(@NonNull Node node, @NonNull String name) {
         long size = node.Size();
 

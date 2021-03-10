@@ -25,20 +25,15 @@ import io.ipfs.unixfs.FSNode;
 public class DagReader implements java.io.Closeable {
     private static final String TAG = DagReader.class.getSimpleName();
     private final Closeable ctx;
-    private final NodeGetter serv;
-    private final Node root;
     private final long size;
     private final Visitor visitor;
 
     private final Walker dagWalker;
     public AtomicInteger atomicLeft = new AtomicInteger(0);
 
-    public DagReader(@NonNull Closeable closeable, @NonNull Walker dagWalker,
-                     @NonNull NodeGetter nodeGetter, @NonNull Node root, long size) {
+    public DagReader(@NonNull Closeable closeable, @NonNull Walker dagWalker, long size) {
         this.ctx = closeable;
         this.dagWalker = dagWalker;
-        this.serv = nodeGetter;
-        this.root = root;
         this.size = size;
         this.visitor = new Visitor(dagWalker.getRoot());
 
@@ -57,8 +52,6 @@ public class DagReader implements java.io.Closeable {
 
             switch (fsNode.Type()) {
                 case Raw:
-                    size = fsNode.FileSize();
-                    break;
                 case File:
                     size = fsNode.FileSize();
                     break;
@@ -114,7 +107,7 @@ public class DagReader implements java.io.Closeable {
         */
 
         Walker dagWalker = Walker.NewWalker(NavigableIPLDNode.NewNavigableIPLDNode(node, serv));
-        return new DagReader(ctx, dagWalker, serv, node, size);
+        return new DagReader(ctx, dagWalker, size);
 
     }
 
@@ -165,7 +158,7 @@ public class DagReader implements java.io.Closeable {
                 return FSNode.ReadUnixFSNodeData(node);
             }
 
-        } catch (Throwable throwable) {
+        } catch (Throwable throwable) { // TODO remove
             LogUtils.error(TAG, throwable);
         }
         return null;

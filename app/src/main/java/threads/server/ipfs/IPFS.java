@@ -494,6 +494,7 @@ public class IPFS implements Listener {
             return;
         }
         try {
+            // TODO
             node.dhtFindProvs(cid, provider, numProvs, closeable::isClosed);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -528,6 +529,7 @@ public class IPFS implements Listener {
         }
 
         try {
+            // TODO
             node.dhtProvide(cid, closable);
         } catch (Throwable ignore) {
         }
@@ -650,6 +652,7 @@ public class IPFS implements Listener {
             return;
         }
         try {
+            // TODO
             node.publishName(cid, closeable::isClosed, sequence);
         } catch (Throwable ignore) {
         }
@@ -808,7 +811,7 @@ public class IPFS implements Listener {
     @Nullable
     public String createEmptyDir() {
         try {
-            return Stream.CreateEmptyDir(blocks, () -> false);
+            return Stream.CreateEmptyDir(blocks);
             //return node.createEmptyDir();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -836,6 +839,7 @@ public class IPFS implements Listener {
         String result = "";
 
         try {
+            // TODO
             result = node.resolve(path, closeable::isClosed);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -861,7 +865,6 @@ public class IPFS implements Listener {
         boolean result;
         try {
             result = Stream.IsDir(blocks, () -> false, cid);
-            ;
             //result = node.isDir(cid, closeable::isClosed);
 
         } catch (Throwable e) {
@@ -999,6 +1002,7 @@ public class IPFS implements Listener {
     @Nullable
     public String storeFile(@NonNull File target) {
         try {
+            // TODO rewrite
             return node.addFile(target.getAbsolutePath());
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -1094,12 +1098,13 @@ public class IPFS implements Listener {
 
     @NonNull
     private Loader getLoader(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
+        // TODO
         return node.getLoader(cid, closeable::isClosed);
     }
 
     @NonNull
     public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
-
+        // TODO
         Loader loader = getLoader(cid, closeable);
 
         return new CloseableInputStream(loader, closeable);
@@ -1130,7 +1135,7 @@ public class IPFS implements Listener {
 
         String res = "";
         try {
-            res = Stream.Write(blocks, ()-> false, new ReaderStream(inputStream, progress, size));
+            res = Stream.Write(blocks, new ReaderStream(inputStream, progress, size));
             //res = node.stream(new WriterStream(inputStream, progress, size));
         } catch (Throwable e) {
             if (!progress.isClosed()) {
@@ -1281,8 +1286,6 @@ public class IPFS implements Listener {
     public boolean isValidCID(@NonNull String cid) {
         try {
             return !Cid.Decode(cid).String().isEmpty();
-            //this.node.cidCheck(cid);
-            //return true;
         } catch (Throwable e) {
             return false;
         }

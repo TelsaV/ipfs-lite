@@ -3,29 +3,27 @@ package io.ipfs.unixfs;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import io.ipfs.Closeable;
 import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
 import io.ipfs.format.ProtoNode;
-import io.ipfs.merkledag.DagService;
 import unixfs.pb.UnixfsProtos;
 
 
 public interface Directory {
 
 
-    static Directory NewDirectory(@NonNull DagService dagService) {
+    static Directory NewDirectory() {
 
-        return new BasicDirectory(dagService, Unixfs.EmptyDirNode());
+        return new BasicDirectory(Unixfs.EmptyDirNode());
     }
 
     @Nullable
-    static Directory NewDirectoryFromNode(@NonNull DagService dagService, @NonNull Node node) {
+    static Directory NewDirectoryFromNode(@NonNull Node node) {
         ProtoNode protoNode = (ProtoNode) node;
         FSNode fsNode = FSNode.FSNodeFromBytes(protoNode.getData());
 
         if (fsNode.Type() == UnixfsProtos.Data.DataType.Directory) {
-            return new BasicDirectory(dagService, (ProtoNode) protoNode.Copy());
+            return new BasicDirectory((ProtoNode) protoNode.Copy());
         }
         return null;
     }
@@ -34,17 +32,15 @@ public interface Directory {
 
     Node GetNode();
 
-    void AddChild(@NonNull Closeable closeable, @NonNull String name, @NonNull Node link);
+    void AddChild(@NonNull String name, @NonNull Node link);
 
-    void RemoveChild(@NonNull Closeable closeable, @NonNull String name);
+    void RemoveChild(@NonNull String name);
 
     class BasicDirectory implements Directory {
         private final ProtoNode protoNode;
-        private final DagService dagService;
 
-        BasicDirectory(@NonNull DagService dagService, @NonNull ProtoNode protoNode) {
+        BasicDirectory(@NonNull ProtoNode protoNode) {
             this.protoNode = protoNode;
-            this.dagService = dagService;
         }
 
         @Override
@@ -58,13 +54,13 @@ public interface Directory {
         }
 
         @Override
-        public void AddChild(@NonNull Closeable closeable, @NonNull String name, @NonNull Node link) {
+        public void AddChild(@NonNull String name, @NonNull Node link) {
             protoNode.RemoveNodeLink(name);
             protoNode.AddNodeLink(name, link);
         }
 
         @Override
-        public void RemoveChild(@NonNull Closeable closeable, @NonNull String name) {
+        public void RemoveChild(@NonNull String name) {
             protoNode.RemoveNodeLink(name);
         }
     }

@@ -67,7 +67,7 @@ public class ProtoNode implements Node {
 
 
     public long Size() {
-        byte[] b = EncodeProtobuf(false);
+        byte[] b = EncodeProtobuf();
         long size = b.length;
         for (Link link : links) {
             size += link.getSize();
@@ -102,7 +102,7 @@ public class ProtoNode implements Node {
 
     @Override
     public byte[] RawData() {
-        return EncodeProtobuf(false);
+        return EncodeProtobuf();
     }
 
 
@@ -135,10 +135,10 @@ public class ProtoNode implements Node {
         return pbn.build().toByteArray();
     }
 
-    private byte[] EncodeProtobuf(boolean force) {
+    private byte[] EncodeProtobuf() {
 
         links.sort((o1, o2) -> o1.getName().compareTo(o2.getName()));// keep links sorted
-        if (encoded == null || force) {
+        if (encoded == null) {
             cached = Cid.Undef();
             encoded = Marshal();
         }
@@ -198,11 +198,11 @@ public class ProtoNode implements Node {
 
         Link lnk = Link.MakeLink(link, name);
 
-        AddRawLink(name, lnk);
+        AddRawLink(lnk);
 
     }
 
-    private void AddRawLink(@NonNull String name, @NonNull Link link) {
+    private void AddRawLink(@NonNull Link link) {
         encoded = null;
 
         synchronized (links) {

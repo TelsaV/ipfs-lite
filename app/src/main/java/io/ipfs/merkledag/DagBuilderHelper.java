@@ -36,14 +36,6 @@ public class DagBuilderHelper {
         return new FSNodeOverDag(new ProtoNode(), FSNode.NewFSNode(fsNodeType), builder);
     }
 
-
-    // NewLeafDataNode builds the `node` with the data obtained from the
-// Splitter with the given constraints (BlockSizeLimit, RawLeaves)
-// specified when creating the DagBuilderHelper. It returns
-// `ipld.Node` with the `dataSize` (that will be used to keep track of
-// the DAG file size). The size of the data is computed here because
-// after that it will be hidden by `NewLeafNode` inside a generic
-// `ipld.Node` representation.
     @Nullable
     public Pair<Node, Integer> NewLeafDataNode(@NonNull UnixfsProtos.Data.DataType dataType) {
 
@@ -51,7 +43,6 @@ public class DagBuilderHelper {
         if (fileData != null) {
             int dataSize = fileData.length;
 
-            // Create a new leaf node containing the file chunk data.
             Node node = NewLeafNode(fileData, dataType);
 
             return Pair.create(node, dataSize);
@@ -74,7 +65,7 @@ public class DagBuilderHelper {
             return RawNode.NewRawNodeWPrefix(data, builder);
         }
 
-        // Encapsulate the data in UnixFS node (instead of a raw node).
+
         FSNodeOverDag fsNodeOverDag = NewFSNodeOverDag(fsNodeType);
         fsNodeOverDag.SetFileData(data);
 
@@ -99,7 +90,7 @@ public class DagBuilderHelper {
     }
 
     public void Add(@NonNull Node node) {
-        dagService.Add(null, node);
+        dagService.Add(node);
     }
 
     public boolean Done() {
@@ -117,7 +108,6 @@ public class DagBuilderHelper {
         }
 
 
-        // NumChildren returns the number of children of the `ft.FSNode`.
         int NumChildren() {
             return file.NumChildren();
         }

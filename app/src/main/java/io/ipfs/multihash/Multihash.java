@@ -1,5 +1,7 @@
 package io.ipfs.multihash;
 
+import androidx.annotation.NonNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -129,6 +131,7 @@ public class Multihash {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         return toBase58();

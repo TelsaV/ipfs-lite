@@ -18,7 +18,6 @@ import io.ipfs.format.ProtoNode;
 import io.ipfs.merkledag.DagService;
 import io.ipfs.multihash.Multihash;
 import io.ipfs.offline.Exchange;
-import io.ipfs.path.Path;
 import io.ipfs.unixfs.Directory;
 import io.ipfs.unixfs.FSNode;
 
@@ -29,16 +28,15 @@ public class Stream {
     public static final int Symlink = 4;
     public static final int NotKnown = 8;
 
-    private static final String TAG = Stream.class.getSimpleName();
 
-    public static Adder getFileAdder(@NonNull Storage storage, @NonNull Closeable closeable) {
+    public static Adder getFileAdder(@NonNull Storage storage) {
 
 
         Blockstore bs = Blockstore.NewBlockstore(storage);
         Interface exchange = new Exchange(bs);
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dagService = new DagService(blockservice);
-        Adder fileAdder = Adder.NewAdder(closeable, dagService);
+        Adder fileAdder = Adder.NewAdder(dagService);
 
         Prefix prefix = Node.PrefixForCidVersion(1);
 
@@ -63,13 +61,13 @@ public class Stream {
 
         io.ipfs.format.Node node = Resolver.ResolveNode(closeable, dagService, Path.New(path));
         Objects.requireNonNull(node);
-        Directory dir = Directory.NewDirectoryFromNode(dagService, node);
+        Directory dir = Directory.NewDirectoryFromNode(node);
         return dir != null;
     }
 
-    public static String CreateEmptyDir(@NonNull Storage storage, @NonNull Closeable closeable) {
+    public static String CreateEmptyDir(@NonNull Storage storage) {
 
-        Adder fileAdder = getFileAdder(storage, closeable);
+        Adder fileAdder = getFileAdder(storage);
 
         Node nd = fileAdder.CreateEmptyDir();
         return nd.Cid().String();
@@ -79,7 +77,7 @@ public class Stream {
     public static String AddLinkToDir(@NonNull Storage storage, @NonNull Closeable closeable,
                                       @NonNull String dir, @NonNull String name, @NonNull String link) {
 
-        Adder fileAdder = getFileAdder(storage, closeable);
+        Adder fileAdder = getFileAdder(storage);
 
         Blockstore bs = Blockstore.NewBlockstore(storage);
         Interface exchange = new Exchange(bs);
@@ -98,7 +96,7 @@ public class Stream {
     public static String RemoveLinkFromDir(@NonNull Storage storage, @NonNull Closeable closeable,
                                            @NonNull String dir, @NonNull String name) {
 
-        Adder fileAdder = getFileAdder(storage, closeable);
+        Adder fileAdder = getFileAdder(storage);
 
         Blockstore bs = Blockstore.NewBlockstore(storage);
         Interface exchange = new Exchange(bs);
@@ -124,7 +122,7 @@ public class Stream {
 
         io.ipfs.format.Node node = Resolver.ResolveNode(closeable, dagService, Path.New(path));
         Objects.requireNonNull(node);
-        Directory dir = Directory.NewDirectoryFromNode(dagService, node);
+        Directory dir = Directory.NewDirectoryFromNode(node);
 
         if (dir == null) {
             lsFromLinks(closeable, dagService, node.getLinks(), resolveChildren);
@@ -136,10 +134,9 @@ public class Stream {
 
 
     public static String Write(@NonNull Storage storage,
-                               @NonNull Closeable closeable,
                                @NonNull ReaderStream readerStream) {
 
-        Adder fileAdder = getFileAdder(storage, closeable);
+        Adder fileAdder = getFileAdder(storage);
         Node node = fileAdder.AddReader(readerStream);
         return node.Cid().String();
     }
@@ -185,7 +182,7 @@ public class Stream {
                 if (linkNode instanceof ProtoNode) {
                     ProtoNode pn = (ProtoNode) linkNode;
                     FSNode d = FSNode.FSNodeFromBytes(pn.getData());
-                    int type = NotKnown;
+                    int type;
                     switch (d.Type()) {
                         case File:
                         case Raw:

@@ -26,7 +26,7 @@ public class RawNode implements Node {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(data);
-            // TODO check if working
+
             Cid cid = Cid.NewCidV1(Cid.Raw, hash);
             Block blk = BasicBlock.NewBlockWithCid(cid, data);
 

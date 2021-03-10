@@ -12,7 +12,6 @@ import io.ipfs.Closeable;
 import io.ipfs.unixfs.FSNode;
 
 public class Walker {
-    private static final String TAG = Walker.class.getSimpleName();
     private final NavigableNode root;
 
     private Walker(NavigableNode navigableNode) {

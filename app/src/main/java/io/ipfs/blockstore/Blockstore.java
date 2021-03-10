@@ -23,19 +23,6 @@ public interface Blockstore {
                 if (bdata == null) {
                     return null;
                 }
-                /*
-                if bs.rehash {
-                    rbcid, err := k.Prefix().Sum(bdata)
-                    if err != nil {
-                        return nil, err
-                    }
-
-                    if !rbcid.Equals(k) {
-                        return nil, bstore.ErrHashMismatch
-                    }
-
-                    return blocks.NewBlockWithCid(bdata, rbcid)
-                }*/
                 return BasicBlock.NewBlockWithCid(cid, bdata.getData());
             }
 

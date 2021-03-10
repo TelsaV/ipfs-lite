@@ -1,4 +1,4 @@
-package io.ipfs.path;
+package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
 
@@ -19,7 +19,6 @@ public class Path {
     }
 
 
-    // ParseCidToPath takes a CID in string form and returns a valid ipfs Path.
     public static Path ParseCidToPath(String txt) {
         if (txt.isEmpty()) {
             throw new RuntimeException("path is empty");

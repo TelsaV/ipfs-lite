@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import java.util.Arrays;
 import java.util.Objects;
 
-import io.ipfs.Closeable;
 import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
 import io.ipfs.format.Reader;
@@ -18,47 +17,44 @@ import threads.server.Settings;
 
 public class Adder {
     @NonNull
-    private final Closeable closeable;
-    @NonNull
     private final DagService dagService;
     public boolean RawLeaves;
     public Builder CidBuilder;
 
-    private Adder(@NonNull Closeable closeable, @NonNull DagService dagService) {
-        this.closeable = closeable;
+    private Adder(@NonNull DagService dagService) {
         this.dagService = dagService;
     }
 
-    public static Adder NewAdder(@NonNull Closeable closeable, @NonNull DagService dagService) {
-        return new Adder(closeable, dagService);
+    public static Adder NewAdder(@NonNull DagService dagService) {
+        return new Adder(dagService);
     }
 
 
     public Node CreateEmptyDir() {
-        Directory dir = Directory.NewDirectory(dagService);
+        Directory dir = Directory.NewDirectory();
         dir.SetCidBuilder(CidBuilder);
         Node fnd = dir.GetNode();
-        dagService.Add(closeable, fnd);
+        dagService.Add(fnd);
         return fnd;
     }
 
     public Node AddLinkToDir(@NonNull Node dirNode, @NonNull String name, @NonNull Node link) {
-        Directory dir = Directory.NewDirectoryFromNode(dagService, dirNode);
+        Directory dir = Directory.NewDirectoryFromNode(dirNode);
         Objects.requireNonNull(dir);
         dir.SetCidBuilder(CidBuilder);
-        dir.AddChild(closeable, name, link);
+        dir.AddChild(name, link);
         Node fnd = dir.GetNode();
-        dagService.Add(closeable, fnd);
+        dagService.Add(fnd);
         return fnd;
     }
 
     public Node RemoveChild(@NonNull Node dirNode, @NonNull String name) {
-        Directory dir = Directory.NewDirectoryFromNode(dagService, dirNode);
+        Directory dir = Directory.NewDirectoryFromNode(dirNode);
         Objects.requireNonNull(dir);
         dir.SetCidBuilder(CidBuilder);
-        dir.RemoveChild(closeable, name);
+        dir.RemoveChild(name);
         Node fnd = dir.GetNode();
-        dagService.Add(closeable, fnd);
+        dagService.Add(fnd);
         return fnd;
     }
 

@@ -14,7 +14,6 @@ import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.merkledag.DagService;
 import io.ipfs.offline.Exchange;
-import io.ipfs.path.Path;
 
 public class Deleter {
     private static final String TAG = Deleter.class.getSimpleName();
@@ -33,7 +32,7 @@ public class Deleter {
 
             List<Cid> cids = new ArrayList<>();
             if (recursively) {
-                RefWriter rw = new RefWriter(closeable, dags, true, -1);
+                RefWriter rw = new RefWriter(true, -1);
 
                 rw.EvalRefs(top);
                 cids.addAll(rw.getCids());

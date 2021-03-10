@@ -4,19 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.MessageDigest;
 
-import io.ipfs.LogUtils;
 import io.ipfs.multihash.Multihash;
 
 public class Prefix implements Builder {
-    private final static String TAG = Prefix.class.getSimpleName();
-
-    // Prefix represents all the metadata of a Cid,
-    // that is, the Version, the Codec, the Multihash type
-    // and the Multihash length. It does not contains
-    // any actual content information.
-    // NOTE: The use -1 in MhLength to mean default length is deprecated,
-    //   use the V0Builder or V1Builder structures instead
-
     public long Version;
     public long Codec;
     public long MhType;
@@ -64,9 +54,6 @@ public class Prefix implements Builder {
 
     }
 
-
-    // Encode a hash digest along with the specified function code.
-// Note: the length is derived from the length of the digest itself.
     byte[] Encode(byte[] buf, long code) {
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
