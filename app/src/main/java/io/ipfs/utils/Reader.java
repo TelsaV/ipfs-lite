@@ -1,6 +1,7 @@
 package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.nio.ByteBuffer;
 
@@ -120,6 +121,7 @@ public class Reader implements java.io.Closeable {
         dagReader.Seek(position);
     }
 
+    @Nullable
     public byte[] loadNextData() {
         return this.dagReader.loadNextData();
     }

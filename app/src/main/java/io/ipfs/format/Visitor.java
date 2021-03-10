@@ -44,4 +44,7 @@ public class Visitor {
     }
 
 
+    public boolean isEmpty() {
+        return stack.isEmpty();
+    }
 }

@@ -3,6 +3,7 @@ package io.ipfs.utils;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Arrays;
 import java.util.Stack;
@@ -132,6 +133,7 @@ public class DagReader implements java.io.Closeable {
         this.visitor.reset(result.first);
     }
 
+    @Nullable
     public byte[] loadNextData() {
 
         try {
@@ -151,9 +153,11 @@ public class DagReader implements java.io.Closeable {
 
             while (true) {
                 NavigableNode visitedNode = dagWalker.Next(ctx, visitor);
+                if(visitedNode == null){
+                    return null;
+                }
 
                 Node node = NavigableIPLDNode.ExtractIPLDNode(visitedNode);
-
                 if (node.getLinks().size() > 0) {
                     continue;
                 }
@@ -162,7 +166,6 @@ public class DagReader implements java.io.Closeable {
             }
 
         } catch (Throwable throwable) {
-            // TODO better exception handling
             LogUtils.error(TAG, throwable);
         }
         return null;

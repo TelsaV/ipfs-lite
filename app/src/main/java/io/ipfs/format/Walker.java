@@ -3,11 +3,11 @@ package io.ipfs.format;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Objects;
 import java.util.Stack;
 
-import io.ipfs.LogUtils;
 import io.ipfs.Closeable;
 import io.ipfs.unixfs.FSNode;
 
@@ -30,68 +30,69 @@ public class Walker {
         }
     }
 
-    public NavigableNode Next(@NonNull Closeable closeable, @NonNull Visitor visitor) throws Exception {
+    @Nullable
+    public NavigableNode Next(@NonNull Closeable closeable, @NonNull Visitor visitor) {
 
         if (!visitor.isRootVisited(true)) {
             if (visitor.getActiveNode().equals(root)) {
                 return root;
             }
         }
-        try {
-            down(closeable, visitor, visitor.getActiveNode());
+
+        boolean success = down(closeable, visitor, visitor.getActiveNode());
+        if (success) {
             return visitor.getActiveNode();
-        } catch (ErrDownNoChild ignore) {
-            // TODO
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-            // `down` is the only movement that can return *any* error.
-            throw new Exception(throwable);
         }
 
-        try {
-            up(visitor);
+        success = up(visitor);
+
+        if (success) {
             return Next(closeable, visitor);
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
         }
-        throw new EndOfDag();
+
+        return null;
     }
 
-    private void up(@NonNull Visitor visitor) {
-        try {
+    private boolean up(@NonNull Visitor visitor) {
+
+        if (!visitor.isEmpty()) {
             visitor.popStage();
-            NextChild(visitor, visitor.getActiveNode());
-        } catch (ErrNextNoChild ignore) {
-            up(visitor);
+        } else {
+            return false;
         }
+        return NextChild(visitor, visitor.getActiveNode());
+
     }
 
 
-    void NextChild(@NonNull Visitor visitor, @NonNull NavigableNode activeNode) throws ErrNextNoChild {
+    private boolean NextChild(@NonNull Visitor visitor, @NonNull NavigableNode activeNode) {
         incrementActiveChildIndex(visitor, activeNode);
-        if (visitor.peekStage().index() == activeNode.ChildTotal()) {
-            throw new ErrNextNoChild();
-        }
+        return visitor.peekStage().index() != activeNode.ChildTotal();
     }
 
 
-    public void down(@NonNull Closeable closeable,
-                     @NonNull Visitor visitor,
-                     @NonNull NavigableNode activeNode) throws Exception {
+    public boolean down(@NonNull Closeable closeable,
+                        @NonNull Visitor visitor,
+                        @NonNull NavigableNode activeNode) {
         int index = visitor.peekStage().index();
 
         NavigableNode child = fetchChild(closeable, activeNode, index);
-        visitor.pushActiveNode(child);
+        if (child != null) {
+            visitor.pushActiveNode(child);
+            return true;
+        }
+        return false;
     }
 
 
+    @Nullable
     private NavigableNode fetchChild(@NonNull Closeable closeable,
                                      @NonNull NavigableNode activeNode,
-                                     int index) throws ErrDownNoChild {
+                                     int index) {
         Objects.requireNonNull(activeNode);
 
         if (index >= activeNode.ChildTotal()) {
-            throw new ErrDownNoChild();
+            return null;
         }
 
         return activeNode.FetchChild(closeable, index);
@@ -117,7 +118,6 @@ public class Walker {
         long left = offset;
 
         NavigableNode visitedNode = stack.peek().getNode();
-        LogUtils.error(TAG, "visited (seek) " + visitedNode.toString());
 
         Node node = NavigableIPLDNode.ExtractIPLDNode(visitedNode);
 
