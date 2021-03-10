@@ -11,7 +11,6 @@ import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
 import io.ipfs.format.Reader;
 import io.ipfs.merkledag.DagBuilderHelper;
-import io.ipfs.merkledag.DagBuilderParams;
 import io.ipfs.merkledag.DagService;
 import io.ipfs.unixfs.Directory;
 import io.ipfs.unixfs.Trickle;
@@ -94,11 +93,8 @@ public class Adder {
             }
         };
 
-
-        DagBuilderParams params = new DagBuilderParams(dagService,
-                CidBuilder, RawLeaves);
-
-        DagBuilderHelper db = params.New(splitter);
+        DagBuilderHelper db = new DagBuilderHelper(
+                dagService, CidBuilder, splitter, RawLeaves);
 
         return Trickle.Layout(db);
     }
