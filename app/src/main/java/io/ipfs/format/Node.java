@@ -42,4 +42,5 @@ public interface Node extends Block {
 
     void SetCidBuilder(@Nullable Builder builder);
 
+    long Size();
 }

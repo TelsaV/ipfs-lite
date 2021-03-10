@@ -40,4 +40,13 @@ public class Adder {
         dagService.Add(closeable, fnd);
         return fnd;
     }
+
+    public Node AddLinkToDir(@NonNull Node dirNode, @NonNull String name, @NonNull Node link) {
+        Directory dir = Directory.NewDirectoryFromNode(dagService, dirNode);
+        dir.SetCidBuilder(CidBuilder);
+        dir.AddChild(closeable, name, link);
+        Node fnd = dir.GetNode();
+        dagService.Add(closeable, fnd);
+        return fnd;
+    }
 }

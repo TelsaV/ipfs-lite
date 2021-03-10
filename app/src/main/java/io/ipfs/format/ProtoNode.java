@@ -8,6 +8,7 @@ import com.google.protobuf.ByteString;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import io.ipfs.LogUtils;
 import io.ipfs.cid.Builder;
@@ -61,6 +62,16 @@ public class ProtoNode implements Node {
             LogUtils.error(TAG, throwable);
         }
 
+    }
+
+
+    public long Size() {
+        byte[] b = EncodeProtobuf(false);
+        long size = b.length;
+        for (Link link:links) {
+            size += link.getSize();
+        }
+        return size;
     }
 
     @Override
@@ -164,4 +175,42 @@ public class ProtoNode implements Node {
 
 
     }
+
+    public void RemoveNodeLink(@NonNull String name) {
+        encoded = null;
+
+        boolean found = false;
+        List<Link> copy = new ArrayList<>(links);
+        for (Link link:links) {
+            if(Objects.equals(link.getName(), name)){
+                copy.remove(link);
+                found = true;
+            }
+        }
+        if(found){
+            synchronized (this){
+                links.clear();
+                links.addAll(copy);
+            }
+        }
+    }
+
+    public void AddNodeLink(@NonNull String name, @NonNull Node link) {
+
+        encoded = null;
+
+        Link lnk = Link.MakeLink(link, name);
+
+        AddRawLink(name, lnk);
+
+    }
+
+    private void AddRawLink(@NonNull String name, @NonNull Link link) {
+        encoded = null;
+
+        synchronized (this) {
+            links.add(link);
+        }
+    }
+
 }

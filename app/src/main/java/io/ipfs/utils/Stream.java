@@ -1,6 +1,7 @@
 package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
@@ -53,9 +54,9 @@ public class Stream {
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dagService = new DagService(blockservice);
 
-        io.ipfs.format.Node dagnode = Resolver.ResolveNode(closeable, dagService, Path.New(path));
+        io.ipfs.format.Node node = Resolver.ResolveNode(closeable, dagService, Path.New(path));
         try {
-            Directory dir = Directory.NewDirectoryFromNode(dagService, dagnode);
+            Directory dir = Directory.NewDirectoryFromNode(dagService, node);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
             return false;
@@ -69,5 +70,24 @@ public class Stream {
 
         Node nd = fileAdder.CreateEmptyDir();
         return nd.Cid().String();
+    }
+
+
+    public static String AddLinkToDir(@NonNull Storage storage, @NonNull Closeable closeable,
+                                      @NonNull String dir, @NonNull String name, @NonNull String link) {
+
+        Adder fileAdder = getFileAdder(storage, closeable);
+
+        Blockstore bs = Blockstore.NewBlockstore(storage);
+        Interface exchange = new Exchange(bs);
+        BlockService blockservice = BlockService.New(bs, exchange);
+        DagService dagService = new DagService(blockservice);
+
+        io.ipfs.format.Node dirNode = Resolver.ResolveNode(closeable, dagService, Path.New(dir));
+        io.ipfs.format.Node linkNode = Resolver.ResolveNode(closeable, dagService, Path.New(link));
+
+        Node nd = fileAdder.AddLinkToDir(dirNode, name, linkNode);
+        return nd.Cid().String();
+
     }
 }

@@ -44,7 +44,6 @@ import lite.Node;
 import lite.Peer;
 import lite.PeerInfo;
 import lite.Provider;
-import lite.Reader;
 import lite.ResolveInfo;
 import threads.server.Settings;
 import threads.server.core.Content;
@@ -797,7 +796,8 @@ public class IPFS implements Listener {
     @Nullable
     public String addLinkToDir(@NonNull String dir, @NonNull String name, @NonNull String link) {
         try {
-            return node.addLinkToDir(dir, name, link);
+            return Stream.AddLinkToDir(blocks, ()-> false, dir, name, link);
+            //return node.addLinkToDir(dir, name, link);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }

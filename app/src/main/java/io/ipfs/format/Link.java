@@ -43,17 +43,11 @@ public class Link {
     }
 
 
-// --Commented out by Inspection START (4/28/2020 9:50 PM):
-//    public int getType() {
-//        return type;
-//    }
-// --Commented out by Inspection STOP (4/28/2020 9:50 PM)
-
 
     @NonNull
     @Override
     public String toString() {
-        return "LinkInfo{" +
+        return "Link{" +
                 "cid='" + cid + '\'' +
                 ", name='" + name + '\'' +
                 ", size=" + size +
@@ -61,9 +55,13 @@ public class Link {
     }
 
 
-// --Commented out by Inspection START (4/28/2020 9:50 PM):
-//    public boolean isRaw() {
-//        return type == 0;
-//    }
-// --Commented out by Inspection STOP (4/28/2020 9:50 PM)
+
+
+    // MakeLink creates a link to the given node
+    public static Link MakeLink(@NonNull Node node, @NonNull String name){
+        long size = node.Size();
+
+        return new Link(node.Cid(), name, size);
+    }
+
 }
