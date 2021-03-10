@@ -33,7 +33,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
+import io.ipfs.cid.Cid;
 import io.ipfs.utils.Deleter;
+import io.ipfs.utils.Stream;
 import ipns.pb.IpnsProtos;
 import lite.Listener;
 import lite.Loader;
@@ -805,7 +807,8 @@ public class IPFS implements Listener {
     @Nullable
     public String createEmptyDir() {
         try {
-            return node.createEmptyDir();
+            return Stream.CreateEmptyDir(blocks, ()-> false);
+            //return node.createEmptyDir();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -856,7 +859,8 @@ public class IPFS implements Listener {
         }
         boolean result;
         try {
-            result = node.isDir(cid, closeable::isClosed);
+            result = Stream.IsDir(blocks, ()-> false, cid);;
+            //result = node.isDir(cid, closeable::isClosed);
 
         } catch (Throwable e) {
             result = false;
@@ -1002,8 +1006,9 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    public Reader getReader(@NonNull String cid) throws Exception {
-        return node.getReader(cid);
+    public io.ipfs.utils.Reader getReader(@NonNull String cid) throws Exception {
+        return io.ipfs.utils.Reader.getReader(blocks, cid);
+        // return node.getReader(cid);
     }
 
     private boolean loadToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid,
@@ -1043,19 +1048,17 @@ public class IPFS implements Listener {
 
         long totalRead = 0L;
         int remember = 0;
-        Reader reader = getReader(cid);
-        try {
 
-            reader.load(4096);
-            long read = reader.getRead();
-            while (read > 0) {
+        try(io.ipfs.utils.Reader reader = getReader(cid)) {
+            byte[] buf = reader.loadNextData();
+            while (buf != null && buf.length > 0) {
 
                 if (progress.isClosed()) {
                     throw new RuntimeException("Progress closed");
                 }
 
                 // calculate progress
-                totalRead += read;
+                totalRead += buf.length;
                 if (progress.doProgress()) {
                     if (size > 0) {
                         int percent = (int) ((totalRead * 100.0f) / size);
@@ -1066,34 +1069,24 @@ public class IPFS implements Listener {
                     }
                 }
 
-                byte[] bytes = reader.getData();
-                os.write(bytes, 0, bytes.length);
+                os.write(buf, 0, buf.length);
 
-                reader.load(4096);
-                read = reader.getRead();
+                buf = reader.loadNextData();
+
             }
-        } finally {
-            reader.close();
         }
 
     }
 
     public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, int blockSize) throws Exception {
 
-        Reader reader = getReader(cid);
-        try {
+        try(io.ipfs.utils.Reader reader = getReader(cid)) {
+            byte[] buf = reader.loadNextData();
+            while (buf != null && buf.length > 0) {
 
-            reader.load(blockSize);
-            long read = reader.getRead();
-            while (read > 0) {
-                byte[] bytes = reader.getData();
-                os.write(bytes, 0, bytes.length);
-
-                reader.load(blockSize);
-                read = reader.getRead();
+                os.write(buf, 0, buf.length);
+                buf = reader.loadNextData();
             }
-        } finally {
-            reader.close();
         }
 
     }
@@ -1274,8 +1267,8 @@ public class IPFS implements Listener {
 
     @NonNull
     public InputStream getInputStream(@NonNull String cid) throws Exception {
-        Reader reader = getReader(cid);
-        return new ReaderInputStream(reader);
+        io.ipfs.utils.Reader reader = getReader(cid);
+        return new io.ipfs.utils.ReaderInputStream(reader);
 
     }
 
@@ -1285,8 +1278,9 @@ public class IPFS implements Listener {
 
     public boolean isValidCID(@NonNull String cid) {
         try {
-            this.node.cidCheck(cid);
-            return true;
+            return !Cid.Decode(cid).String().isEmpty();
+            //this.node.cidCheck(cid);
+            //return true;
         } catch (Throwable e) {
             return false;
         }
@@ -1447,80 +1441,6 @@ public class IPFS implements Listener {
         }
     }
 
-    private static class ReaderInputStream extends InputStream implements AutoCloseable {
-        private final Reader mReader;
-        private int position = 0;
-        private byte[] data = null;
-
-        ReaderInputStream(@NonNull Reader reader) {
-            mReader = reader;
-        }
-
-        @Override
-        public int available() {
-            long size = mReader.getSize();
-            return (int) size;
-        }
-
-
-        @Override
-        public int read() throws IOException {
-
-            try {
-                if (data == null) {
-                    invalidate();
-                    preLoad();
-                }
-                if (data == null) {
-                    return -1;
-                }
-                if (position < data.length) {
-                    byte value = data[position];
-                    position++;
-                    return (value & 0xff);
-                } else {
-                    invalidate();
-                    if (preLoad()) {
-                        byte value = data[position];
-                        position++;
-                        return (value & 0xff);
-                    } else {
-                        return -1;
-                    }
-                }
-
-
-            } catch (Throwable e) {
-                throw new IOException(e);
-            }
-        }
-
-        private void invalidate() {
-            position = 0;
-            data = null;
-        }
-
-
-        private boolean preLoad() throws Exception {
-            mReader.load(4096);
-            int read = (int) mReader.getRead();
-            if (read > 0) {
-                data = new byte[read];
-                byte[] values = mReader.getData();
-                System.arraycopy(values, 0, data, 0, read);
-                return true;
-            }
-            return false;
-        }
-
-        public void close() {
-            try {
-                mReader.close();
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-        }
-    }
 
     private static class CloseableInputStream extends InputStream implements AutoCloseable {
         private final Loader loader;

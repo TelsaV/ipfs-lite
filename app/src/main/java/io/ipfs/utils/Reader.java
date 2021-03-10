@@ -82,7 +82,6 @@ public class Reader implements java.io.Closeable {
         data = null;
     }
 
-
     private boolean preLoad() {
 
         data = loadNextData();
@@ -110,10 +109,6 @@ public class Reader implements java.io.Closeable {
         } catch (Throwable throwable){
             LogUtils.error(TAG, throwable);
         }
-    }
-
-    public byte[] getData() {
-        return data;
     }
 
     public byte[] readAt(long position, int size) {

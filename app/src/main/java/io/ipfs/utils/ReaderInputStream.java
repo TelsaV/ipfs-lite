@@ -13,7 +13,7 @@ public class ReaderInputStream extends InputStream implements AutoCloseable {
     private int position = 0;
     private byte[] data = null;
 
-    ReaderInputStream(@NonNull Reader reader) {
+    public ReaderInputStream(@NonNull Reader reader) {
         mReader = reader;
     }
 
