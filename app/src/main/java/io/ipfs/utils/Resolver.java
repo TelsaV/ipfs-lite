@@ -6,7 +6,7 @@ import java.util.List;
 
 import io.ipfs.Closeable;
 import io.ipfs.cid.Cid;
-import io.ipfs.exchange.NodeGetter;
+import io.ipfs.format.NodeGetter;
 import io.ipfs.path.Path;
 import io.ipfs.path.Resolved;
 

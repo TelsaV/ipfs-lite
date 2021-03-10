@@ -8,12 +8,12 @@ import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.ipfs.LogUtils;
 import io.ipfs.Closeable;
-import io.ipfs.exchange.NodeGetter;
+import io.ipfs.LogUtils;
 import io.ipfs.format.NavigableIPLDNode;
 import io.ipfs.format.NavigableNode;
 import io.ipfs.format.Node;
+import io.ipfs.format.NodeGetter;
 import io.ipfs.format.ProtoNode;
 import io.ipfs.format.RawNode;
 import io.ipfs.format.Stage;

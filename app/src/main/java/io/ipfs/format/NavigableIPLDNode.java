@@ -8,7 +8,6 @@ import java.util.Objects;
 
 import io.ipfs.Closeable;
 import io.ipfs.cid.Cid;
-import io.ipfs.exchange.NodeGetter;
 
 public class NavigableIPLDNode implements NavigableNode {
 

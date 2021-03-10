@@ -22,7 +22,6 @@ public class FSNode {
         return data.getData().toByteArray();
     }
 
-    // FSNodeFromBytes unmarshal a protobuf message onto an FSNode.
     public static FSNode FSNodeFromBytes(byte[] data) {
         return new FSNode(data);
     }
@@ -64,16 +63,10 @@ public class FSNode {
 
     }
 
-
-    // BlockSize returns the block size indexed by `i`.
-// TODO: Evaluate if this function should be bounds checking.
     public long BlockSize(int i) {
         return data.getBlocksizes(i);
     }
 
-
-    // Extract the `unixfs.FSNode` from the `ipld.Node` (assuming this
-// was implemented by a `mdag.ProtoNode`).
     public static FSNode ExtractFSNode(@NonNull Node node) {
         if(node instanceof  ProtoNode){
             return FSNodeFromBytes(node.getData());
@@ -85,6 +78,8 @@ public class FSNode {
     public int NumChildren() {
         return data.getBlocksizesCount();
     }
+
+
 }
 
 

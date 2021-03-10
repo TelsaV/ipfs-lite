@@ -10,4 +10,6 @@ import io.ipfs.cid.Cid;
 public interface BlockGetter {
     @Nullable
     Block GetBlock(@NonNull Closeable closeable, @NonNull Cid cid);
+
+    void AddBlock(@NonNull Block block);
 }

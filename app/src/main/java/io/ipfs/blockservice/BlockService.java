@@ -22,6 +22,34 @@ public interface BlockService extends BlockGetter {
                 return getBlock(closeable, cid, bs, rem);
             }
 
+            @Override
+            public void AddBlock(@NonNull Block block) {
+
+                Cid c = block.Cid();
+
+                // hash security
+                Cid.ValidateCid(c); // TODO
+
+                /*
+                if err != nil {
+                    return err
+                }
+                if s.checkFirst {
+                    if has, err := s.blockstore.Has(c); has || err != nil {
+                        return err
+                    }
+                }*/
+
+                bs.Put(block);
+
+                /*
+                if exchange != nil {
+                    if err := s.exchange.HasBlock(o); err != nil {
+                        log.Errorf("HasBlock: %s", err.Error())
+                    }
+                }*/
+            }
+
             @Nullable
             private Block getBlock(@NonNull Closeable closeable, @NonNull Cid c,
                                    @NonNull Blockstore bs, @NonNull Fetcher fetcher) {

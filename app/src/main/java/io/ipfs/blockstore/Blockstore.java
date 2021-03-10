@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import java.util.List;
 
 import io.ipfs.Storage;
-import threads.server.core.blocks.BLOCKS;
 import io.ipfs.blocks.BasicBlock;
 import io.ipfs.blocks.Block;
 import io.ipfs.cid.Cid;
@@ -14,9 +13,6 @@ import io.ipfs.datastore.Dshelp;
 public interface Blockstore {
     String TAG = Blockstore.class.getSimpleName();
     Block Get(@NonNull Cid cid);
-    void DeleteBlock(@NonNull Cid cid);
-    void DeleteBlocks(@NonNull List<Cid> cids);
-
 
     static Blockstore NewBlockstore(@NonNull final Storage storage){
         return new Blockstore() {
@@ -44,20 +40,32 @@ public interface Blockstore {
                 return BasicBlock.NewBlockWithCid(cid, bdata.getData());
             }
 
+            @Override
+            public void Put(@NonNull Block block) {
+                String key = Dshelp.CidToDsKey(block.Cid()).String();
+                storage.insertBlock(key, block.RawData());
+            }
+
             public void DeleteBlock(@NonNull Cid cid) {
-                 String key = Dshelp.CidToDsKey(cid).String();
-                 storage.deleteBlock(key);
+                String key = Dshelp.CidToDsKey(cid).String();
+                storage.deleteBlock(key);
             }
 
             @Override
             public void DeleteBlocks(@NonNull List<Cid> cids) {
-                for (Cid cid:cids) {
+                for (Cid cid : cids) {
                     DeleteBlock(cid);
                 }
             }
 
         };
     }
+
+    void DeleteBlock(@NonNull Cid cid);
+
+    void DeleteBlocks(@NonNull List<Cid> cids);
+
+    void Put(@NonNull Block block);
 
 }
 

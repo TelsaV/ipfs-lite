@@ -1,11 +1,10 @@
-package io.ipfs.exchange;
+package io.ipfs.format;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import io.ipfs.Closeable;
 import io.ipfs.cid.Cid;
-import io.ipfs.format.Node;
 
 public interface NodeGetter {
     @Nullable

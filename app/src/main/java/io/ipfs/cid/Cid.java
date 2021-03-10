@@ -5,49 +5,47 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Objects;
 
 import io.ipfs.multibase.Multibase;
-
 import io.ipfs.multihash.Multihash;
 
 public class Cid {
-    public static final String TAG= Cid.class.getSimpleName();
+    public static final String TAG = Cid.class.getSimpleName();
+    public static long IDENTITY = 0x00;
     public static long Raw = 0x55;
     public static long DagProtobuf = 0x70;
-    public static long DagCBOR     = 0x71;
-    public static long Libp2pKey   = 0x72;
+    public static long DagCBOR = 0x71;
+    public static long Libp2pKey = 0x72;
 
     private final byte[] multihash;
 
-    public Cid(@NonNull byte[] multihash){
+    public Cid(byte[] multihash) {
         this.multihash = multihash;
     }
 
-
-
-
-    // String returns the default string representation of a
-// Cid. Currently, Base32 is used for CIDV1 as the encoding for the
-// multibase string, Base58 is used for CIDV0.
-    public String String() {
-        switch( Version()) {
-            case 0:
-                try {
-                    return Multihash.deserialize(multihash).toBase58();
-                } catch (IOException e) {
-                   throw new RuntimeException(e);
-                }
-            case 1:
-                return Multibase.encode(Multibase.Base.Base32, multihash);
-            default:
-                throw new RuntimeException("");
-        }
+    public static Cid Undef() {
+        return new Cid(null);
     }
 
+    public static Cid tryNewCidV0(byte[] mhash) {
+        // Need to make sure hash is valid for CidV0 otherwise we will
+        // incorrectly detect it as CidV1 in the Version() method
+        try {
+            Multihash dec = Multihash.deserialize(mhash);
+
+            if (dec.getType().index != Multihash.Type.sha2_256.index || Multihash.Type.sha2_256.length != 32) {
+                throw new RuntimeException("invalid hash for cidv0");
+            }
+            return new Cid(dec.toBytes());
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
 
 
     // Decode parses a Cid-encoded string and returns a Cid object.
@@ -78,11 +76,72 @@ public class Cid {
         return new Cid(data);
     }
 
+    // NewCidV0 returns a Cid-wrapped multihash.
+// They exist to allow IPFS to work with Cids while keeping
+// compatibility with the plain-multihash format used used in IPFS.
+// NewCidV1 should be used preferentially.
+//
+// Panics if the multihash isn't sha2-256.
+    public static Cid NewCidV0(byte[] mhash) {
+        return tryNewCidV0(mhash);
+    }
 
+    // NewCidV1 returns a new Cid using the given multicodec-packed
+// content type.
+//
+// Panics if the multihash is invalid.
+    public static Cid NewCidV1(long codecType, byte[] mhash) {
+
+        // two 8 bytes (max) numbers plus hash
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Multihash.putUvarint(out, 1);
+            Multihash.putUvarint(out, codecType);
+            out.write(mhash);
+            return new Cid(out.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void ValidateCid(Cid c) {
+        /* TODO
+        pref := c.Prefix();
+        if !IsGoodHash(pref.MhType) {
+            return ErrPossiblyInsecureHashFunction
+        }
+
+        if pref.MhType != mh.ID && pref.MhLength < minimumHashLength {
+            return ErrBelowMinimumHashLength
+        }
+
+        return nil*/
+    }
+
+
+
+
+    /*
+    func IsGoodHash(code uint64) bool {
+        good, found := goodset[code]
+        if good {
+            return true
+        }
+
+        if !found {
+            if code >= mh.BLAKE2B_MIN+19 && code <= mh.BLAKE2B_MAX {
+                return true
+            }
+            if code >= mh.BLAKE2S_MIN+19 && code <= mh.BLAKE2S_MAX {
+                return true
+            }
+        }
+
+        return false
+    }*/
 
     // FromUvarint reads an unsigned varint from the beginning of buf, returns the
 // varint, and the number of bytes read.
-    public static Pair<Long, Integer> FromUvarint(byte[] buf){
+    public static Pair<Long, Integer> FromUvarint(byte[] buf) {
         // Modified from the go standard library. Copyright the G int type = (int)readVarint(din);
         //        int len = (int)readVarint(din);
         //        Type t = Type.lookup(type);
@@ -114,20 +173,18 @@ public class Cid {
                 if( b == 0 && s > 0) {
                     throw new RuntimeException("overflow");
                 }
-                return Pair.create((x | (b)<<s), i + 1);
+                return Pair.create((x | (b) << s), i + 1);
             }
-            x |= (b&0x7f) << s;
+            x |= (b & 0x7f) << s;
             s += 7;
         }
         throw new RuntimeException("overflow");
     }
 
-
-
     public static Cid CidFromBytes(byte[] data) throws IOException {
 
-        if( data.length > 2 && data[0] == Multihash.Type.sha2_256.index && data[1] == Multihash.Type.sha2_256.length) {
-            if( data.length != 34 ) {
+        if (data.length > 2 && data[0] == Multihash.Type.sha2_256.index && data[1] == Multihash.Type.sha2_256.length) {
+            if (data.length != 34) {
                 throw new RuntimeException("not enough bytes for cid v0");
             }
 
@@ -164,22 +221,39 @@ public class Cid {
 
     }
 
-
-    public static Cid Cast(byte[] data){
+    public static Cid Cast(byte[] data) {
         try {
             Cid c = CidFromBytes(data);
             Objects.requireNonNull(c);
             return c;
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
+        }
+    }
+
+    // String returns the default string representation of a
+// Cid. Currently, Base32 is used for CIDV1 as the encoding for the
+// multibase string, Base58 is used for CIDV0.
+    public String String() {
+        switch (Version()) {
+            case 0:
+                try {
+                    return Multihash.deserialize(multihash).toBase58();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            case 1:
+                return Multibase.encode(Multibase.Base.Base32, multihash);
+            default:
+                throw new RuntimeException("");
         }
     }
 
 
     // Version returns the Cid version.
     public int Version() {
-        byte[] bytes =  multihash;
-        if( bytes.length == 34 && bytes[0] == 18 && bytes[1] == 32) {
+        byte[] bytes = multihash;
+        if (bytes.length == 34 && bytes[0] == 18 && bytes[1] == 32) {
             return 0;
         }
         return 1;
@@ -231,6 +305,9 @@ public class Cid {
         }
     }
 
+    public boolean Defined() {
+        return multihash != null;
+    }
 }
 
 /*
