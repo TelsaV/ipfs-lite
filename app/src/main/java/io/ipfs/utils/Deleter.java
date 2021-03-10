@@ -20,9 +20,7 @@ public class Deleter {
     private static final String TAG = Deleter.class.getSimpleName();
 
     public static void rm(@NonNull Storage storage, @NonNull String cid, boolean recursively){
-        // TODO
         try {
-
             Cid m = Cid.Decode(cid);
             LogUtils.error(TAG, m.String());
 
