@@ -63,9 +63,9 @@ public class IpfsTest {
             List<String> first = result.first;
             List<String> second = result.second;
             assertNotNull(first);
-            assertEquals(first.size(), 1);
+            assertEquals(first.size(), 0);
             assertNotNull(second);
-            assertEquals(second.size(), 12);
+            assertEquals(second.size(), 5);
 
 
             for (String address : first) {
