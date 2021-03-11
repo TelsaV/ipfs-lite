@@ -5,21 +5,24 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
 
 public class ReaderStream extends InputStream implements AutoCloseable {
     private static final String TAG = ReaderStream.class.getSimpleName();
-    private final Reader mReader;
+    private final Reader reader;
     private int position = 0;
     private byte[] data = null;
+    private final Closeable closeable;
 
-    public ReaderStream(@NonNull Reader reader) {
-        mReader = reader;
+    public ReaderStream(@NonNull Reader reader, @NonNull Closeable closeable) {
+        this.reader = reader;
+        this.closeable = closeable;
     }
 
     @Override
     public int available() {
-        long size = mReader.getSize();
+        long size = reader.getSize();
         return (int) size;
     }
 
@@ -63,15 +66,13 @@ public class ReaderStream extends InputStream implements AutoCloseable {
 
 
     private boolean preLoad() {
-
-        data = mReader.loadNextData();
-
+        data = reader.loadNextData(closeable);
         return data != null;
     }
 
     public void close() {
         try {
-            mReader.close();
+            reader.close();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }

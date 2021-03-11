@@ -38,7 +38,7 @@ public class IpfsSwarmReaderTest {
     }
 
     //@Test
-    public void read() {
+    public void read() throws Exception {
         String RELAY_PID = "QmWFhiem9PnRAm9pBHQYvRqQcGAeJ2VfSFhD3JKdytiWKG";
 
         String cid = "QmaFuc7VmzwT5MAx3EANZiVXRtuWtTwALjgaPcSsZ2J2ip";

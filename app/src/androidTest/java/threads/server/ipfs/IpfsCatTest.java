@@ -11,7 +11,6 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 
-import io.ipfs.ClosedException;
 import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
 import io.ipfs.utils.Link;
@@ -19,7 +18,7 @@ import io.ipfs.utils.TimeoutProgress;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 
 @SuppressWarnings("SpellCheckingInspection")
@@ -35,7 +34,7 @@ public class IpfsCatTest {
     }
 
     @Test
-    public void cat_test() throws ClosedException {
+    public void cat_test() throws Exception {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         String cid = "Qmaisz6NMhDB51cCvNWa1GMS7LU1pAxdF4Ld6Ft9kZEP2a";
@@ -73,12 +72,12 @@ public class IpfsCatTest {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         String cid = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nt";
-
-
-        byte[] content = ipfs.loadData(cid, new TimeoutProgress(10));
-
-        assertNull(content);
-
+        try {
+            ipfs.loadData(cid, new TimeoutProgress(10));
+            fail();
+        } catch (Exception ignore) {
+            //
+        }
     }
 
 
@@ -94,15 +93,14 @@ public class IpfsCatTest {
         assertNotNull(local);
 
 
-        byte[] content = ipfs.getData(cid);
+        byte[] content = ipfs.getData(cid, () -> false);
 
         assertNotNull(content);
 
     }
 
-
     @Test
-    public void cat_empty() throws ClosedException {
+    public void cat_empty() throws Exception {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         String cid = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
@@ -110,9 +108,12 @@ public class IpfsCatTest {
         assertNotNull(res);
 
         assertTrue(res.isEmpty());
-        byte[] content = ipfs.loadData(cid, new TimeoutProgress(10));
-
-        assertNull(content);
+        try {
+            ipfs.loadData(cid, new TimeoutProgress(10));
+            fail();
+        } catch (Exception ignore) {
+            //
+        }
 
         ipfs.rm(cid, true);
 

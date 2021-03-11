@@ -834,9 +834,8 @@ public class DOCS {
                                                    @NonNull String mimeType, long size,
                                                    @NonNull Closeable closeable) throws ClosedException {
 
-        try {
+        try(InputStream in = ipfs.getLoaderStream(content, closeable)) {
 
-            InputStream in = ipfs.getLoaderStream(content, closeable);
             if (closeable.isClosed()) {
                 throw new ClosedException();
             }

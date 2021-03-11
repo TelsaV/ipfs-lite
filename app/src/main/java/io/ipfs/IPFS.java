@@ -762,7 +762,7 @@ public class IPFS implements Listener, Interface {
 
     public void rm(@NonNull String cid, boolean recursively) {
         try {
-            Deleter.rm(blocks, cid, recursively);
+            Deleter.rm(() -> false, blocks, cid, recursively);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -981,14 +981,14 @@ public class IPFS implements Listener, Interface {
     }
 
     @NonNull
-    public io.ipfs.utils.Reader getReader(@NonNull String cid) {
+    public io.ipfs.utils.Reader getReader(@NonNull String cid, @NonNull Closeable closeable) {
         Blockstore blockstore = Blockstore.NewBlockstore(blocks);
-        Interface exchange = new Exchange(blockstore);
-        return io.ipfs.utils.Reader.getReader(()-> false, blockstore, exchange, cid);
+        return io.ipfs.utils.Reader.getReader(closeable, blockstore, this, cid);
     }
 
-    private void getToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid) throws Exception {
-        try (InputStream inputStream = getInputStream(cid)) {
+    private void getToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid,
+                                   @NonNull Closeable closeable) throws Exception {
+        try (InputStream inputStream = getInputStream(cid, closeable)) {
             IPFS.copy(inputStream, outputStream);
         }
     }
@@ -1010,10 +1010,10 @@ public class IPFS implements Listener, Interface {
         long totalRead = 0L;
         int remember = 0;
 
-        try (io.ipfs.utils.Reader reader = getReader(cid)) {
+        try (io.ipfs.utils.Reader reader = getReader(cid, progress)) {
 
             long size = reader.getSize();
-            byte[] buf = reader.loadNextData();
+            byte[] buf = reader.loadNextData(progress);
             while (buf != null && buf.length > 0) {
 
                 if (progress.isClosed()) {
@@ -1034,53 +1034,43 @@ public class IPFS implements Listener, Interface {
 
                 os.write(buf, 0, buf.length);
 
-                buf = reader.loadNextData();
+                buf = reader.loadNextData(progress);
 
             }
         }
 
     }
 
-    public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid) throws Exception {
+    public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, @NonNull Closeable closeable) throws Exception {
 
-        try (io.ipfs.utils.Reader reader = getReader(cid)) {
-            byte[] buf = reader.loadNextData();
+        try (io.ipfs.utils.Reader reader = getReader(cid, closeable)) {
+            byte[] buf = reader.loadNextData(closeable);
             while (buf != null && buf.length > 0) {
 
                 os.write(buf, 0, buf.length);
-                buf = reader.loadNextData();
+                buf = reader.loadNextData(closeable);
             }
         }
-
-    }
-
-    @NonNull
-    private io.ipfs.utils.Reader getLoader(@NonNull String cid, @NonNull Closeable closeable) {
-        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
-        return io.ipfs.utils.Reader.getReader(closeable, blockstore, this, cid);
 
     }
 
     @NonNull
     public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable) {
-        io.ipfs.utils.Reader loader = getLoader(cid, closeable);
-        return new ReaderStream(loader);
-
+        io.ipfs.utils.Reader loader = getReader(cid, closeable);
+        return new ReaderStream(loader, closeable);
     }
 
     @NonNull
     public InputStream getLoaderStream(@NonNull String cid, @NonNull Progress progress) {
-
-        io.ipfs.utils.Reader loader = getLoader(cid, progress);
-
+        io.ipfs.utils.Reader loader = getReader(cid, progress);
         return new ProgressStream(loader, progress);
 
     }
 
-    public void storeToFile(@NonNull File file, @NonNull String cid) throws Exception {
+    public void storeToFile(@NonNull File file, @NonNull String cid, @NonNull Closeable closeable) throws Exception {
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-            storeToOutputStream(fileOutputStream, cid);
+            storeToOutputStream(fileOutputStream, cid, closeable);
         }
     }
 
@@ -1127,10 +1117,10 @@ public class IPFS implements Listener, Interface {
     }
 
     @Nullable
-    public String getText(@NonNull String cid) {
+    public String getText(@NonNull String cid, @NonNull Closeable closeable) {
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            getToOutputStream(outputStream, cid);
+            getToOutputStream(outputStream, cid, closeable);
             return new String(outputStream.toByteArray());
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -1139,10 +1129,10 @@ public class IPFS implements Listener, Interface {
     }
 
     @Nullable
-    public byte[] getData(@NonNull String cid) {
+    public byte[] getData(@NonNull String cid, @NonNull Closeable closeable) {
 
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            getToOutputStream(outputStream, cid);
+            getToOutputStream(outputStream, cid, closeable);
             return outputStream.toByteArray();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -1151,18 +1141,14 @@ public class IPFS implements Listener, Interface {
     }
 
     @Nullable
-    public byte[] loadData(@NonNull String cid, @NonNull Progress progress) {
+    public byte[] loadData(@NonNull String cid, @NonNull Progress progress) throws Exception {
         if (!isDaemonRunning()) {
             return null;
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             storeToOutputStream(outputStream, progress, cid);
             return outputStream.toByteArray();
-
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
         }
-
     }
 
     @Override
@@ -1224,9 +1210,9 @@ public class IPFS implements Listener, Interface {
     }
 
     @NonNull
-    public InputStream getInputStream(@NonNull String cid) {
-        io.ipfs.utils.Reader reader = getReader(cid);
-        return new ReaderStream(reader);
+    public InputStream getInputStream(@NonNull String cid, @NonNull Closeable closeable) {
+        io.ipfs.utils.Reader reader = getReader(cid, closeable);
+        return new ReaderStream(reader, closeable);
 
     }
 
@@ -1283,6 +1269,7 @@ public class IPFS implements Listener, Interface {
     @Override
     public io.ipfs.blocks.Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
         try {
+            // TODO remove this function to bitswap
             String resolve =  node.resolve(cid.String(), closeable::isClosed);
             if(!resolve.isEmpty()){
                 Blockstore bs = Blockstore.NewBlockstore(blocks);

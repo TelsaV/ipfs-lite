@@ -26,7 +26,6 @@ import io.ipfs.utils.Link;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertNotEquals;
 
@@ -74,7 +73,7 @@ public class IpfsAddTest {
         assertNotNull(links);
         assertEquals(links.size(), 4);
 
-        byte[] bytes = ipfs.getData(hash58Base);
+        byte[] bytes = ipfs.getData(hash58Base, () -> false);
         assertNotNull(bytes);
         assertEquals(bytes.length, size);
 
@@ -131,7 +130,7 @@ public class IpfsAddTest {
         assertEquals(links.size(), 4);
         assertNotEquals(links.get(0).getContent(), hash58Base);
 
-        byte[] bytes = ipfs.getData(hash58Base);
+        byte[] bytes = ipfs.getData(hash58Base, () -> false);
         assertNotNull(bytes);
         assertEquals(bytes.length, size);
 
@@ -164,7 +163,7 @@ public class IpfsAddTest {
         assertNotNull(links);
         assertEquals(links.size(), 0);
 
-        byte[] bytes = ipfs.getData(hash58Base);
+        byte[] bytes = ipfs.getData(hash58Base, () -> false);
         assertNotNull(bytes);
         assertEquals(bytes.length, size);
 
@@ -197,7 +196,7 @@ public class IpfsAddTest {
         assertNotNull(links);
         assertEquals(links.size(), 0);
 
-        byte[] bytes = ipfs.getData(hash58Base);
+        byte[] bytes = ipfs.getData(hash58Base, () -> false);
         assertNotNull(bytes);
         assertEquals(bytes.length, size);
 

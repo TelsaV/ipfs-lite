@@ -25,7 +25,6 @@ import io.ipfs.utils.TimeoutProgress;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -80,7 +79,7 @@ public class IpfsPerformance {
 
         now = System.currentTimeMillis();
 
-        byte[] data = ipfs.getData(cid);
+        byte[] data = ipfs.getData(cid, () -> false);
         Objects.requireNonNull(data);
 
         LogUtils.error(TAG, "Cat : " + cid +
@@ -89,7 +88,7 @@ public class IpfsPerformance {
         assertEquals(data.length, size);
 
         File temp = createCacheFile();
-        ipfs.storeToFile(temp, cid);
+        ipfs.storeToFile(temp, cid, () -> false);
 
         assertEquals(temp.length(), size);
 
@@ -128,7 +127,7 @@ public class IpfsPerformance {
         String cid = ipfs.storeFile(inputFile);
         assertNotNull(cid);
         File file = createCacheFile();
-        ipfs.storeToFile(file, cid);
+        ipfs.storeToFile(file, cid, () -> false);
 
         assertEquals(file.length(), size);
 
@@ -218,8 +217,8 @@ public class IpfsPerformance {
 
             });
             fail();
-        } catch (Throwable throwable){
-            LogUtils.error(TAG, throwable);
+        } catch (Throwable ignore) {
+            //
         }
 
 
@@ -232,14 +231,14 @@ public class IpfsPerformance {
 
         now = System.currentTimeMillis();
         File outputFile1 = createCacheFile();
-        ipfs.storeToFile(outputFile1, cid);
+        ipfs.storeToFile(outputFile1, cid, () -> false);
         LogUtils.error(TAG, "Cat : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 
 
         now = System.currentTimeMillis();
         File outputFile2 = createCacheFile();
-        ipfs.storeToFile(outputFile2, cid);
+        ipfs.storeToFile(outputFile2, cid, () -> false);
         LogUtils.error(TAG, "Cat : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 

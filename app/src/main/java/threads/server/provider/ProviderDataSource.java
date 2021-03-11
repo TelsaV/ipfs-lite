@@ -40,7 +40,7 @@ public class ProviderDataSource extends BaseDataSource {
     private int readIntern(byte[] buffer, int offset, int size) throws IOException {
         try {
 
-            byte[] data = fileReader.load(size);
+            byte[] data = fileReader.load(()-> false, size);
             System.arraycopy(data, 0, buffer, offset, data.length);
             return data.length;
 
@@ -64,7 +64,7 @@ public class ProviderDataSource extends BaseDataSource {
                 fileReader = Reader.getReader(()-> false, blockstore, exchange, cid);
             }
 
-            fileReader.seek(dataSpec.position);
+            fileReader.seek(()-> false, dataSpec.position);
             bytesRemaining = dataSpec.length == C.LENGTH_UNSET ? fileReader.getSize() - dataSpec.position
                     : dataSpec.length;
             if (bytesRemaining < 0) {

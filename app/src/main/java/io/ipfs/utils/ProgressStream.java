@@ -71,7 +71,7 @@ public class ProgressStream extends InputStream implements AutoCloseable {
 
     private boolean preLoad() {
 
-        data = mReader.loadNextData();
+        data = mReader.loadNextData(mProgress);
         if(data != null) {
             int read = data.length;
             totalRead += read;

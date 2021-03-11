@@ -42,7 +42,7 @@ public class IpfsDaemonTest {
         String hash58Base = ipfs.storeText(content);
         LogUtils.error(TAG, Objects.requireNonNull(hash58Base));
 
-        byte[] contentLocal = ipfs.getData(hash58Base);
+        byte[] contentLocal = ipfs.getData(hash58Base, () -> false);
         assertEquals(content, new String(Objects.requireNonNull(contentLocal)));
 
 

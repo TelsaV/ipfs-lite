@@ -24,7 +24,6 @@ import lite.PeerInfo;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 
@@ -80,33 +79,39 @@ public class IpfsTest {
     }
 
     @Test
-    public void streamTest() {
+    public void streamTest() throws Exception {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         String test = "Moin";
         String cid = ipfs.storeText(test);
         assertNotNull(cid);
-        byte[] bytes = ipfs.getData(cid);
+        byte[] bytes = ipfs.getData(cid, () -> false);
         assertNotNull(bytes);
         assertEquals(test, new String(bytes));
 
         String fault = Objects.requireNonNull(IPFS.getPeerID(context));
 
-        bytes = ipfs.loadData(fault, new TimeoutProgress(10));
-        assertNull(bytes);
+        try {
+            ipfs.loadData(fault, new TimeoutProgress(10));
+            fail();
+        } catch (Exception ignore) {
+            // ok
+        }
 
 
     }
 
     @Test
-    public void test_timeout_cat() {
+    public void test_timeout_cat() throws Exception {
 
         String notValid = "QmaFuc7VmzwT5MAx3EANZiVXRtuWtTwALjgaPcSsZ2Jdip";
         IPFS ipfs = TestEnv.getTestInstance(context);
 
-        byte[] bytes = ipfs.loadData(notValid, new TimeoutProgress(10));
-
-        assertNull(bytes);
+        try {
+            ipfs.loadData(notValid, new TimeoutProgress(10));
+        } catch (Exception ignore) {
+            // ok
+        }
 
     }
 
@@ -125,7 +130,7 @@ public class IpfsTest {
         assertNotNull(hash58Base);
         LogUtils.error(TAG, hash58Base);
 
-        byte[] fileContents = ipfs.getData(hash58Base);
+        byte[] fileContents = ipfs.getData(hash58Base, () -> false);
         assertNotNull(fileContents);
         assertEquals(content.length, fileContents.length);
         assertEquals(new String(content), new String(fileContents));

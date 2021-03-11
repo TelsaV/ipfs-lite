@@ -23,24 +23,21 @@ import io.ipfs.unixfs.FSNode;
 
 public class DagReader implements java.io.Closeable {
     private static final String TAG = DagReader.class.getSimpleName();
-    private final Closeable ctx;
+
     private final long size;
     private final Visitor visitor;
 
     private final Walker dagWalker;
     public AtomicInteger atomicLeft = new AtomicInteger(0);
 
-    public DagReader(@NonNull Closeable closeable, @NonNull Walker dagWalker, long size) {
-        this.ctx = closeable;
+    public DagReader(@NonNull Walker dagWalker, long size) {
         this.dagWalker = dagWalker;
         this.size = size;
         this.visitor = new Visitor(dagWalker.getRoot());
 
     }
 
-    public static DagReader NewDagReader(@NonNull Closeable ctx,
-                                         @NonNull Node node,
-                                         @NonNull NodeGetter serv) {
+    public static DagReader NewDagReader(@NonNull Node node, @NonNull NodeGetter serv) {
         long size = 0;
 
 
@@ -106,7 +103,7 @@ public class DagReader implements java.io.Closeable {
         */
 
         Walker dagWalker = Walker.NewWalker(NavigableIPLDNode.NewNavigableIPLDNode(node, serv));
-        return new DagReader(ctx, dagWalker, size);
+        return new DagReader(dagWalker, size);
 
     }
 
@@ -119,14 +116,14 @@ public class DagReader implements java.io.Closeable {
         // TODO
     }
 
-    public void Seek(long offset) {
-        Pair<Stack<Stage>, Long> result = dagWalker.Seek(ctx, offset);
+    public void Seek(@NonNull Closeable closeable, long offset) {
+        Pair<Stack<Stage>, Long> result = dagWalker.Seek(closeable, offset);
         this.atomicLeft.set(result.second.intValue());
         this.visitor.reset(result.first);
     }
 
     @Nullable
-    public byte[] loadNextData() {
+    public byte[] loadNextData(@NonNull Closeable closeable) {
 
 
         int left = atomicLeft.getAndSet(0);
@@ -144,7 +141,7 @@ public class DagReader implements java.io.Closeable {
         }
 
         while (true) {
-            NavigableNode visitedNode = dagWalker.Next(ctx, visitor);
+            NavigableNode visitedNode = dagWalker.Next(closeable, visitor);
             if (visitedNode == null) {
                 return null;
             }

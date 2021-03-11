@@ -41,7 +41,7 @@ public class IpfsStreamTest {
         assertEquals(links.size(), 0);
 
 
-        byte[] result = ipfs.getData(hash);
+        byte[] result = ipfs.getData(hash, () -> false);
         assertNotNull(result);
         assertEquals(text, new String(result));
 

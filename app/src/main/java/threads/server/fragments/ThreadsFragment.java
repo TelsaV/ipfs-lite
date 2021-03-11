@@ -811,7 +811,7 @@ public class ThreadsFragment extends Fragment implements
                 // special case
                 if (Objects.equals(mimeType, MimeType.URL_MIME_TYPE)) {
 
-                    Uri uri = Uri.parse(IPFS.getInstance(mContext).getText(cid));
+                    Uri uri = Uri.parse(IPFS.getInstance(mContext).getText(cid, ()-> false));
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 
 
@@ -866,7 +866,7 @@ public class ThreadsFragment extends Fragment implements
                 if (Objects.equals(mimeType, MimeType.URL_MIME_TYPE)) {
 
                     IPFS ipfs = IPFS.getInstance(mContext);
-                    Uri uri = Uri.parse(ipfs.getText(cid));
+                    Uri uri = Uri.parse(ipfs.getText(cid, ()-> false));
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     startActivity(intent);
 

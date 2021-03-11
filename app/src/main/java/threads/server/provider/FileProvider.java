@@ -56,7 +56,7 @@ public class FileProvider {
             if (!file.exists()) {
                 file = fileProvider.createDataFile(idx);
                 try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                    try (InputStream inputStream = ipfs.getInputStream(cid)) {
+                    try (InputStream inputStream = ipfs.getInputStream(cid, ()-> false)) {
                         long copied = IPFS.copy(inputStream, outputStream);
                         LogUtils.error(TAG, "Copied : " + copied);
                     }

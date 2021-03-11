@@ -18,9 +18,8 @@ import io.ipfs.offline.Exchange;
 public class Deleter {
     private static final String TAG = Deleter.class.getSimpleName();
 
-    public static void rm(@NonNull Storage storage, @NonNull String cid, boolean recursively) {
+    public static void rm(@NonNull Closeable closeable, @NonNull Storage storage, @NonNull String cid, boolean recursively) {
         try {
-            Closeable closeable = () -> false;
             Blockstore bs = Blockstore.NewBlockstore(storage);
             Interface exchange = new Exchange(bs);
             BlockService blockservice = BlockService.New(bs, exchange);
