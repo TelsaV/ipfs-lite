@@ -140,22 +140,22 @@ public class DagReader implements java.io.Closeable {
                 byte[] data = FSNode.ReadUnixFSNodeData(node);
 
                 return Arrays.copyOfRange(data, left, data.length);
-                }
+            }
+        }
+
+        while (true) {
+            NavigableNode visitedNode = dagWalker.Next(ctx, visitor);
+            if (visitedNode == null) {
+                return null;
             }
 
-            while (true) {
-                NavigableNode visitedNode = dagWalker.Next(ctx, visitor);
-                if (visitedNode == null) {
-                    return null;
-                }
-
-                Node node = NavigableIPLDNode.ExtractIPLDNode(visitedNode);
-                if (node.getLinks().size() > 0) {
-                    continue;
-                }
-
-                return FSNode.ReadUnixFSNodeData(node);
+            Node node = NavigableIPLDNode.ExtractIPLDNode(visitedNode);
+            if (node.getLinks().size() > 0) {
+                continue;
             }
+
+            return FSNode.ReadUnixFSNodeData(node);
+        }
 
     }
 }
