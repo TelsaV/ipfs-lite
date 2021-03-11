@@ -9,9 +9,12 @@ import java.util.Objects;
 import java.util.Stack;
 
 import io.ipfs.Closeable;
+import io.ipfs.LogUtils;
 import io.ipfs.unixfs.FSNode;
 
 public class Walker {
+
+
     private final NavigableNode root;
 
     private Walker(NavigableNode navigableNode) {
@@ -23,26 +26,26 @@ public class Walker {
         return new Walker(navigableNode);
     }
 
-    void incrementActiveChildIndex(@NonNull Visitor visitor, @NonNull NavigableNode activeNode) {
-        if (visitor.peekStage().index() + 1 <= activeNode.ChildTotal()) {
-            visitor.peekStage().incrementIndex();
-        }
-    }
 
     @Nullable
     public NavigableNode Next(@NonNull Closeable closeable, @NonNull Visitor visitor) {
 
+
         if (!visitor.isRootVisited(true)) {
-            if (visitor.getActiveNode().equals(root)) {
+            Stage stage = visitor.peekStage();
+            Objects.requireNonNull(stage);
+            if (stage.getNode().equals(root)) {
                 return root;
             }
         }
         if (!visitor.isEmpty()) {
-            boolean success = down(closeable, visitor, visitor.getActiveNode());
-            if (success) {
-                return visitor.getActiveNode();
-            }
 
+            boolean success = down(closeable, visitor);
+            if (success) {
+                Stage stage = visitor.peekStage();
+                Objects.requireNonNull(stage);
+                return stage.getNode();
+            }
 
             success = up(visitor);
 
@@ -61,26 +64,35 @@ public class Walker {
             return false;
         }
         if (!visitor.isEmpty()) {
-            return NextChild(visitor, visitor.getActiveNode());
+            boolean result = NextChild(visitor);
+            if (result) {
+                return true;
+            } else {
+                return up(visitor);
+            }
         } else {
             return false;
         }
-
     }
 
 
-    private boolean NextChild(@NonNull Visitor visitor, @NonNull NavigableNode activeNode) {
-        incrementActiveChildIndex(visitor, activeNode);
-        return visitor.peekStage().index() != activeNode.ChildTotal();
+    private boolean NextChild(@NonNull Visitor visitor) {
+        Stage stage = visitor.peekStage();
+        NavigableNode activeNode = stage.getNode();
+
+        if (stage.index() + 1 < activeNode.ChildTotal()) {
+            stage.incrementIndex();
+            return true;
+        }
+
+        return false;
     }
 
 
-    public boolean down(@NonNull Closeable closeable,
-                        @NonNull Visitor visitor,
-                        @NonNull NavigableNode activeNode) {
-        int index = visitor.peekStage().index();
+    public boolean down(@NonNull Closeable closeable, @NonNull Visitor visitor) {
 
-        NavigableNode child = fetchChild(closeable, activeNode, index);
+
+        NavigableNode child = fetchChild(closeable, visitor);
         if (child != null) {
             visitor.pushActiveNode(child);
             return true;
@@ -90,9 +102,10 @@ public class Walker {
 
 
     @Nullable
-    private NavigableNode fetchChild(@NonNull Closeable closeable,
-                                     @NonNull NavigableNode activeNode,
-                                     int index) {
+    private NavigableNode fetchChild(@NonNull Closeable closeable, @NonNull Visitor visitor) {
+        Stage stage = visitor.peekStage();
+        NavigableNode activeNode = stage.getNode();
+        int index = stage.index();
         Objects.requireNonNull(activeNode);
 
         if (index >= activeNode.ChildTotal()) {

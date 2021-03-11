@@ -42,7 +42,6 @@ public class ProviderDataSource extends BaseDataSource {
 
             byte[] data = fileReader.load(size);
             System.arraycopy(data, 0, buffer, offset, data.length);
-
             return data.length;
 
         } catch (Throwable e) {

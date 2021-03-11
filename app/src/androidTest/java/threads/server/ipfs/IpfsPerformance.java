@@ -27,6 +27,7 @@ import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 @RunWith(AndroidJUnit4.class)
 public class IpfsPerformance {
@@ -195,26 +196,31 @@ public class IpfsPerformance {
 
         File abort = createCacheFile();
         AtomicBoolean closed = new AtomicBoolean(false);
-        ipfs.storeToFile(abort, cid, new Progress() {
-            @Override
-            public void setProgress(int percent) {
-                if (percent > 50) {
-                    closed.set(true);
+        try {
+            ipfs.storeToFile(abort, cid, new Progress() {
+                @Override
+                public void setProgress(int percent) {
+                    if (percent > 50) {
+                        closed.set(true);
+                    }
+                    LogUtils.error(TAG, "Progress : " + percent);
                 }
-                LogUtils.error(TAG, "Progress : " + percent);
-            }
 
-            @Override
-            public boolean doProgress() {
-                return true;
-            }
+                @Override
+                public boolean doProgress() {
+                    return true;
+                }
 
-            @Override
-            public boolean isClosed() {
-                return closed.get();
-            }
+                @Override
+                public boolean isClosed() {
+                    return closed.get();
+                }
 
-        });
+            });
+            fail();
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
+        }
 
 
         now = System.currentTimeMillis();

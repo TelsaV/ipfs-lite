@@ -61,8 +61,15 @@ public class NavigableIPLDNode implements NavigableNode {
     public int ChildTotal() {
         return GetIPLDNode().getLinks().size();
     }
+
     private Node getPromiseValue(Closeable ctx, int childIndex) {
         return nodeGetter.Get(ctx, cids.get(childIndex));
 
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return node.toString() + " (" + ChildTotal() + ") ";
     }
 }

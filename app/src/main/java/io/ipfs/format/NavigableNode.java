@@ -7,4 +7,5 @@ public interface NavigableNode {
     NavigableNode FetchChild(Closeable ctx, int childIndex);
 
     int ChildTotal();
+
 }

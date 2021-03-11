@@ -19,11 +19,6 @@ public class Visitor {
         rootVisited = true;
     }
 
-    @NonNull
-    NavigableNode getActiveNode() {
-        return stack.peek().getNode();
-    }
-
     public void pushActiveNode(@NonNull NavigableNode node) {
         stack.push(new Stage(node));
     }
@@ -46,5 +41,15 @@ public class Visitor {
 
     public boolean isEmpty() {
         return stack.isEmpty();
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        String result = "";
+        for (Stage stage : stack) {
+            result = result.concat(stage.toString());
+        }
+        return result;
     }
 }

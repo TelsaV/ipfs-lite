@@ -16,7 +16,7 @@ public class Stage {
     }
 
     public void incrementIndex() {
-        index++;
+        index = index + 1;
     }
 
     public int index() {
@@ -30,6 +30,6 @@ public class Stage {
     @NonNull
     @Override
     public String toString() {
-        return node.toString() + " " + index;
+        return node.toString() + " " + index + " ";
     }
 }
