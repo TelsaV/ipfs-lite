@@ -26,7 +26,7 @@ import threads.server.core.pages.Page;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.ipfs.IPFS;
-import threads.server.ipfs.LinkInfo;
+import io.ipfs.utils.Link;
 import threads.server.services.ConnectService;
 import threads.server.services.LiteService;
 
@@ -168,10 +168,10 @@ public class PageWorker extends Worker {
 
         try {
 
-            List<LinkInfo> links = ipfs.getLinks(content, this::isStopped);
+            List<Link> links = ipfs.getLinks(content, this::isStopped);
 
             if (links != null) {
-                for (LinkInfo linkInfo : links) {
+                for (Link linkInfo : links) {
                     if (linkInfo.isFile() || linkInfo.isDirectory()) {
                         LogUtils.error(TAG, "publishContent " + linkInfo.getName());
                         Executors.newSingleThreadExecutor().execute(() ->

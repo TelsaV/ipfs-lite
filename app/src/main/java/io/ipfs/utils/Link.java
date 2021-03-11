@@ -1,10 +1,15 @@
-package threads.server.ipfs;
+package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-public class LinkInfo {
+public class Link {
+    public static final int Raw = 3;
+    public static final int File = 2;
+    public static final int Dir = 1;
+    public static final int Symlink = 4;
+    public static final int NotKnown = 8;
 
     @NonNull
     private final String hash;
@@ -14,21 +19,18 @@ public class LinkInfo {
     private final int type;
 
 
-    private LinkInfo(@NonNull String hash,
-                     @NonNull String name,
-                     long size,
-                     int type) {
+    private Link(@NonNull String hash, @NonNull String name, long size, int type) {
         this.hash = hash;
         this.name = name;
         this.size = size;
         this.type = type;
     }
 
-    public static LinkInfo create(String name, String hash, long size, int type) {
+    public static Link create(String name, String hash, long size, int type) {
         Objects.requireNonNull(hash);
         Objects.requireNonNull(name);
 
-        return new LinkInfo(hash, name, size, type);
+        return new Link(hash, name, size, type);
     }
 
     @NonNull
@@ -40,7 +42,7 @@ public class LinkInfo {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        LinkInfo linkInfo = (LinkInfo) o;
+        Link linkInfo = (Link) o;
         return size == linkInfo.size &&
                 type == linkInfo.type &&
                 hash.equals(linkInfo.hash) &&
@@ -61,17 +63,8 @@ public class LinkInfo {
         return name;
     }
 
-
-// --Commented out by Inspection START (4/28/2020 9:50 PM):
-//    public int getType() {
-//        return type;
-//    }
-// --Commented out by Inspection STOP (4/28/2020 9:50 PM)
-
-
     public boolean isDirectory() {
-        return type == 1;
-
+        return type == Dir;
     }
 
 
@@ -87,15 +80,12 @@ public class LinkInfo {
     }
 
     public boolean isFile() {
-        return type == 2;
+        return type == File;
 
     }
 
-
-// --Commented out by Inspection START (4/28/2020 9:50 PM):
-//    public boolean isRaw() {
-//        return type == 0;
-//    }
-// --Commented out by Inspection STOP (4/28/2020 9:50 PM)
+    public boolean isRaw() {
+        return type == Raw;
+    }
 }
 

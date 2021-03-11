@@ -43,7 +43,7 @@ import threads.server.core.threads.Thread;
 import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.DnsAddrResolver;
 import threads.server.ipfs.IPFS;
-import threads.server.ipfs.Link;
+import io.ipfs.utils.Link;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
 import threads.server.services.MimeTypeService;
@@ -691,7 +691,13 @@ public class DOCS {
                     answer.append("<tr>");
 
                     answer.append("<td>");
-                    answer.append(MimeTypeService.getSvgResource(linkInfo.getName()));
+
+                    if (!linkInfo.isDirectory()) {
+                        answer.append(MimeTypeService.getSvgResource(linkInfo.getName()));
+                    } else {
+                        answer.append(MimeTypeService.SVG_FOLDER);
+                    }
+
                     answer.append("</td>");
 
                     answer.append("<td width=\"100%\" style=\"word-break:break-word\">");
@@ -700,6 +706,10 @@ public class DOCS {
                     answer.append("\">");
                     answer.append(linkInfo.getName());
                     answer.append("</a>");
+                    answer.append("</td>");
+
+                    answer.append("<td>");
+                    answer.append(getFileSize(linkInfo.getSize()));
                     answer.append("</td>");
 
                     answer.append("<td align=\"center\">");
@@ -717,6 +727,22 @@ public class DOCS {
 
 
         return answer.toString();
+    }
+
+    private String getFileSize(long size) {
+
+        String fileSize;
+
+        if (size < 1000) {
+            fileSize = String.valueOf(size);
+            return fileSize.concat(" B");
+        } else if (size < 1000 * 1000) {
+            fileSize = String.valueOf((double) (size / 1000));
+            return fileSize.concat(" KB");
+        } else {
+            fileSize = String.valueOf((double) (size / (1000 * 1000)));
+            return fileSize.concat(" MB");
+        }
     }
 
     @NonNull

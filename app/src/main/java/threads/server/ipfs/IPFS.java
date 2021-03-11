@@ -40,6 +40,7 @@ import io.ipfs.exchange.Interface;
 import io.ipfs.merkledag.DagService;
 import io.ipfs.offline.Exchange;
 import io.ipfs.utils.Deleter;
+import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
 import io.ipfs.utils.Path;
 import io.ipfs.utils.ProgressStream;
@@ -879,10 +880,10 @@ public class IPFS implements Listener, Interface {
 
 
     public long getSize(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
-        List<LinkInfo> links = ls(cid, closeable);
+        List<Link> links = ls(cid, closeable, true);
         int size = -1;
         if (links != null) {
-            for (LinkInfo info : links) {
+            for (Link info : links) {
                 size += info.getSize();
             }
         }
@@ -895,7 +896,28 @@ public class IPFS implements Listener, Interface {
 
         LogUtils.info(TAG, "Lookup CID : " + cid);
 
-        List<Link> links = lss(cid, closeable);
+        List<Link> links = ls(cid, closeable, false);
+        if (links == null) {
+            LogUtils.info(TAG, "no links");
+            return null;
+        }
+
+        List<Link> result = new ArrayList<>();
+        for (Link link : links) {
+            LogUtils.info(TAG, "Link : " + link.toString());
+            if (!link.isRaw()) {
+                result.add(link);
+            }
+        }
+        return result;
+    }
+
+    @Nullable
+    public List<Link> getLinks(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
+
+        LogUtils.info(TAG, "Lookup CID : " + cid);
+
+        List<Link> links = ls(cid, closeable, true);
         if (links == null) {
             LogUtils.info(TAG, "no links");
             return null;
@@ -911,70 +933,16 @@ public class IPFS implements Listener, Interface {
         return result;
     }
 
-    @Nullable
-    public List<LinkInfo> getLinks(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
-
-        LogUtils.info(TAG, "Lookup CID : " + cid);
-
-        List<LinkInfo> links = ls(cid, closeable);
-        if (links == null) {
-            LogUtils.info(TAG, "no links");
-            return null;
-        }
-
-        List<LinkInfo> result = new ArrayList<>();
-        for (LinkInfo link : links) {
-            LogUtils.info(TAG, "Link : " + link.toString());
-            if (!link.getName().isEmpty()) {
-                result.add(link);
-            }
-        }
-        return result;
-    }
 
 
     @Nullable
-    private List<Link> lss(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
+    List<Link> ls(@NonNull String cid, @NonNull Closeable closeable, boolean resolveChildren) throws ClosedException {
         if (!isDaemonRunning()) {
             return Collections.emptyList();
         }
         List<Link> infoList = new ArrayList<>();
         try {
             Stream.Ls(blocks, new LinkCloseable() {
-                @Override
-                public void info(@NonNull String name, @NonNull String hash, long size, int type) {
-                    Link info = Link.create(name, hash);
-                    infoList.add(info);
-                    LogUtils.error(TAG, info.toString());
-                }
-
-                @Override
-                public boolean isClosed() {
-                    return closeable.isClosed();
-                }
-            }, cid, false);
-
-        } catch (Throwable e) {
-            if (closeable.isClosed()) {
-                throw new ClosedException();
-            }
-            return null;
-        }
-        if (closeable.isClosed()) {
-            throw new ClosedException();
-        }
-        return infoList;
-    }
-
-
-    @Nullable
-    List<LinkInfo> ls(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
-        if (!isDaemonRunning()) {
-            return Collections.emptyList();
-        }
-        List<LinkInfo> infoList = new ArrayList<>();
-        try {
-            Stream.Ls(blocks, new LinkCloseable() {
 
                 @Override
                 public boolean isClosed() {
@@ -982,11 +950,11 @@ public class IPFS implements Listener, Interface {
                 }
 
                 @Override
-                public void info(@NonNull String name, @NonNull String hash, long size, int type) {
-                    LinkInfo info = LinkInfo.create(name, hash, size, type);
-                    infoList.add(info);
+                public void info(@NonNull Link link) {
+                    infoList.add(link);
+                    LogUtils.error(TAG, link.toString());
                 }
-            }, cid, true);
+            }, cid, resolveChildren);
 
         } catch (Throwable e) {
             if (closeable.isClosed()) {

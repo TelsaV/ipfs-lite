@@ -23,11 +23,6 @@ import io.ipfs.unixfs.FSNode;
 
 public class Stream {
 
-    public static final int File = 2;
-    public static final int Dir = 1;
-    public static final int Symlink = 4;
-    public static final int NotKnown = 8;
-
 
     public static Adder getFileAdder(@NonNull Storage storage) {
 
@@ -172,10 +167,10 @@ public class Stream {
         Cid cid = link.getCid();
 
         if (cid.Type() == Cid.Raw) {
-            closeable.info(name, hash, size, File);
+            closeable.info(io.ipfs.utils.Link.create(name, hash, size, io.ipfs.utils.Link.File));
         } else if (cid.Type() == Cid.DagProtobuf) {
             if (!resolveChildren) {
-                closeable.info(name, hash, size, NotKnown);
+                closeable.info(io.ipfs.utils.Link.create(name, hash, size, io.ipfs.utils.Link.NotKnown));
             } else {
 
                 Node linkNode = link.GetNode(closeable, dagService);
@@ -185,17 +180,19 @@ public class Stream {
                     int type;
                     switch (d.Type()) {
                         case File:
+                            type = io.ipfs.utils.Link.Raw;
+                            break;
                         case Raw:
-                            type = File;
+                            type = io.ipfs.utils.Link.File;
                             break;
                         case Symlink:
-                            type = Symlink;
+                            type = io.ipfs.utils.Link.Symlink;
                             break;
                         default:
-                            type = Dir;
+                            type = io.ipfs.utils.Link.Dir;
                     }
                     size = d.FileSize();
-                    closeable.info(name, hash, size, type);
+                    closeable.info(io.ipfs.utils.Link.create(name, hash, size, type));
 
                 }
             }

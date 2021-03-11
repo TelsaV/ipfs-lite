@@ -43,7 +43,7 @@ import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.ipfs.ClosedException;
 import threads.server.ipfs.IPFS;
-import threads.server.ipfs.Link;
+import io.ipfs.utils.Link;
 import threads.server.ipfs.Progress;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
