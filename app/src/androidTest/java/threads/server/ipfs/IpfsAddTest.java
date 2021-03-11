@@ -88,61 +88,22 @@ public class IpfsAddTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
 
-        String ciddir = ipfs.createEmptyDir();
-        assertNotNull(ciddir);
 
-        File cacheDir = new File(context.getCacheDir(), UUID.randomUUID().toString());
-        assertTrue(cacheDir.mkdir());
-
-        File inputFile = new File(cacheDir, UUID.randomUUID().toString());
+        File inputFile = new File(context.getCacheDir(), UUID.randomUUID().toString());
         assertTrue(inputFile.createNewFile());
         for (int i = 0; i < 10; i++) {
             byte[] randomBytes = getRandomBytes(1000);
             FileServer.insertRecord(inputFile, i, 1000, randomBytes);
         }
-        long size = inputFile.length();
 
-        String hash58Base = ipfs.storeFile(cacheDir);
+        String hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
         List<Link> links = ipfs.getLinks(hash58Base, () -> false);
         assertNotNull(links);
 
 
-        assertEquals(links.size(), 1);
-        Link link = links.get(0);
-        assertTrue(link.isFile());
-        assertEquals(link.getSize(), size);
-        String content = link.getContent();
-
-        ciddir = ipfs.addLinkToDir(ciddir, link.getName(), content);
-        assertNotNull(ciddir);
-
-        byte[] bytes = ipfs.getData(content);
-        assertNotNull(bytes);
-        assertEquals(bytes.length, size);
-
-        IOUtils.contentEquals(new ByteArrayInputStream(bytes), new FileInputStream(inputFile));
-        assertEquals(ciddir, hash58Base);
-
-        List<Link> artLinks = ipfs.getLinks(hash58Base, () -> false);
-        assertNotNull(artLinks);
-        assertEquals(artLinks.size(), 1);
-        assertEquals(artLinks.get(0), links.get(0));
-
-
-        // delete parent
-        ipfs.rm(ciddir, false);
-
-        // check if child is still available
-        bytes = ipfs.getData(content);
-        assertNotNull(bytes);
-        assertEquals(bytes.length, size);
-
-        ipfs.rm(content, true);
-
-        bytes = ipfs.getData(content);
-        assertNull(bytes);
+        assertEquals(links.size(), 0);
     }
 
 

@@ -917,8 +917,6 @@ public class IPFS implements Listener, Interface {
     @Nullable
     public List<Link> getLinks(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
 
-        LogUtils.info(TAG, "Lookup CID : " + cid);
-
         List<Link> links = ls(cid, closeable, true);
         if (links == null) {
             LogUtils.info(TAG, "no links");

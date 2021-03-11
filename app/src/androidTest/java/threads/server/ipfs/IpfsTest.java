@@ -25,6 +25,7 @@ import lite.PeerInfo;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 
 @SuppressWarnings("SpellCheckingInspection")
@@ -135,14 +136,19 @@ public class IpfsTest {
 
 
     @Test
-    public void test_ls_timeout() throws ClosedException {
+    public void test_ls_timeout() {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
 
-        List<Link> links = ipfs.getLinks(
-                "QmXm3f7uKuFKK3QUL1V1oJZnpJSYX8c3vdhd94evSQUPCH",
-                new TimeoutProgress(20));
-        assertNull(links);
+        try {
+            ipfs.getLinks(
+                    "QmXm3f7uKuFKK3QUL1V1oJZnpJSYX8c3vdhd94evSQUPCH",
+                    new TimeoutProgress(20));
+            fail();
+        } catch (ClosedException closedException){
+            return;
+        }
+        fail();
 
     }
 
