@@ -57,13 +57,14 @@ public class ProtoNode implements Node {
         return Pair.create(lnk, left);
     }
 
+    @NonNull
     private Link GetNodeLink(@NonNull String name) {
         for (Link link : links) {
             if (Objects.equals(link.getName(), name)) {
                 return new Link(link.getCid(), link.getName(), link.getSize());
             }
         }
-        throw new RuntimeException("Link not found");
+        throw new RuntimeException("" + name + " not found");
     }
 
     public void unmarshal(byte[] encoded) {

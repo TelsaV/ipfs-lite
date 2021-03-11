@@ -848,10 +848,8 @@ public class IPFS implements Listener, Interface {
 
         try {
             result = Resolver.resolve(closeable, blocks, this, path);
-            // TODO
-            result = node.resolve(path, closeable::isClosed);
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
+        } catch (Throwable ignore) {
+            // common use case not resolve a a path
         }
         if (closeable.isClosed()) {
             throw new ClosedException();
