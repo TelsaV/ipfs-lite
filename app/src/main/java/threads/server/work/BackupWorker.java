@@ -35,8 +35,8 @@ import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.IPFS;
-import threads.server.ipfs.Progress;
+import io.ipfs.IPFS;
+import io.ipfs.utils.Progress;
 
 public class BackupWorker extends Worker {
     private static final String WID = "BW";

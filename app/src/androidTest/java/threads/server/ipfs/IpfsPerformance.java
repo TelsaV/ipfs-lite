@@ -17,7 +17,10 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
+import io.ipfs.utils.Progress;
+import io.ipfs.utils.TimeoutProgress;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -85,7 +88,7 @@ public class IpfsPerformance {
         assertEquals(data.length, size);
 
         File temp = createCacheFile();
-        ipfs.storeToFile(temp, cid, 4096);
+        ipfs.storeToFile(temp, cid);
 
         assertEquals(temp.length(), size);
 
@@ -124,7 +127,7 @@ public class IpfsPerformance {
         String cid = ipfs.storeFile(inputFile);
         assertNotNull(cid);
         File file = createCacheFile();
-        ipfs.storeToFile(file, cid, 4096);
+        ipfs.storeToFile(file, cid);
 
         assertEquals(file.length(), size);
 
@@ -223,14 +226,14 @@ public class IpfsPerformance {
 
         now = System.currentTimeMillis();
         File outputFile1 = createCacheFile();
-        ipfs.storeToFile(outputFile1, cid, 4096);
+        ipfs.storeToFile(outputFile1, cid);
         LogUtils.error(TAG, "Cat : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 
 
         now = System.currentTimeMillis();
         File outputFile2 = createCacheFile();
-        ipfs.storeToFile(outputFile2, cid, 4096);
+        ipfs.storeToFile(outputFile2, cid);
         LogUtils.error(TAG, "Cat : " + cid +
                 " Time : " + ((System.currentTimeMillis() - now) / 1000) + "[s]");
 

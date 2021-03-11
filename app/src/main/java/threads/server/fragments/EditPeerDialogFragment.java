@@ -35,7 +35,7 @@ import io.ipfs.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.events.EVENTS;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.services.LiteService;
 
 

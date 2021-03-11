@@ -35,7 +35,7 @@ import threads.server.Settings;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.DaemonService;
 import threads.server.services.LiteService;

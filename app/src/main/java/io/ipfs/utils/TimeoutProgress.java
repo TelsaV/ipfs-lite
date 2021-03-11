@@ -1,4 +1,4 @@
-package threads.server.ipfs;
+package io.ipfs.utils;
 
 public class TimeoutProgress implements Progress {
     private final long timeout;

@@ -1,4 +1,4 @@
-package threads.server.ipfs;
+package io.ipfs;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -31,8 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.ipfs.Closeable;
-import io.ipfs.LogUtils;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;
@@ -43,7 +41,10 @@ import io.ipfs.utils.Deleter;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
 import io.ipfs.utils.Path;
+import io.ipfs.utils.Progress;
 import io.ipfs.utils.ProgressStream;
+import io.ipfs.utils.Reachable;
+import io.ipfs.utils.ReaderProgress;
 import io.ipfs.utils.ReaderStream;
 import io.ipfs.utils.Resolver;
 import io.ipfs.utils.Stream;
@@ -936,7 +937,8 @@ public class IPFS implements Listener, Interface {
 
 
     @Nullable
-    List<Link> ls(@NonNull String cid, @NonNull Closeable closeable, boolean resolveChildren) throws ClosedException {
+    public List<Link> ls(@NonNull String cid, @NonNull Closeable closeable,
+                         boolean resolveChildren) throws ClosedException {
         if (!isDaemonRunning()) {
             return Collections.emptyList();
         }

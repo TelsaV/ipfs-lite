@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.ipfs.LogUtils;
-import threads.server.ipfs.Progress;
 
 public class ProgressStream extends InputStream implements AutoCloseable {
     private static final String TAG = ProgressStream.class.getSimpleName();

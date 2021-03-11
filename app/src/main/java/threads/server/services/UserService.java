@@ -13,7 +13,7 @@ import io.ipfs.LogUtils;
 import threads.server.core.DeleteOperation;
 import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 
 public class UserService {
 

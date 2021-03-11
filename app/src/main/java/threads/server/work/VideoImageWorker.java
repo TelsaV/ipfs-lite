@@ -23,7 +23,7 @@ import io.ipfs.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.provider.FileProvider;
 import threads.server.provider.MediaDataSource;
 

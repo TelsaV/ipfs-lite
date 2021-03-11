@@ -32,8 +32,8 @@ import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.Content;
-import threads.server.ipfs.IPFS;
-import threads.server.ipfs.ReaderProgress;
+import io.ipfs.IPFS;
+import io.ipfs.utils.ReaderProgress;
 
 
 public class DownloadFileWorker extends Worker {

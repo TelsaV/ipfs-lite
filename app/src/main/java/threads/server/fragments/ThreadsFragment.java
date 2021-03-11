@@ -67,7 +67,7 @@ import threads.server.core.threads.SortOrder;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.core.threads.ThreadViewModel;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.QRCodeService;
 import threads.server.services.ThreadsService;

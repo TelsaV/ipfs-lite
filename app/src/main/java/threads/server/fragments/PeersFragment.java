@@ -43,7 +43,7 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.peers.UsersViewModel;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.services.QRCodeService;
 import threads.server.services.UserService;
 import threads.server.utils.MimeType;

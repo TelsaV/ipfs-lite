@@ -14,7 +14,12 @@ import org.junit.runner.RunWith;
 import java.util.List;
 import java.util.Objects;
 
+import io.ipfs.ClosedException;
+import io.ipfs.DnsAddrResolver;
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
+import io.ipfs.utils.Link;
+import io.ipfs.utils.TimeoutProgress;
 import lite.PeerInfo;
 
 import static junit.framework.TestCase.assertNotNull;
@@ -134,7 +139,7 @@ public class IpfsTest {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
 
-        List<LinkInfo> links = ipfs.getLinks(
+        List<Link> links = ipfs.getLinks(
                 "QmXm3f7uKuFKK3QUL1V1oJZnpJSYX8c3vdhd94evSQUPCH",
                 new TimeoutProgress(20));
         assertNull(links);
@@ -149,7 +154,7 @@ public class IpfsTest {
 
         String cid = ipfs.storeText("hallo");
         assertNotNull(cid);
-        List<LinkInfo> links = ipfs.getLinks(cid, () -> false);
+        List<Link> links = ipfs.getLinks(cid, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
         links = ipfs.getLinks(cid, new TimeoutProgress(20));

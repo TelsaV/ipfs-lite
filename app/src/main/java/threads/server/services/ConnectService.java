@@ -18,7 +18,7 @@ import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 
 public class ConnectService {
     private static final String TAG = ConnectService.class.getSimpleName();

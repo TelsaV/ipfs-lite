@@ -26,7 +26,7 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.threads.THREADS;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.work.UploadFileWorker;

@@ -1,4 +1,4 @@
-package threads.server.ipfs;
+package io.ipfs;
 
 import android.util.Pair;
 
@@ -17,7 +17,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ipfs.LogUtils;
 import threads.server.Settings;
 
 public class DnsAddrResolver {
@@ -70,7 +69,7 @@ public class DnsAddrResolver {
     }
 
     @NonNull
-    static Pair<List<String>, List<String>> getMultiAddresses() {
+    public static Pair<List<String>, List<String>> getMultiAddresses() {
 
         List<String> multiAddresses = new ArrayList<>();
         List<String> p2pAddresses = new ArrayList<>();

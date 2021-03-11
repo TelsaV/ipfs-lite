@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
+import io.ipfs.utils.Link;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
@@ -68,7 +70,7 @@ public class IpfsAddTest {
         String hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
+        List<Link> links = ipfs.ls(hash58Base, () -> false, true);
         assertNotNull(links);
         assertEquals(links.size(), 4);
 
@@ -103,12 +105,12 @@ public class IpfsAddTest {
         String hash58Base = ipfs.storeFile(cacheDir);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.getLinks(hash58Base, () -> false);
+        List<Link> links = ipfs.getLinks(hash58Base, () -> false);
         assertNotNull(links);
 
 
         assertEquals(links.size(), 1);
-        LinkInfo link = links.get(0);
+        Link link = links.get(0);
         assertTrue(link.isFile());
         assertEquals(link.getSize(), size);
         String content = link.getContent();
@@ -123,7 +125,7 @@ public class IpfsAddTest {
         IOUtils.contentEquals(new ByteArrayInputStream(bytes), new FileInputStream(inputFile));
         assertEquals(ciddir, hash58Base);
 
-        List<LinkInfo> artLinks = ipfs.getLinks(hash58Base, () -> false);
+        List<Link> artLinks = ipfs.getLinks(hash58Base, () -> false);
         assertNotNull(artLinks);
         assertEquals(artLinks.size(), 1);
         assertEquals(artLinks.get(0), links.get(0));
@@ -163,7 +165,7 @@ public class IpfsAddTest {
         String hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.ls(hash58Base, () -> false);
+        List<Link> links = ipfs.ls(hash58Base, () -> false, true);
         assertNotNull(links);
         assertEquals(links.size(), 4);
         assertNotEquals(links.get(0).getContent(), hash58Base);
@@ -197,7 +199,7 @@ public class IpfsAddTest {
         String hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.getLinks(hash58Base, () -> false);
+        List<Link> links = ipfs.getLinks(hash58Base, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 
@@ -230,7 +232,7 @@ public class IpfsAddTest {
         String hash58Base = ipfs.storeFile(inputFile);
         assertNotNull(hash58Base);
 
-        List<LinkInfo> links = ipfs.getLinks(hash58Base, () -> false);
+        List<Link> links = ipfs.getLinks(hash58Base, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 

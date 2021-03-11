@@ -12,7 +12,7 @@ import java.io.InputStream;
 
 import io.ipfs.LogUtils;
 import threads.server.BuildConfig;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 
 public class FileProvider {
     private static final String TAG = FileProvider.class.getSimpleName();

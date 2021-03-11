@@ -12,7 +12,7 @@ import java.util.Objects;
 
 import io.ipfs.LogUtils;
 import threads.server.core.Content;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 
 
 public class CodecDecider {

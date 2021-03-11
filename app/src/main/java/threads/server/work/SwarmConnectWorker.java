@@ -12,7 +12,7 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import io.ipfs.LogUtils;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.services.ConnectService;
 
 public class SwarmConnectWorker extends Worker {

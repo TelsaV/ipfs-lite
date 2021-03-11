@@ -6,6 +6,7 @@ import android.net.NetworkCapabilities;
 
 import androidx.annotation.NonNull;
 
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
 
 class TestEnv {

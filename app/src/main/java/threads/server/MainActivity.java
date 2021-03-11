@@ -94,7 +94,7 @@ import threads.server.fragments.SettingsFragment;
 import threads.server.fragments.SwarmFragment;
 import threads.server.fragments.TextDialogFragment;
 import threads.server.fragments.ThreadsFragment;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.services.DiscoveryService;

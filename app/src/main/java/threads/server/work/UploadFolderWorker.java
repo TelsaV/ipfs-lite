@@ -33,8 +33,8 @@ import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
-import threads.server.ipfs.IPFS;
-import threads.server.ipfs.Progress;
+import io.ipfs.IPFS;
+import io.ipfs.utils.Progress;
 import threads.server.utils.MimeType;
 
 

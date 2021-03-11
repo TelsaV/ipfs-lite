@@ -19,7 +19,7 @@ import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 
 public class UserConnectWorker extends Worker {
 

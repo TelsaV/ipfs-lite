@@ -20,7 +20,7 @@ import io.ipfs.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.work.SwarmConnectWorker;
 
 public class DaemonService extends Service {

@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 
 import java.io.InputStream;
 
-import threads.server.ipfs.Progress;
-
 public class WriterStream implements io.ipfs.format.Reader {
 
     private final InputStream mInputStream;

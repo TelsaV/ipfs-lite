@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
 import lite.Peer;
 import lite.PeerInfo;

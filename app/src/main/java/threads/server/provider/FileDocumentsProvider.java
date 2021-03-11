@@ -37,7 +37,7 @@ import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import threads.server.ipfs.IPFS;
+import io.ipfs.IPFS;
 import threads.server.utils.MimeType;
 
 import static android.provider.DocumentsContract.QUERY_ARG_DISPLAY_NAME;

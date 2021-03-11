@@ -11,6 +11,10 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 
+import io.ipfs.ClosedException;
+import io.ipfs.IPFS;
+import io.ipfs.utils.Link;
+
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 
@@ -32,7 +36,7 @@ public class IpfsStreamTest {
         String text = "Hello Moin und Zehn Elf";
         String hash = ipfs.storeText(text);
         assertNotNull(hash);
-        List<LinkInfo> links = ipfs.getLinks(hash, () -> false);
+        List<Link> links = ipfs.getLinks(hash, () -> false);
         assertNotNull(links);
         assertEquals(links.size(), 0);
 

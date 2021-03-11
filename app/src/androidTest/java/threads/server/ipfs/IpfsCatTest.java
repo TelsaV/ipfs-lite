@@ -11,7 +11,11 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 
+import io.ipfs.ClosedException;
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
+import io.ipfs.utils.Link;
+import io.ipfs.utils.TimeoutProgress;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
@@ -43,7 +47,7 @@ public class IpfsCatTest {
         LogUtils.error(TAG, "Time Providers : " + (System.currentTimeMillis() - time) + " [ms]");
 
         time = System.currentTimeMillis();
-        List<LinkInfo> res = ipfs.getLinks(cid, new TimeoutProgress(10));
+        List<Link> res = ipfs.getLinks(cid, new TimeoutProgress(10));
         LogUtils.error(TAG, "Time : " + (System.currentTimeMillis() - time) + " [ms]");
         assertNotNull(res);
         assertTrue(res.isEmpty());
@@ -102,7 +106,7 @@ public class IpfsCatTest {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
         String cid = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
-        List<LinkInfo> res = ipfs.getLinks(cid, new TimeoutProgress(10));
+        List<Link> res = ipfs.getLinks(cid, new TimeoutProgress(10));
         assertNotNull(res);
 
         assertTrue(res.isEmpty());
