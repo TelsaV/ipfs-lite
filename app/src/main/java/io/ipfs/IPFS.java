@@ -868,7 +868,8 @@ public class IPFS implements Listener, Interface {
         }
         boolean result;
         try {
-            result = Stream.IsDir(blocks, () -> false, cid);
+            Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+            result = Stream.IsDir(closeable, blockstore, this, cid);
 
         } catch (Throwable e) {
             result = false;
@@ -926,7 +927,7 @@ public class IPFS implements Listener, Interface {
 
         List<Link> result = new ArrayList<>();
         for (Link link : links) {
-            LogUtils.info(TAG, "Link : " + link.toString());
+
             if (!link.getName().isEmpty()) {
                 result.add(link);
             }
@@ -944,7 +945,8 @@ public class IPFS implements Listener, Interface {
         }
         List<Link> infoList = new ArrayList<>();
         try {
-            Stream.Ls(blocks, new LinkCloseable() {
+            Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+            Stream.Ls(new LinkCloseable() {
 
                 @Override
                 public boolean isClosed() {
@@ -956,7 +958,7 @@ public class IPFS implements Listener, Interface {
                     infoList.add(link);
                     LogUtils.error(TAG, link.toString());
                 }
-            }, cid, resolveChildren);
+            }, blockstore, this, cid, resolveChildren);
 
         } catch (Throwable e) {
             if (closeable.isClosed()) {

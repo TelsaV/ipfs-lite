@@ -165,9 +165,7 @@ public class PageWorker extends Worker {
     }
 
     private void publishContent(@NonNull String content) {
-
         try {
-
             List<Link> links = ipfs.getLinks(content, this::isStopped);
 
             if (links != null) {

@@ -45,13 +45,13 @@ public class Stream {
         return fileAdder;
     }
 
-    public static boolean IsDir(@NonNull Storage storage,
-                                @NonNull Closeable closeable,
+    public static boolean IsDir(@NonNull Closeable closeable,
+                                @NonNull Blockstore blockstore,
+                                @NonNull Interface exchange,
                                 @NonNull String path) {
 
-        Blockstore bs = Blockstore.NewBlockstore(storage);
-        Interface exchange = new Exchange(bs);
-        BlockService blockservice = BlockService.New(bs, exchange);
+
+        BlockService blockservice = BlockService.New(blockstore, exchange);
         DagService dagService = new DagService(blockservice);
 
         io.ipfs.format.Node node = Resolver.ResolveNode(closeable, dagService, Path.New(path));
@@ -105,13 +105,11 @@ public class Stream {
 
     }
 
-    public static void Ls(@NonNull Storage storage, @NonNull LinkCloseable closeable,
+    public static void Ls(@NonNull LinkCloseable closeable, @NonNull Blockstore blockstore,
+                          @NonNull Interface exchange,
                           @NonNull String path, boolean resolveChildren) {
 
-
-        Blockstore bs = Blockstore.NewBlockstore(storage);
-        Interface exchange = new Exchange(bs);
-        BlockService blockservice = BlockService.New(bs, exchange);
+        BlockService blockservice = BlockService.New(blockstore, exchange);
         DagService dagService = new DagService(blockservice);
 
 
