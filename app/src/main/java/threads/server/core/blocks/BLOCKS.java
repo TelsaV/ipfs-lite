@@ -69,12 +69,12 @@ public class BLOCKS implements Storage {
     }
 
     public void deleteBlock(@NonNull String id) {
-        LogUtils.error(TAG, "deleteBlock " +  id);
+        //LogUtils.error(TAG, "deleteBlock " +  id);
         getBlocksDatabase().blockDao().deleteBlock(Settings.BLOCKS + id);
     }
 
     public void insertBlock(@NonNull String id, @NonNull byte[] bytes) {
-        LogUtils.error(TAG, "insertBlock " +  id);
+        //LogUtils.error(TAG, "insertBlock " +  id);
         storeBlock(createBlock(id, bytes));
     }
 
@@ -92,7 +92,7 @@ public class BLOCKS implements Storage {
 
     @Nullable
     public Block getBlock(@NonNull String id) {
-        LogUtils.error(TAG, "getBlock " +  id);
+        //LogUtils.error(TAG, "getBlock " +  id);
         return getBlocksDatabase().blockDao().getBlock(Settings.BLOCKS + id);
     }
 

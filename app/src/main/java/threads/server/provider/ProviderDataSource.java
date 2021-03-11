@@ -13,6 +13,9 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import io.ipfs.Storage;
+import io.ipfs.blockstore.Blockstore;
+import io.ipfs.exchange.Interface;
+import io.ipfs.offline.Exchange;
 import io.ipfs.utils.Reader;
 
 public class ProviderDataSource extends BaseDataSource {
@@ -57,7 +60,9 @@ public class ProviderDataSource extends BaseDataSource {
 
 
             if (fileReader == null) {
-                fileReader = Reader.getReader(storage, cid);
+                Blockstore blockstore = Blockstore.NewBlockstore(storage);
+                Interface exchange = new Exchange(blockstore);
+                fileReader = Reader.getReader(()-> false, blockstore, exchange, cid);
             }
 
             fileReader.seek(dataSpec.position);

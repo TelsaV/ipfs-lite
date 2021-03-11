@@ -2,62 +2,78 @@ package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
 
+import java.io.IOException;
 import java.io.InputStream;
 
-import threads.server.ipfs.Progress;
+import io.ipfs.LogUtils;
 
-public class ReaderStream implements io.ipfs.format.Reader {
+public class ReaderStream extends InputStream implements AutoCloseable {
+    private static final String TAG = ReaderStream.class.getSimpleName();
+    private final Reader mReader;
+    private int position = 0;
+    private byte[] data = null;
 
-    private final InputStream mInputStream;
-    private final Progress mProgress;
-    private final long size;
-    private int progress = 0;
-    private long totalRead = 0;
-    private boolean done;
-
-
-    public ReaderStream(@NonNull InputStream inputStream, @NonNull Progress progress, long size) {
-        this.mInputStream = inputStream;
-        this.mProgress = progress;
-        this.size = size;
-    }
-
-    public boolean close() {
-        done = true;
-        return mProgress.isClosed();
-
+    public ReaderStream(@NonNull Reader reader) {
+        mReader = reader;
     }
 
     @Override
-    public int Read(byte[] bytes) {
+    public int available() {
+        long size = mReader.getSize();
+        return (int) size;
+    }
 
-        if (mProgress.isClosed()) {
-            throw new RuntimeException("progress closed");
-        }
+
+    @Override
+    public int read() throws IOException {
 
         try {
-            int read = mInputStream.read(bytes);
-            if (read < 0) {
-                done = true;
+            if (data == null) {
+                invalidate();
+                preLoad();
+            }
+            if (data == null) {
+                return -1;
+            }
+            if (position < data.length) {
+                byte value = data[position];
+                position++;
+                return (value & 0xff);
             } else {
-                totalRead += read;
-                if (mProgress.doProgress()) {
-                    if (size > 0) {
-                        int percent = (int) ((totalRead * 100.0f) / size);
-                        if (progress < percent) {
-                            progress = percent;
-                            mProgress.setProgress(percent);
-                        }
-                    }
+                invalidate();
+                if (preLoad()) {
+                    byte value = data[position];
+                    position++;
+                    return (value & 0xff);
+                } else {
+                    return -1;
                 }
             }
-            return read;
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
+
+
+        } catch (Throwable e) {
+            throw new IOException(e);
         }
     }
 
-    public boolean Done() {
-        return done;
+    private void invalidate() {
+        position = 0;
+        data = null;
+    }
+
+
+    private boolean preLoad() {
+
+        data = mReader.loadNextData();
+
+        return data != null;
+    }
+
+    public void close() {
+        try {
+            mReader.close();
+        } catch (Throwable e) {
+            LogUtils.error(TAG, e);
+        }
     }
 }

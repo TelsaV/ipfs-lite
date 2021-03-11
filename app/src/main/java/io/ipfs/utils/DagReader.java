@@ -10,7 +10,6 @@ import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.ipfs.Closeable;
-import io.ipfs.LogUtils;
 import io.ipfs.format.NavigableIPLDNode;
 import io.ipfs.format.NavigableNode;
 import io.ipfs.format.Node;
@@ -129,18 +128,18 @@ public class DagReader implements java.io.Closeable {
     @Nullable
     public byte[] loadNextData() {
 
-        try {
-            int left = atomicLeft.getAndSet(0);
-            if (left > 0) {
-                NavigableNode navigableNode = visitor.peekStage().getNode();
 
-                Node node = NavigableIPLDNode.ExtractIPLDNode(navigableNode);
+        int left = atomicLeft.getAndSet(0);
+        if (left > 0) {
+            NavigableNode navigableNode = visitor.peekStage().getNode();
 
-                if (node.getLinks().size() == 0) {
+            Node node = NavigableIPLDNode.ExtractIPLDNode(navigableNode);
 
-                    byte[] data = FSNode.ReadUnixFSNodeData(node);
+            if (node.getLinks().size() == 0) {
 
-                    return Arrays.copyOfRange(data, left, data.length);
+                byte[] data = FSNode.ReadUnixFSNodeData(node);
+
+                return Arrays.copyOfRange(data, left, data.length);
                 }
             }
 
@@ -158,9 +157,5 @@ public class DagReader implements java.io.Closeable {
                 return FSNode.ReadUnixFSNodeData(node);
             }
 
-        } catch (Throwable throwable) { // TODO remove
-            LogUtils.error(TAG, throwable);
-        }
-        return null;
     }
 }

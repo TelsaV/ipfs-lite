@@ -16,7 +16,7 @@ public class Link {
     private final long size;
 
 
-    private Link(@NonNull Cid cid, @NonNull String name, long size) {
+    Link(@NonNull Cid cid, @NonNull String name, long size) {
         this.cid = cid;
         this.name = name;
         this.size = size;

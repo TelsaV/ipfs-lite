@@ -37,18 +37,19 @@ public class Walker {
                 return root;
             }
         }
+        if (!visitor.isEmpty()) {
+            boolean success = down(closeable, visitor, visitor.getActiveNode());
+            if (success) {
+                return visitor.getActiveNode();
+            }
 
-        boolean success = down(closeable, visitor, visitor.getActiveNode());
-        if (success) {
-            return visitor.getActiveNode();
+
+            success = up(visitor);
+
+            if (success) {
+                return Next(closeable, visitor);
+            }
         }
-
-        success = up(visitor);
-
-        if (success) {
-            return Next(closeable, visitor);
-        }
-
         return null;
     }
 
@@ -59,7 +60,11 @@ public class Walker {
         } else {
             return false;
         }
-        return NextChild(visitor, visitor.getActiveNode());
+        if (!visitor.isEmpty()) {
+            return NextChild(visitor, visitor.getActiveNode());
+        } else {
+            return false;
+        }
 
     }
 

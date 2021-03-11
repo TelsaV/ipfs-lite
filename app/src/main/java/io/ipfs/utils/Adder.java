@@ -59,7 +59,7 @@ public class Adder {
     }
 
 
-    public Node AddReader(@NonNull final ReaderStream reader) {
+    public Node AddReader(@NonNull final WriterStream reader) {
 
         Splitter splitter = new Splitter() {
 

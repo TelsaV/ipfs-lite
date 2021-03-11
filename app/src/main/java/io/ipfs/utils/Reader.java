@@ -7,12 +7,10 @@ import java.nio.ByteBuffer;
 
 import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
-import io.ipfs.Storage;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.exchange.Interface;
 import io.ipfs.merkledag.DagService;
-import io.ipfs.offline.Exchange;
 
 public class Reader implements java.io.Closeable {
     private static final String TAG = Reader.class.getSimpleName();
@@ -25,13 +23,11 @@ public class Reader implements java.io.Closeable {
         this.dagReader = dagReader;
     }
 
-    public static Reader getReader(@NonNull Storage storage, @NonNull String cid) {
-
-
-        Closeable closeable = () -> false;
-        Blockstore bs = Blockstore.NewBlockstore(storage);
-        Interface rem = new Exchange(bs);
-        BlockService blockservice = BlockService.New(bs, rem);
+    public static Reader getReader(@NonNull Closeable closeable,
+                                   @NonNull Blockstore blockstore,
+                                   @NonNull Interface exchange,
+                                   @NonNull String cid) {
+        BlockService blockservice = BlockService.New(blockstore, exchange);
         DagService dags = new DagService(blockservice);
         io.ipfs.format.Node top = Resolver.ResolveNode(closeable, dags, Path.New(cid));
 

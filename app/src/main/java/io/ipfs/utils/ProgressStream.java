@@ -6,15 +6,21 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.ipfs.LogUtils;
+import threads.server.ipfs.Progress;
 
-public class ReaderInputStream extends InputStream implements AutoCloseable {
-    private static final String TAG = ReaderInputStream.class.getSimpleName();
+public class ProgressStream extends InputStream implements AutoCloseable {
+    private static final String TAG = ProgressStream.class.getSimpleName();
     private final Reader mReader;
+    private final Progress mProgress;
+    private final long size;
     private int position = 0;
     private byte[] data = null;
 
-    public ReaderInputStream(@NonNull Reader reader) {
+    public ProgressStream(@NonNull Reader reader,
+                          @NonNull Progress progress) {
         mReader = reader;
+        mProgress = progress;
+        size = reader.getSize();
     }
 
     @Override
@@ -26,6 +32,7 @@ public class ReaderInputStream extends InputStream implements AutoCloseable {
 
     @Override
     public int read() throws IOException {
+
 
         try {
             if (data == null) {
@@ -49,7 +56,6 @@ public class ReaderInputStream extends InputStream implements AutoCloseable {
                     return -1;
                 }
             }
-
 
         } catch (Throwable e) {
             throw new IOException(e);

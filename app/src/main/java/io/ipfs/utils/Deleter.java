@@ -20,13 +20,10 @@ public class Deleter {
 
     public static void rm(@NonNull Storage storage, @NonNull String cid, boolean recursively) {
         try {
-            Cid m = Cid.Decode(cid);
-            LogUtils.error(TAG, m.String());
-
             Closeable closeable = () -> false;
             Blockstore bs = Blockstore.NewBlockstore(storage);
-            Interface rem = new Exchange(bs);
-            BlockService blockservice = BlockService.New(bs, rem);
+            Interface exchange = new Exchange(bs);
+            BlockService blockservice = BlockService.New(bs, exchange);
             DagService dags = new DagService(blockservice);
             io.ipfs.format.Node top = Resolver.ResolveNode(closeable, dags, Path.New(cid));
 

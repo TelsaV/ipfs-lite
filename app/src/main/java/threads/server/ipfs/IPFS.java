@@ -32,10 +32,18 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
+import io.ipfs.blockservice.BlockService;
+import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;
+import io.ipfs.exchange.Interface;
+import io.ipfs.merkledag.DagService;
+import io.ipfs.offline.Exchange;
 import io.ipfs.utils.Deleter;
 import io.ipfs.utils.LinkCloseable;
+import io.ipfs.utils.Path;
+import io.ipfs.utils.ProgressStream;
 import io.ipfs.utils.ReaderStream;
+import io.ipfs.utils.Resolver;
 import io.ipfs.utils.Stream;
 import ipns.pb.IpnsProtos;
 import lite.Listener;
@@ -51,7 +59,7 @@ import threads.server.core.blocks.BLOCKS;
 import threads.server.core.blocks.Block;
 import threads.server.core.events.EVENTS;
 
-public class IPFS implements Listener {
+public class IPFS implements Listener, Interface {
 
     private static final String PREF_KEY = "prefKey";
     private static final String PID_KEY = "pidKey";
@@ -839,6 +847,7 @@ public class IPFS implements Listener {
         String result = "";
 
         try {
+            result = Resolver.resolve(closeable, blocks, this, path);
             // TODO
             result = node.resolve(path, closeable::isClosed);
         } catch (Throwable throwable) {
@@ -1012,7 +1021,9 @@ public class IPFS implements Listener {
 
     @NonNull
     public io.ipfs.utils.Reader getReader(@NonNull String cid) {
-        return io.ipfs.utils.Reader.getReader(blocks, cid);
+        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+        Interface exchange = new Exchange(blockstore);
+        return io.ipfs.utils.Reader.getReader(()-> false, blockstore, exchange, cid);
         // return node.getReader(cid);
     }
 
@@ -1097,26 +1108,28 @@ public class IPFS implements Listener {
     }
 
     @NonNull
-    private Loader getLoader(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
+    private io.ipfs.utils.Reader getLoader(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
+        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+        return io.ipfs.utils.Reader.getReader(()-> false, blockstore, this, cid);
         // TODO
-        return node.getLoader(cid, closeable::isClosed);
+        //return node.getLoader(cid, closeable::isClosed);
     }
 
     @NonNull
     public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
         // TODO
-        Loader loader = getLoader(cid, closeable);
+        io.ipfs.utils.Reader loader = getLoader(cid, closeable);
 
-        return new CloseableInputStream(loader, closeable);
+        return new ReaderStream(loader);
 
     }
 
     @NonNull
     public InputStream getLoaderStream(@NonNull String cid, @NonNull Progress progress) throws Exception {
 
-        Loader loader = getLoader(cid, progress);
+        io.ipfs.utils.Reader loader = getLoader(cid, progress);
 
-        return new LoaderInputStream(loader, progress);
+        return new ProgressStream(loader, progress);
 
     }
 
@@ -1135,7 +1148,7 @@ public class IPFS implements Listener {
 
         String res = "";
         try {
-            res = Stream.Write(blocks, new ReaderStream(inputStream, progress, size));
+            res = Stream.Write(blocks, new io.ipfs.utils.WriterStream(inputStream, progress, size));
             //res = node.stream(new WriterStream(inputStream, progress, size));
         } catch (Throwable e) {
             if (!progress.isClosed()) {
@@ -1275,7 +1288,7 @@ public class IPFS implements Listener {
     @NonNull
     public InputStream getInputStream(@NonNull String cid) throws Exception {
         io.ipfs.utils.Reader reader = getReader(cid);
-        return new io.ipfs.utils.ReaderInputStream(reader);
+        return new ReaderStream(reader);
 
     }
 
@@ -1327,6 +1340,26 @@ public class IPFS implements Listener {
 
     public long getLeeching() {
         return leeching;
+    }
+
+    @Override
+    public io.ipfs.blocks.Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
+        try {
+            String resolve =  node.resolve(cid.String(), closeable::isClosed);
+            if(!resolve.isEmpty()){
+                Blockstore bs = Blockstore.NewBlockstore(blocks);
+                Interface exchange = new Exchange(bs);
+                BlockService blockservice = BlockService.New(bs, exchange);
+                DagService dags = new DagService(blockservice);
+                return Resolver.ResolveNode(closeable, dags, Path.New(resolve));
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+        if (closeable.isClosed()) {
+            throw new RuntimeException(new ClosedException());
+        }
+        return null;
     }
 
     public interface Pusher {

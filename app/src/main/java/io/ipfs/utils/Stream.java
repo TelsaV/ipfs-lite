@@ -134,10 +134,10 @@ public class Stream {
 
 
     public static String Write(@NonNull Storage storage,
-                               @NonNull ReaderStream readerStream) {
+                               @NonNull WriterStream writerStream) {
 
         Adder fileAdder = getFileAdder(storage);
-        Node node = fileAdder.AddReader(readerStream);
+        Node node = fileAdder.AddReader(writerStream);
         return node.Cid().String();
     }
 

@@ -1,9 +1,12 @@
 package io.ipfs.utils;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.ipfs.cid.Cid;
 
@@ -30,6 +33,27 @@ public class Path {
     }
 
 
+    public static Pair<Cid, List<String>> SplitAbsPath(Path fpath) {
+        List<String> parts = fpath.Segments();
+        String ident = parts.get(0);
+        if (Objects.equals(ident, "ipfs") || (Objects.equals(ident, "ipld"))) {
+            parts.remove(ident);
+        }
+
+
+        // if nothing, bail.
+        if (parts.size() == 0) {
+            throw new RuntimeException();
+        }
+
+        String txt = parts.get(0);
+        Cid cid = decodeCid(txt);
+        parts.remove(txt);
+
+        return Pair.create(cid, parts);
+    }
+
+
     // FromCid safely converts a cid.Cid type to a Path type.
     public static Path FromCid(@NonNull Cid cid) {
         return new Path("/ipfs/" + cid.String());
@@ -41,43 +65,43 @@ public class Path {
         if (parts.length == 1) {
             return ParseCidToPath(txt);
         }
-        /*
+
         // if the path doesnt begin with a '/'
         // we expect this to start with a hash, and be an 'ipfs' path
-        if parts[0] != "" {
-            if _, err := decodeCid(parts[0]); err != nil {
-                return "", &pathError{error: err, path: txt}
-            }
+        if (!parts[0].equals("")) {
+            decodeCid(parts[0]); // throws exception
             // The case when the path starts with hash without a protocol prefix
-            return Path("/ipfs/" + txt), nil
+            return new Path("/ipfs/" + txt);
         }
 
-        if len(parts) < 3 {
-            return "", &pathError{error: fmt.Errorf("path does not begin with '/'"), path: txt}
+        if (parts.length < 3) {
+            throw new RuntimeException("path does not begin with '/'");
         }
 
         //TODO: make this smarter
-        switch parts[1] {
-            case "ipfs", "ipld":
-                if parts[2] == "" {
-                return "", &pathError{error: fmt.Errorf("not enough path components"), path: txt}
+        String ident = parts[1];
+        if (Objects.equals(ident, "ipfs") || Objects.equals(ident, "ipld")) {
+            if (Objects.equals(parts[2], "")) {
+                throw new RuntimeException("not enough path components");
             }
-            // Validate Cid.
-            _, err := decodeCid(parts[2])
-            if err != nil {
-                return "", &pathError{error: fmt.Errorf("invalid CID: %s", err), path: txt}
+            decodeCid(parts[2]);
+        } else if (Objects.equals(ident, "ipns")) {
+            if (Objects.equals(parts[2], "")) {
+                throw new RuntimeException("not enough path components");
             }
-            case "ipns":
-                if parts[2] == "" {
-                return "", &pathError{error: fmt.Errorf("not enough path components"), path: txt}
-            }
-            default:
-                return "", &pathError{error: fmt.Errorf("unknown namespace %q", parts[1]), path: txt}
         }
-        */
         return new Path(txt);
     }
 
+
+    public static Cid decodeCid(@NonNull String cstr) {
+        Cid c = Cid.Decode(cstr);
+
+        if (cstr.length() == 46 && cstr.startsWith("qm")) { // https://github.com/ipfs/go-ipfs/issues/7792
+            throw new RuntimeException("(possible lowercased CIDv0; consider converting to a case-agnostic CIDv1, such as base32)");
+        }
+        return c;
+    }
 
     public List<String> Segments() {
         String[] spits = path.split("/");

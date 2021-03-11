@@ -1,5 +1,7 @@
 package io.ipfs.format;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -40,6 +42,28 @@ public class ProtoNode implements Node {
             this.mBuilder = builder.WithCodec(Cid.DagProtobuf);
             this.cached = Cid.Undef();
         }
+    }
+
+    @Override
+    public Pair<Link, List<String>> ResolveLink(@NonNull List<String> path) {
+
+        if (path.size() == 0) {
+            throw new RuntimeException("end of path, no more links to resolve");
+        }
+        String name = path.get(0);
+        Link lnk = GetNodeLink(name);
+        List<String> left = new ArrayList<>(path);
+        left.remove(name);
+        return Pair.create(lnk, left);
+    }
+
+    private Link GetNodeLink(@NonNull String name) {
+        for (Link link : links) {
+            if (Objects.equals(link.getName(), name)) {
+                return new Link(link.getCid(), link.getName(), link.getSize());
+            }
+        }
+        throw new RuntimeException("Link not found");
     }
 
     public void unmarshal(byte[] encoded) {
@@ -214,5 +238,11 @@ public class ProtoNode implements Node {
         encoded = null;
         cached = Cid.Undef();
         data = fileData;
+    }
+
+    @Override
+    public Pair<Object, List<String>> Resolve(@NonNull List<String> path) {
+        Pair<Link, List<String>> res = ResolveLink(path);
+        return Pair.create(res.first, res.second);
     }
 }

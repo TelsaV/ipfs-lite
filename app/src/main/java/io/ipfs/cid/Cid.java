@@ -55,7 +55,22 @@ public class Cid {
         }
 
         byte[] data = Multibase.decode(v);
-        return new Cid(data);
+
+        try (InputStream inputStream = new ByteArrayInputStream(data)) {
+            long version = Multihash.readVarint(inputStream);
+            if (version != 1) {
+                throw new Exception("invalid version");
+            }
+            long codecType = Multihash.readVarint(inputStream);
+            if (!(codecType == Cid.DagProtobuf || codecType == Cid.Raw || codecType == Cid.Libp2pKey)) {
+                throw new Exception("not supported codec");
+            }
+
+            return new Cid(data);
+
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
     }
 
     public static Cid NewCidV0(byte[] mhash) {

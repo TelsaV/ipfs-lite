@@ -1,5 +1,7 @@
 package io.ipfs.format;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -54,6 +56,11 @@ public class RawNode implements Node {
     }
 
     @Override
+    public Pair<Link, List<String>> ResolveLink(@NonNull List<String> path) {
+        throw new RuntimeException("not supported here");
+    }
+
+    @Override
     public long Size() {
         // TODO
         return getData().length;
@@ -79,4 +86,8 @@ public class RawNode implements Node {
         return block.RawData();
     }
 
+    @Override
+    public Pair<Object, List<String>> Resolve(@NonNull List<String> path) {
+        throw new RuntimeException("not supported here");
+    }
 }
