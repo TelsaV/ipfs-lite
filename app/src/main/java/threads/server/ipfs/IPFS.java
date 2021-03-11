@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +48,6 @@ import io.ipfs.utils.Resolver;
 import io.ipfs.utils.Stream;
 import ipns.pb.IpnsProtos;
 import lite.Listener;
-import lite.Loader;
 import lite.Node;
 import lite.Peer;
 import lite.PeerInfo;
@@ -521,7 +521,7 @@ public class IPFS implements Listener, Interface {
         List<String> providers = new ArrayList<>();
 
         try {
-
+            // TODO
             node.dhtFindProvsTimeout(cid, providers::add
                     , numProvs, timeout);
         } catch (Throwable e) {
@@ -759,10 +759,8 @@ public class IPFS implements Listener, Interface {
 
 
     public void rm(@NonNull String cid, boolean recursively) {
-
         try {
             Deleter.rm(blocks, cid, recursively);
-            // node.rm(cid, recursively);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -798,7 +796,6 @@ public class IPFS implements Listener, Interface {
     public String rmLinkFromDir(String dir, String name) {
         try {
             return Stream.RemoveLinkFromDir(blocks, () -> false, dir, name);
-            //return node.removeLinkFromDir(dir, name);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -809,7 +806,6 @@ public class IPFS implements Listener, Interface {
     public String addLinkToDir(@NonNull String dir, @NonNull String name, @NonNull String link) {
         try {
             return Stream.AddLinkToDir(blocks, () -> false, dir, name, link);
-            //return node.addLinkToDir(dir, name, link);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -820,7 +816,6 @@ public class IPFS implements Listener, Interface {
     public String createEmptyDir() {
         try {
             return Stream.CreateEmptyDir(blocks);
-            //return node.createEmptyDir();
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }
@@ -872,7 +867,6 @@ public class IPFS implements Listener, Interface {
         boolean result;
         try {
             result = Stream.IsDir(blocks, () -> false, cid);
-            //result = node.isDir(cid, closeable::isClosed);
 
         } catch (Throwable e) {
             result = false;
@@ -1008,11 +1002,10 @@ public class IPFS implements Listener, Interface {
 
     @Nullable
     public String storeFile(@NonNull File target) {
-        try {
-            // TODO rewrite
-            return node.addFile(target.getAbsolutePath());
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+        try(FileInputStream inputStream = new FileInputStream(target)) {
+            return storeInputStream(inputStream);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
         return null;
     }
@@ -1022,7 +1015,6 @@ public class IPFS implements Listener, Interface {
         Blockstore blockstore = Blockstore.NewBlockstore(blocks);
         Interface exchange = new Exchange(blockstore);
         return io.ipfs.utils.Reader.getReader(()-> false, blockstore, exchange, cid);
-        // return node.getReader(cid);
     }
 
     private boolean loadToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid,
@@ -1092,7 +1084,7 @@ public class IPFS implements Listener, Interface {
 
     }
 
-    public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, int blockSize) throws Exception {
+    public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid) throws Exception {
 
         try (io.ipfs.utils.Reader reader = getReader(cid)) {
             byte[] buf = reader.loadNextData();
@@ -1106,24 +1098,21 @@ public class IPFS implements Listener, Interface {
     }
 
     @NonNull
-    private io.ipfs.utils.Reader getLoader(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
+    private io.ipfs.utils.Reader getLoader(@NonNull String cid, @NonNull Closeable closeable) {
         Blockstore blockstore = Blockstore.NewBlockstore(blocks);
-        return io.ipfs.utils.Reader.getReader(()-> false, blockstore, this, cid);
-        // TODO
-        //return node.getLoader(cid, closeable::isClosed);
+        return io.ipfs.utils.Reader.getReader(closeable, blockstore, this, cid);
+
     }
 
     @NonNull
-    public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable) throws Exception {
-        // TODO
+    public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable) {
         io.ipfs.utils.Reader loader = getLoader(cid, closeable);
-
         return new ReaderStream(loader);
 
     }
 
     @NonNull
-    public InputStream getLoaderStream(@NonNull String cid, @NonNull Progress progress) throws Exception {
+    public InputStream getLoaderStream(@NonNull String cid, @NonNull Progress progress) {
 
         io.ipfs.utils.Reader loader = getLoader(cid, progress);
 
@@ -1131,10 +1120,10 @@ public class IPFS implements Listener, Interface {
 
     }
 
-    public void storeToFile(@NonNull File file, @NonNull String cid, int blockSize) throws Exception {
+    public void storeToFile(@NonNull File file, @NonNull String cid) throws Exception {
 
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-            storeToOutputStream(fileOutputStream, cid, blockSize);
+            storeToOutputStream(fileOutputStream, cid);
         }
 
     }
@@ -1147,7 +1136,6 @@ public class IPFS implements Listener, Interface {
         String res = "";
         try {
             res = Stream.Write(blocks, new io.ipfs.utils.WriterStream(inputStream, progress, size));
-            //res = node.stream(new WriterStream(inputStream, progress, size));
         } catch (Throwable e) {
             if (!progress.isClosed()) {
                 LogUtils.error(TAG, e);
@@ -1284,7 +1272,7 @@ public class IPFS implements Listener, Interface {
     }
 
     @NonNull
-    public InputStream getInputStream(@NonNull String cid) throws Exception {
+    public InputStream getInputStream(@NonNull String cid) {
         io.ipfs.utils.Reader reader = getReader(cid);
         return new ReaderStream(reader);
 
@@ -1384,229 +1372,4 @@ public class IPFS implements Listener, Interface {
         }
     }
 
-    private static class LoaderInputStream extends InputStream implements AutoCloseable {
-        private final Loader mLoader;
-        private final Progress mProgress;
-        private final long size;
-        private int position = 0;
-        private byte[] data = null;
-        private int remember = 0;
-        private long totalRead = 0L;
-
-        LoaderInputStream(@NonNull Loader loader, @NonNull Progress progress) {
-            mLoader = loader;
-            mProgress = progress;
-            size = mLoader.getSize();
-        }
-
-        @Override
-        public int available() {
-            long size = mLoader.getSize();
-            return (int) size;
-        }
-
-        @Override
-        public int read() throws IOException {
-
-
-            try {
-                if (data == null) {
-                    invalidate();
-                    preLoad();
-                }
-                if (data == null) {
-                    return -1;
-                }
-                if (position < data.length) {
-                    byte value = data[position];
-                    position++;
-                    return (value & 0xff);
-                } else {
-                    invalidate();
-                    if (preLoad()) {
-                        byte value = data[position];
-                        position++;
-                        return (value & 0xff);
-                    } else {
-                        return -1;
-                    }
-                }
-
-            } catch (Throwable e) {
-                throw new IOException(e);
-            }
-        }
-
-
-        private void invalidate() {
-            position = 0;
-            data = null;
-        }
-
-
-        private boolean preLoad() throws Exception {
-
-            mLoader.load(4096, mProgress::isClosed);
-            int read = (int) mLoader.getRead();
-            if (read > 0) {
-                data = new byte[read];
-                byte[] values = mLoader.getData();
-                System.arraycopy(values, 0, data, 0, read);
-
-                totalRead += read;
-                if (mProgress.doProgress()) {
-                    if (size > 0) {
-                        int percent = (int) ((totalRead * 100.0f) / size);
-                        if (remember < percent) {
-                            remember = percent;
-                            mProgress.setProgress(percent);
-                        }
-                    }
-                }
-                return true;
-            }
-            return false;
-        }
-
-        public void close() {
-            try {
-                mLoader.close();
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-        }
-    }
-
-
-    private static class CloseableInputStream extends InputStream implements AutoCloseable {
-        private final Loader loader;
-        private final Closeable closeable;
-        private int position = 0;
-        private byte[] data = null;
-
-        CloseableInputStream(@NonNull Loader loader, @NonNull Closeable closeable) {
-            this.loader = loader;
-            this.closeable = closeable;
-        }
-
-        @Override
-        public int available() {
-            long size = loader.getSize();
-            return (int) size;
-        }
-
-        @Override
-        public int read() throws IOException {
-
-
-            try {
-                if (data == null) {
-                    invalidate();
-                    preLoad();
-                }
-                if (data == null) {
-                    return -1;
-                }
-                if (position < data.length) {
-                    byte value = data[position];
-                    position++;
-                    return (value & 0xff);
-                } else {
-                    invalidate();
-                    if (preLoad()) {
-                        byte value = data[position];
-                        position++;
-                        return (value & 0xff);
-                    } else {
-                        return -1;
-                    }
-                }
-
-            } catch (Throwable e) {
-                throw new IOException(e);
-            }
-        }
-
-
-        private void invalidate() {
-            position = 0;
-            data = null;
-        }
-
-
-        private boolean preLoad() throws Exception {
-            loader.load(4096, closeable::isClosed);
-            int read = (int) loader.getRead();
-            if (read > 0) {
-                data = new byte[read];
-                byte[] values = loader.getData();
-                System.arraycopy(values, 0, data, 0, read);
-                return true;
-            }
-            return false;
-        }
-
-        public void close() {
-            try {
-                loader.close();
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
-            }
-        }
-    }
-
-
-    private static class WriterStream implements lite.WriterStream {
-        private final InputStream mInputStream;
-        private final Progress mProgress;
-        private final int SIZE = 262144;
-        private final long size;
-        private final byte[] data = new byte[SIZE];
-        private int progress = 0;
-        private long totalRead = 0;
-
-
-        WriterStream(@NonNull InputStream inputStream, @NonNull Progress progress, long size) {
-            this.mInputStream = inputStream;
-            this.mProgress = progress;
-            this.size = size;
-        }
-
-
-        @Override
-        public byte[] data() {
-            return data;
-        }
-
-        @Override
-        public long read() throws Exception {
-
-
-            if (mProgress.isClosed()) {
-                throw new Exception("progress closed");
-            }
-
-
-            int read = mInputStream.read(data);
-
-            totalRead += read;
-
-            if (mProgress.doProgress()) {
-                if (size > 0) {
-                    int percent = (int) ((totalRead * 100.0f) / size);
-                    if (progress < percent) {
-                        progress = percent;
-                        mProgress.setProgress(percent);
-                    }
-                }
-            }
-            return read;
-        }
-
-        @Override
-        public boolean close() {
-            return mProgress.isClosed();
-
-        }
-    }
 }
