@@ -43,8 +43,8 @@ public class InitApplication extends Application {
                 notificationManager.createNotificationChannel(mChannel);
             }
 
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
 
     }

@@ -48,7 +48,7 @@ public class IpfsPerformance {
         return File.createTempFile("temp", ".io.ipfs.cid", context.getCacheDir());
     }
 
-    @Test
+    //@Test
     public void test_add_cat_small() throws Exception {
 
         int packetSize = 1000;
@@ -105,7 +105,7 @@ public class IpfsPerformance {
     }
 
 
-    @Test
+    //@Test
     public void test_cmp_files() throws Exception {
 
         int packetSize = 10000;
@@ -159,7 +159,7 @@ public class IpfsPerformance {
         }
 
         long size = inputFile.length();
-
+        assertEquals(packetSize * maxData, size);
 
         LogUtils.error(TAG, "Bytes : " + inputFile.length() / 1000 + "[kb]");
 
@@ -172,7 +172,7 @@ public class IpfsPerformance {
 
 
         File temp = createCacheFile();
-        ipfs.loadToFile(temp, cid, new Progress() {
+        ipfs.storeToFile(temp, cid, new Progress() {
             @Override
             public void setProgress(int percent) {
                 LogUtils.error(TAG, "Progress : " + percent);
@@ -189,12 +189,13 @@ public class IpfsPerformance {
             }
 
         });
+
         assertEquals(temp.length(), size);
 
 
         File abort = createCacheFile();
         AtomicBoolean closed = new AtomicBoolean(false);
-        boolean success = ipfs.loadToFile(abort, cid, new Progress() {
+        ipfs.storeToFile(abort, cid, new Progress() {
             @Override
             public void setProgress(int percent) {
                 if (percent > 50) {
@@ -214,7 +215,6 @@ public class IpfsPerformance {
             }
 
         });
-        assertFalse(success);
 
 
         now = System.currentTimeMillis();

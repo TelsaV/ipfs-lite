@@ -987,45 +987,32 @@ public class IPFS implements Listener, Interface {
         return io.ipfs.utils.Reader.getReader(()-> false, blockstore, exchange, cid);
     }
 
-    private boolean loadToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid,
-                                       @NonNull Progress progress) {
-
-        try (InputStream inputStream = getLoaderStream(cid, progress)) {
-            IPFS.copy(inputStream, outputStream);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-            return false;
-        }
-        return true;
-
-    }
-
     private void getToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid) throws Exception {
         try (InputStream inputStream = getInputStream(cid)) {
             IPFS.copy(inputStream, outputStream);
         }
     }
 
-    public boolean loadToFile(@NonNull File file, @NonNull String cid, @NonNull Progress progress) {
+    public void storeToFile(@NonNull File file, @NonNull String cid, @NonNull Progress progress) {
         if (!isDaemonRunning()) {
-            return false;
+            return;
         }
-
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            return loadToOutputStream(outputStream, cid, progress);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-            return false;
+            storeToOutputStream(outputStream, progress, cid);
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
         }
     }
 
     public void storeToOutputStream(@NonNull OutputStream os, @NonNull Progress progress,
-                                    @NonNull String cid, long size) throws Exception {
+                                    @NonNull String cid) throws Exception {
 
         long totalRead = 0L;
         int remember = 0;
 
         try (io.ipfs.utils.Reader reader = getReader(cid)) {
+
+            long size = reader.getSize();
             byte[] buf = reader.loadNextData();
             while (buf != null && buf.length > 0) {
 
@@ -1095,7 +1082,6 @@ public class IPFS implements Listener, Interface {
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
             storeToOutputStream(fileOutputStream, cid);
         }
-
     }
 
     @Nullable
@@ -1170,15 +1156,11 @@ public class IPFS implements Listener, Interface {
             return null;
         }
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            boolean success = loadToOutputStream(outputStream, cid, progress);
-            if (success) {
-                return outputStream.toByteArray();
-            } else {
-                return null;
-            }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-            return null;
+            storeToOutputStream(outputStream, progress, cid);
+            return outputStream.toByteArray();
+
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
         }
 
     }

@@ -257,9 +257,9 @@ public class CopyDirectoryWorker extends Worker {
                     }
 
 
-                }, cid, size);
-            } catch (Throwable e) {
-                LogUtils.error(TAG, e);
+                }, cid);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
             }
 
             if (isStopped()) {

@@ -165,7 +165,7 @@ public class CopyFileWorker extends Worker {
                     }
 
 
-                }, cid, size);
+                }, cid);
             } catch (Throwable e) {
                 LogUtils.error(TAG, e);
             }

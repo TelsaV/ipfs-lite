@@ -14,6 +14,8 @@ public class ProgressStream extends InputStream implements AutoCloseable {
     private final long size;
     private int position = 0;
     private byte[] data = null;
+    private int remember = 0;
+    private long totalRead = 0L;
 
     public ProgressStream(@NonNull Reader reader,
                           @NonNull Progress progress) {
@@ -70,7 +72,19 @@ public class ProgressStream extends InputStream implements AutoCloseable {
     private boolean preLoad() {
 
         data = mReader.loadNextData();
-
+        if(data != null) {
+            int read = data.length;
+            totalRead += read;
+            if (mProgress.doProgress()) {
+                if (size > 0) {
+                    int percent = (int) ((totalRead * 100.0f) / size);
+                    if (remember < percent) {
+                        remember = percent;
+                        mProgress.setProgress(percent);
+                    }
+                }
+            }
+        }
         return data != null;
     }
 

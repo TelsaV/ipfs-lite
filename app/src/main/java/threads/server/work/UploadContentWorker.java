@@ -347,40 +347,41 @@ public class UploadContentWorker extends Worker {
                 threads.setThreadSize(threadIdx, 0L);
                 threads.setThreadMimeType(threadIdx, MimeType.DIR_MIME_TYPE);
             } else {
-                File file = FileProvider.getInstance(
-                        getApplicationContext()).createDataFile(threadIdx);
+                try {
+                    File file = FileProvider.getInstance(
+                            getApplicationContext()).createDataFile(threadIdx);
 
-                AtomicLong refresh = new AtomicLong(System.currentTimeMillis());
-                boolean success = ipfs.loadToFile(file, cid,
-                        new Progress() {
-                            @Override
-                            public boolean isClosed() {
-                                return isStopped();
-                            }
-
-
-                            @Override
-                            public void setProgress(int percent) {
-                                threads.setThreadProgress(threadIdx, percent);
-                                reportProgress(filename, percent);
-                            }
-
-                            @Override
-                            public boolean doProgress() {
-                                started.set(System.currentTimeMillis());
-                                long time = System.currentTimeMillis();
-                                long diff = time - refresh.get();
-                                boolean doProgress = (diff > Settings.REFRESH);
-                                if (doProgress) {
-                                    refresh.set(time);
+                    AtomicLong refresh = new AtomicLong(System.currentTimeMillis());
+                    ipfs.storeToFile(file, cid,
+                            new Progress() {
+                                @Override
+                                public boolean isClosed() {
+                                    return isStopped();
                                 }
-                                return doProgress;
-                            }
 
 
-                        });
+                                @Override
+                                public void setProgress(int percent) {
+                                    threads.setThreadProgress(threadIdx, percent);
+                                    reportProgress(filename, percent);
+                                }
 
-                if (success) {
+                                @Override
+                                public boolean doProgress() {
+                                    started.set(System.currentTimeMillis());
+                                    long time = System.currentTimeMillis();
+                                    long diff = time - refresh.get();
+                                    boolean doProgress = (diff > Settings.REFRESH);
+                                    if (doProgress) {
+                                        refresh.set(time);
+                                    }
+                                    return doProgress;
+                                }
+
+
+                            });
+
+
                     threads.setThreadDone(threadIdx);
 
                     threads.setThreadSize(threadIdx, file.length());
@@ -412,7 +413,7 @@ public class UploadContentWorker extends Worker {
                     docs.finishDocument(threadIdx);
 
                     checkParentSeeding(parent);
-                } else {
+                } catch (Throwable throwable){
                     finished.set(false);
                     threads.resetThreadLeaching(threadIdx);
                 }
