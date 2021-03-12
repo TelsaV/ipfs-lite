@@ -31,16 +31,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.ipfs.blockservice.BlockService;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
-import io.ipfs.merkledag.DagService;
-import io.ipfs.offline.Exchange;
+import io.ipfs.routing.ContentRouting;
 import io.ipfs.utils.Deleter;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
-import io.ipfs.utils.Path;
 import io.ipfs.utils.Progress;
 import io.ipfs.utils.ProgressStream;
 import io.ipfs.utils.Reachable;
@@ -53,7 +50,7 @@ import lite.Listener;
 import lite.Node;
 import lite.Peer;
 import lite.PeerInfo;
-import lite.Provider;
+import lite.Providers;
 import lite.ResolveInfo;
 import threads.server.Settings;
 import threads.server.core.Content;
@@ -61,7 +58,7 @@ import threads.server.core.blocks.BLOCKS;
 import threads.server.core.blocks.Block;
 import threads.server.core.events.EVENTS;
 
-public class IPFS implements Listener, Interface {
+public class IPFS implements Listener, Interface, ContentRouting {
 
     private static final String PREF_KEY = "prefKey";
     private static final String PID_KEY = "pidKey";
@@ -498,50 +495,48 @@ public class IPFS implements Listener, Interface {
     }
 
 
-    public void dhtFindProviders(@NonNull String cid, @NonNull Provider provider, int numProvs,
-                                 @NonNull Closeable closeable) throws ClosedException {
+    public void dhtFindProviders(@NonNull String cid, int numProviders,
+                                 @NonNull io.ipfs.routing.Providers providers) throws ClosedException {
         if (!isDaemonRunning()) {
             return;
         }
-        try {
-            // TODO
-            node.dhtFindProvs(cid, provider, numProvs, closeable::isClosed);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+
+        if (numProviders < 1) {
+            throw new RuntimeException("number of providers must be greater than 0");
         }
-        if (closeable.isClosed()) {
+
+        try {
+            node.dhtFindProviders(cid, numProviders, new Providers() {
+                @Override
+                public boolean close() {
+                    return providers.isClosed();
+                }
+
+                @Override
+                public void peer(@NonNull String id) {
+                    providers.Peer(id);
+                }
+            });
+        } catch (Throwable ignore) {
+        }
+        if (providers.isClosed()) {
             throw new ClosedException();
         }
     }
 
-    public List<String> dhtFindProviders(@NonNull String cid, int numProvs, int timeout) {
 
-        if (!isDaemonRunning()) {
-            return Collections.emptyList();
-        }
-
-        List<String> providers = new ArrayList<>();
-
-        try {
-            // TODO
-            node.dhtFindProvsTimeout(cid, providers::add
-                    , numProvs, timeout);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-        return providers;
-    }
-
-    public void dhtPublish(@NonNull String cid, @NonNull lite.Closeable closable) {
+    public void dhtPublish(@NonNull Closeable closable, @NonNull String cid) throws ClosedException {
 
         if (!isDaemonRunning()) {
             return;
         }
 
         try {
-            // TODO
-            node.dhtProvide(cid, closable);
+            node.dhtProvide(cid, closable::isClosed);
         } catch (Throwable ignore) {
+        }
+        if (closable.isClosed()) {
+            throw new ClosedException();
         }
     }
 
@@ -657,12 +652,12 @@ public class IPFS implements Listener, Interface {
         return peers;
     }
 
-    public void publishName(@NonNull String cid, @NonNull Closeable closeable, int sequence) throws ClosedException {
+    public void publishName(@NonNull String cid, @NonNull Closeable closeable, int sequence)
+            throws ClosedException {
         if (!isDaemonRunning()) {
             return;
         }
         try {
-            // TODO
             node.publishName(cid, closeable::isClosed, sequence);
         } catch (Throwable ignore) {
         }
@@ -1268,15 +1263,17 @@ public class IPFS implements Listener, Interface {
 
     @Override
     public io.ipfs.blocks.Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
+
+        if(!isDaemonRunning()){
+            return null;
+        }
+
         try {
-            // TODO remove this function to bitswap
-            String resolve =  node.resolve(cid.String(), closeable::isClosed);
-            if(!resolve.isEmpty()){
+
+            String result = node.getBlock(closeable::isClosed, cid.String());
+            if(!result.isEmpty()){
                 Blockstore bs = Blockstore.NewBlockstore(blocks);
-                Interface exchange = new Exchange(bs);
-                BlockService blockservice = BlockService.New(bs, exchange);
-                DagService dags = new DagService(blockservice);
-                return Resolver.ResolveNode(closeable, dags, Path.New(resolve));
+                return bs.Get(Cid.Decode(result));
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -1286,6 +1283,27 @@ public class IPFS implements Listener, Interface {
         }
         return null;
     }
+
+    @Override
+    public void FindProvidersAsync(@NonNull io.ipfs.routing.Providers providers, @NonNull Cid cid, int number) {
+
+        try {
+            dhtFindProviders(cid.String(), number, providers);
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    @Override
+    public void Provide(@NonNull Closeable closeable, @NonNull Cid cid) {
+        try {
+            dhtPublish(closeable, cid.String());
+        } catch (Throwable throwable){
+            throw new RuntimeException(throwable);
+        }
+
+    }
+
 
     public interface Pusher {
         void push(@NonNull String pid, @NonNull String cid);

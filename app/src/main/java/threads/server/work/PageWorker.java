@@ -178,7 +178,7 @@ public class PageWorker extends Worker {
                 }
             }
 
-            ipfs.dhtPublish(content, this::isStopped);
+            ipfs.dhtPublish(this::isStopped, content);
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

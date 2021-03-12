@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
+import io.ipfs.routing.Providers;
 import lite.Peer;
 import threads.server.Settings;
 import threads.server.core.blocks.BLOCKS;
@@ -95,25 +96,34 @@ public class DOCS {
         Executors.newSingleThreadExecutor().execute(() -> {
             long start = System.currentTimeMillis();
             try {
-                ipfs.dhtFindProviders(cid, pid -> {
-                    try {
-                        LogUtils.error(TAG, "Found Provider " + pid);
-                        if (!ipfs.isConnected(pid)) {
-                            Executors.newSingleThreadExecutor().execute(() -> {
-                                try {
-                                    boolean result = ipfs.swarmConnect(
-                                            Content.P2P_PATH + pid, pid, closeable);
-                                    LogUtils.error(TAG, "Connect " + pid + " " + result);
-                                } catch (Throwable throwable) {
-                                    LogUtils.error(TAG, throwable.getMessage());
-                                }
-                            });
+                ipfs.dhtFindProviders(cid, 10, new Providers() {
+                    @Override
+                    public void Peer(@NonNull String pid) {
+                        try {
+                            LogUtils.error(TAG, "Found Provider " + pid);
+                            if (!ipfs.isConnected(pid)) {
+                                Executors.newSingleThreadExecutor().execute(() -> {
+                                    try {
+                                        boolean result = ipfs.swarmConnect(
+                                                Content.P2P_PATH + pid, pid, closeable);
+                                        LogUtils.error(TAG, "Connect " + pid + " " + result);
+                                    } catch (Throwable throwable) {
+                                        LogUtils.error(TAG, throwable.getMessage());
+                                    }
+                                });
+                            }
+
+                        } catch (Throwable throwable) {
+                            LogUtils.error(TAG, throwable);
                         }
 
-                    } catch (Throwable throwable) {
-                        LogUtils.error(TAG, throwable);
                     }
-                }, 10, closeable);
+
+                    @Override
+                    public boolean isClosed() {
+                        return closeable.isClosed();
+                    }
+                });
 
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable.getMessage());
