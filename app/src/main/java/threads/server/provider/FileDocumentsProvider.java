@@ -13,10 +13,14 @@ import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.os.ProxyFileDescriptorCallback;
+import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.DocumentsProvider;
 import android.provider.OpenableColumns;
+import android.system.ErrnoException;
+import android.system.OsConstants;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,12 +28,16 @@ import androidx.annotation.RequiresApi;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+import io.ipfs.Closeable;
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
+import io.ipfs.utils.Reader;
 import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.R;
@@ -37,7 +45,6 @@ import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import io.ipfs.IPFS;
 import threads.server.utils.MimeType;
 
 import static android.provider.DocumentsContract.QUERY_ARG_DISPLAY_NAME;
@@ -61,7 +68,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
     private THREADS threads;
     private IPFS ipfs;
     private DOCS docs;
-
 
     public static boolean isLocalUri(@NonNull Uri uri) {
         try {
@@ -644,6 +650,8 @@ public class FileDocumentsProvider extends DocumentsProvider {
         }
     }
 
+    private StorageManager mStorageManager;
+
     @Override
     public ParcelFileDescriptor openDocument(String documentId, String mode,
                                              @Nullable CancellationSignal signal) throws FileNotFoundException {
@@ -681,9 +689,13 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 String cid = file.getContent();
                 Objects.requireNonNull(cid);
 
+
+                return getParcelFileDescriptor(cid, mode, signal);
+
+                /*
                 return ParcelFileDescriptor.open(
                         FileProvider.getFile(Objects.requireNonNull(getContext()), cid, idx),
-                        ParcelFileDescriptor.MODE_READ_ONLY);
+                        ParcelFileDescriptor.MODE_READ_ONLY);*/
 
             }
         } catch (Throwable throwable) {
@@ -699,11 +711,82 @@ public class FileDocumentsProvider extends DocumentsProvider {
         appName = context.getString(R.string.app_name);
         rootDir = context.getString(R.string.ipfs);
         threads = THREADS.getInstance(context);
+        mStorageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
         ipfs = IPFS.getInstance(context);
         docs = DOCS.getInstance(context);
         InitApplication.syncData(context);
         return true;
     }
 
+    private ParcelFileDescriptor getParcelFileDescriptor(@NonNull String cid, @NonNull String mode,
+                                                         @Nullable CancellationSignal signal) throws IOException {
+
+
+        Closeable closeable = () -> false;
+        if (signal != null) {
+            closeable = signal::isCanceled;
+        }
+
+        final Reader reader = ipfs.getReader(cid, closeable);
+        Handler handler = new Handler(getContext().getMainLooper());
+
+        return mStorageManager.openProxyFileDescriptor(
+                ParcelFileDescriptor.parseMode(mode),
+                new ProxyFileDescriptorCallback() {
+
+                    /**
+                     * Returns size of bytes provided by the file descriptor.
+                     *
+                     * @return Size of bytes.
+                     */
+                    public long onGetSize() {
+                        return reader.getSize();
+                    }
+
+                    /**
+                     * Provides bytes read from file descriptor.
+                     * It needs to return exact requested size of bytes unless it reaches file end.
+                     *
+                     * @param offset Offset in bytes from the file head specifying where to read bytes. If a seek
+                     *               operation is conducted on the file descriptor, then a read operation is requested, the
+                     *               offset refrects the proper position of requested bytes.
+                     * @param size   Size for read bytes.
+                     * @param data   Byte array to store read bytes.
+                     * @return Size of bytes returned by the function.
+                     */
+                    public int onRead(long offset, int size, byte[] data) throws ErrnoException {
+
+                        try {
+                            reader.seek(offset);
+                            byte[] bytes = reader.loadNextData();
+                            if (bytes != null) {
+                                int min = Math.min(bytes.length, size);
+                                System.arraycopy(bytes, 0, data, 0, min);
+                                if (min < size) {
+                                    int remain = size - min;
+                                    bytes = reader.loadNextData();
+                                    if (bytes != null) {
+                                        System.arraycopy(bytes, 0, data, min, remain);
+                                        return size;
+                                    } else {
+                                        return min;
+                                    }
+                                }
+                                return min;
+                            }
+                        } catch (Throwable throwable) {
+                            LogUtils.error(TAG, throwable);
+                            throw new ErrnoException(throwable.getLocalizedMessage(), OsConstants.EBADF);
+                        }
+                        return 0;
+                    }
+
+                    @Override
+                    public void onRelease() {
+                    }
+                }, handler);
+
+
+    }
 
 }

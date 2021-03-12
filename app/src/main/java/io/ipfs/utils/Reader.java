@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Objects;
 
 import io.ipfs.Closeable;
@@ -16,11 +17,13 @@ import io.ipfs.merkledag.DagService;
 public class Reader implements java.io.Closeable {
     private static final String TAG = Reader.class.getSimpleName();
     private final DagReader dagReader;
+    private final Closeable closeable;
     private int position = 0;
     private byte[] data = null;
 
 
-    private Reader(@NonNull DagReader dagReader) {
+    private Reader(@NonNull Closeable closeable, @NonNull DagReader dagReader) {
+        this.closeable = closeable;
         this.dagReader = dagReader;
     }
 
@@ -34,19 +37,19 @@ public class Reader implements java.io.Closeable {
         Objects.requireNonNull(top);
         DagReader dagReader = DagReader.NewDagReader(top, dags);
 
-        return new Reader(dagReader);
+        return new Reader(closeable, dagReader);
     }
 
     public long getSize() {
         return dagReader.getSize();
     }
 
-    public int read(@NonNull Closeable closeable) {
+    private int read() {
 
         try {
             if (data == null) {
                 invalidate();
-                preLoad(closeable);
+                preLoad();
             }
             if (data == null) {
                 return -1;
@@ -57,7 +60,7 @@ public class Reader implements java.io.Closeable {
                 return (value & 0xff);
             } else {
                 invalidate();
-                if (preLoad(closeable)) {
+                if (preLoad()) {
                     byte value = data[position];
                     position++;
                     return (value & 0xff);
@@ -77,24 +80,24 @@ public class Reader implements java.io.Closeable {
         data = null;
     }
 
-    private boolean preLoad(@NonNull Closeable closeable) {
+    private boolean preLoad() {
 
-        data = loadNextData(closeable);
+        data = loadNextData();
 
         return data != null;
     }
 
-    public byte[] load(@NonNull Closeable closeable, int size) {
-        ByteBuffer buf = ByteBuffer.allocate(size);
-
-        for (int i = 0; i < size; i++) {
-            int val = read(closeable);
+    public byte[] load(int size) {
+       byte[] buf = new byte[size];
+        int i = 0;
+        for (; i < size; i++) {
+            int val = read();
             if (val < 0) {
                 break;
             }
-            buf.put((byte) (val & 0xff));
+            buf[i] = ((byte) (val & 0xff));
         }
-        return buf.array();
+        return Arrays.copyOfRange(buf, 0, i);
     }
 
 
@@ -106,17 +109,18 @@ public class Reader implements java.io.Closeable {
         }
     }
 
-    public byte[] readAt(@NonNull Closeable closeable, long position, int size) {
-        seek(closeable, position);
-        return load(closeable, size);
+    public byte[] readAt(long position, int size) {
+        seek(position);
+        return load(size);
     }
 
-    public void seek(@NonNull Closeable closeable, long position) {
+    public void seek(long position) {
         dagReader.Seek(closeable, position);
     }
 
     @Nullable
-    public byte[] loadNextData(@NonNull Closeable closeable) {
+    public byte[] loadNextData() {
         return this.dagReader.loadNextData(closeable);
     }
+
 }

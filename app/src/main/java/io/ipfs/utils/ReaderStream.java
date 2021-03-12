@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 
-import io.ipfs.Closeable;
 import io.ipfs.LogUtils;
 
 public class ReaderStream extends InputStream implements AutoCloseable {
@@ -13,11 +12,9 @@ public class ReaderStream extends InputStream implements AutoCloseable {
     private final Reader reader;
     private int position = 0;
     private byte[] data = null;
-    private final Closeable closeable;
 
-    public ReaderStream(@NonNull Reader reader, @NonNull Closeable closeable) {
+    public ReaderStream(@NonNull Reader reader) {
         this.reader = reader;
-        this.closeable = closeable;
     }
 
     @Override
@@ -66,7 +63,7 @@ public class ReaderStream extends InputStream implements AutoCloseable {
 
 
     private boolean preLoad() {
-        data = reader.loadNextData(closeable);
+        data = reader.loadNextData();
         return data != null;
     }
 

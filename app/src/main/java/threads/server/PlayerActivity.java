@@ -16,22 +16,19 @@ import com.google.android.exoplayer2.upstream.ContentDataSource;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
 
-import java.io.IOException;
+import java.util.concurrent.Executors;
 
 import io.ipfs.LogUtils;
-import io.ipfs.Storage;
-import threads.server.core.blocks.BLOCKS;
 import threads.server.core.threads.THREADS;
 import threads.server.provider.FileDocumentsProvider;
-import threads.server.provider.ProviderDataSource;
 import threads.server.work.VideoImageWorker;
 
 import static com.google.android.exoplayer2.util.RepeatModeUtil.REPEAT_TOGGLE_MODE_NONE;
 
 
-public class ExoPlayerActivity extends Activity {
+public class PlayerActivity extends Activity {
 
-    private static final String TAG = ExoPlayerActivity.class.getSimpleName();
+    private static final String TAG = PlayerActivity.class.getSimpleName();
     private PlayerView mPlayerView;
     private SimpleExoPlayer mPlayer;
     private long playbackPosition;
@@ -73,8 +70,8 @@ public class ExoPlayerActivity extends Activity {
                 }
             }
 
-        } catch (Throwable e) {
-            LogUtils.error(TAG, "" + e.getLocalizedMessage());
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
     }
 
@@ -135,9 +132,11 @@ public class ExoPlayerActivity extends Activity {
         }
 
         try {
+
             MediaSource mediaSource = buildMediaSource();
             mPlayer.setMediaSource(mediaSource, false);
             mPlayer.prepare();
+
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -174,8 +173,6 @@ public class ExoPlayerActivity extends Activity {
                     }
                 }
             }
-
-
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         } finally {
@@ -194,36 +191,19 @@ public class ExoPlayerActivity extends Activity {
 
     private MediaSource buildMediaSource() {
 
-        THREADS threads = THREADS.getInstance(getApplicationContext());
-        Storage storage = BLOCKS.getInstance(getApplicationContext());
-
-
-        if (idx > 0) {
-            String content = threads.getThreadContent(idx);
-            if (content != null) {
-                DataSpec dataSpec = new DataSpec(uri);
-                final ProviderDataSource fileDataSource = new ProviderDataSource(storage, content);
-                try {
-                    fileDataSource.open(dataSpec);
-                } catch (IOException e) {
-                    LogUtils.error(TAG, e);
-                }
-
-                DataSource.Factory factory = () -> fileDataSource;
-
-                MediaItem mediaItem = MediaItem.fromUri(uri);
-                return new ProgressiveMediaSource.Factory(factory).createMediaSource(mediaItem);
-            }
-        }
-
         DataSpec dataSpec = new DataSpec(uri);
 
         final ContentDataSource fileDataSource = new ContentDataSource(getApplicationContext());
-        try {
-            fileDataSource.open(dataSpec);
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                fileDataSource.open(dataSpec);
+            } catch (Throwable e) {
+                LogUtils.error(TAG, e);
+            }
+        });
+
+
         DataSource.Factory factory = () -> fileDataSource;
         MediaItem mediaItem = MediaItem.fromUri(uri);
         return new ProgressiveMediaSource.Factory(factory).createMediaSource(mediaItem);

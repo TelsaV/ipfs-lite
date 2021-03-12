@@ -80,7 +80,7 @@ public class MediaDataSource extends android.media.MediaDataSource {
     public int readAt(long position, byte[] buffer, int offset, int size) throws IOException {
         try {
 
-            byte[] data = fileReader.readAt(()-> false, position, size);
+            byte[] data = fileReader.readAt(position, size);
             System.arraycopy(data, 0, buffer, offset, data.length);
             return data.length;
 

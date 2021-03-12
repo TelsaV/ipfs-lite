@@ -55,9 +55,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.ipfs.IPFS;
 import io.ipfs.LogUtils;
-import threads.server.ExoPlayerActivity;
 import threads.server.MainActivity;
+import threads.server.PlayerActivity;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.Content;
@@ -67,7 +68,6 @@ import threads.server.core.threads.SortOrder;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
 import threads.server.core.threads.ThreadViewModel;
-import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.QRCodeService;
 import threads.server.services.ThreadsService;
@@ -886,7 +886,7 @@ public class ThreadsFragment extends Fragment implements
 
                 Intent intent;
                 if (MimeTypes.isVideo(mimeType)) {
-                    intent = new Intent(Intent.ACTION_VIEW, uri, mContext, ExoPlayerActivity.class);
+                    intent = new Intent(Intent.ACTION_VIEW, uri, mContext, PlayerActivity.class);
                 } else {
                     intent = new Intent(Intent.ACTION_VIEW);
 

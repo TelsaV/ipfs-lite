@@ -72,8 +72,8 @@
 
 
         <activity
-            android:name=".ExoPlayerActivity"
-            android:exported="true"
+            android:name=".PlayerActivity"
+            android:exported="false"
             android:theme="@style/VideoTheme">
             <intent-filter>
                 <category android:name="android.intent.category.LAUNCHER" />

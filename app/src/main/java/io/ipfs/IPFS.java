@@ -1008,7 +1008,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
         try (io.ipfs.utils.Reader reader = getReader(cid, progress)) {
 
             long size = reader.getSize();
-            byte[] buf = reader.loadNextData(progress);
+            byte[] buf = reader.loadNextData();
             while (buf != null && buf.length > 0) {
 
                 if (progress.isClosed()) {
@@ -1029,7 +1029,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
 
                 os.write(buf, 0, buf.length);
 
-                buf = reader.loadNextData(progress);
+                buf = reader.loadNextData();
 
             }
         }
@@ -1039,11 +1039,11 @@ public class IPFS implements Listener, Interface, ContentRouting {
     public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, @NonNull Closeable closeable) throws Exception {
 
         try (io.ipfs.utils.Reader reader = getReader(cid, closeable)) {
-            byte[] buf = reader.loadNextData(closeable);
+            byte[] buf = reader.loadNextData();
             while (buf != null && buf.length > 0) {
 
                 os.write(buf, 0, buf.length);
-                buf = reader.loadNextData(closeable);
+                buf = reader.loadNextData();
             }
         }
 
@@ -1052,7 +1052,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
     @NonNull
     public InputStream getLoaderStream(@NonNull String cid, @NonNull Closeable closeable) {
         io.ipfs.utils.Reader loader = getReader(cid, closeable);
-        return new ReaderStream(loader, closeable);
+        return new ReaderStream(loader);
     }
 
     @NonNull
@@ -1207,7 +1207,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
     @NonNull
     public InputStream getInputStream(@NonNull String cid, @NonNull Closeable closeable) {
         io.ipfs.utils.Reader reader = getReader(cid, closeable);
-        return new ReaderStream(reader, closeable);
+        return new ReaderStream(reader);
 
     }
 
