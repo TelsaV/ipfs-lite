@@ -70,7 +70,7 @@ public class ProgressStream extends InputStream {
     private boolean preLoad() {
 
         data = mReader.loadNextData();
-        if(data != null) {
+        if (data != null) {
             int read = data.length;
             totalRead += read;
             if (mProgress.doProgress()) {

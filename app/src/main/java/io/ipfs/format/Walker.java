@@ -9,7 +9,6 @@ import java.util.Objects;
 import java.util.Stack;
 
 import io.ipfs.Closeable;
-import io.ipfs.LogUtils;
 import io.ipfs.unixfs.FSNode;
 
 public class Walker {

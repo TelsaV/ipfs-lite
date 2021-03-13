@@ -30,12 +30,6 @@ public class FSNode {
         return new FSNode(dataType);
     }
 
-    private void UpdateFilesize(long filesize) {
-        long previous = data.getFilesize();
-        data = data.toBuilder().setFilesize(previous + filesize).build();
-    }
-
-
     public static FSNode FSNodeFromBytes(byte[] data) {
         return new FSNode(data);
     }
@@ -66,6 +60,11 @@ public class FSNode {
         }
         throw new RuntimeException("expected a ProtoNode as internal node");
 
+    }
+
+    private void UpdateFilesize(long filesize) {
+        long previous = data.getFilesize();
+        data = data.toBuilder().setFilesize(previous + filesize).build();
     }
 
     public byte[] Data() {

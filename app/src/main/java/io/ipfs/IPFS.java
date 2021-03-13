@@ -929,7 +929,6 @@ public class IPFS implements Listener, Interface, ContentRouting {
     }
 
 
-
     @Nullable
     public List<Link> ls(@NonNull String cid, @NonNull Closeable closeable,
                          boolean resolveChildren) throws ClosedException {
@@ -967,7 +966,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
 
     @Nullable
     public String storeFile(@NonNull File target) {
-        try(FileInputStream inputStream = new FileInputStream(target)) {
+        try (FileInputStream inputStream = new FileInputStream(target)) {
             return storeInputStream(inputStream);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -1005,32 +1004,32 @@ public class IPFS implements Listener, Interface, ContentRouting {
         long totalRead = 0L;
         int remember = 0;
 
-            io.ipfs.utils.Reader reader = getReader(cid, progress);
-            long size = reader.getSize();
-            byte[] buf = reader.loadNextData();
-            while (buf != null && buf.length > 0) {
+        io.ipfs.utils.Reader reader = getReader(cid, progress);
+        long size = reader.getSize();
+        byte[] buf = reader.loadNextData();
+        while (buf != null && buf.length > 0) {
 
-                if (progress.isClosed()) {
-                    throw new RuntimeException("Progress closed");
-                }
+            if (progress.isClosed()) {
+                throw new RuntimeException("Progress closed");
+            }
 
-                // calculate progress
-                totalRead += buf.length;
-                if (progress.doProgress()) {
-                    if (size > 0) {
-                        int percent = (int) ((totalRead * 100.0f) / size);
-                        if (remember < percent) {
-                            remember = percent;
-                            progress.setProgress(percent);
-                        }
+            // calculate progress
+            totalRead += buf.length;
+            if (progress.doProgress()) {
+                if (size > 0) {
+                    int percent = (int) ((totalRead * 100.0f) / size);
+                    if (remember < percent) {
+                        remember = percent;
+                        progress.setProgress(percent);
                     }
                 }
-
-                os.write(buf, 0, buf.length);
-
-                buf = reader.loadNextData();
-
             }
+
+            os.write(buf, 0, buf.length);
+
+            buf = reader.loadNextData();
+
+        }
 
 
     }
@@ -1038,13 +1037,13 @@ public class IPFS implements Listener, Interface, ContentRouting {
     public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, @NonNull Closeable closeable) throws Exception {
 
 
-            io.ipfs.utils.Reader reader = getReader(cid, closeable);
-            byte[] buf = reader.loadNextData();
-            while (buf != null && buf.length > 0) {
+        io.ipfs.utils.Reader reader = getReader(cid, closeable);
+        byte[] buf = reader.loadNextData();
+        while (buf != null && buf.length > 0) {
 
-                os.write(buf, 0, buf.length);
-                buf = reader.loadNextData();
-            }
+            os.write(buf, 0, buf.length);
+            buf = reader.loadNextData();
+        }
 
 
     }
@@ -1264,14 +1263,14 @@ public class IPFS implements Listener, Interface, ContentRouting {
     @Override
     public io.ipfs.blocks.Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
 
-        if(!isDaemonRunning()){
+        if (!isDaemonRunning()) {
             return null;
         }
 
         try {
 
             String result = node.getBlock(closeable::isClosed, cid.String());
-            if(!result.isEmpty()){
+            if (!result.isEmpty()) {
                 Blockstore bs = Blockstore.NewBlockstore(blocks);
                 return bs.Get(Cid.Decode(result));
             }
@@ -1298,7 +1297,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
     public void Provide(@NonNull Closeable closeable, @NonNull Cid cid) {
         try {
             dhtPublish(closeable, cid.String());
-        } catch (Throwable throwable){
+        } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
 
