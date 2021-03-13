@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import io.ipfs.cid.Builder;
 import io.ipfs.cid.Cid;
 import merkledag.pb.MerkledagProtos;

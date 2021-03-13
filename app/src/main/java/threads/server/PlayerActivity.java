@@ -18,7 +18,7 @@ import com.google.android.exoplayer2.upstream.DataSpec;
 
 import java.util.concurrent.Executors;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.core.threads.THREADS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.work.VideoImageWorker;

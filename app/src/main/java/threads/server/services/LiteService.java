@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.BuildConfig;
 import threads.server.R;
 import threads.server.core.Content;

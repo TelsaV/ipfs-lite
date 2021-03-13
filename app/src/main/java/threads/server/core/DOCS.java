@@ -29,9 +29,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import io.ipfs.Closeable;
-import io.ipfs.LogUtils;
-import io.ipfs.routing.Providers;
+import io.Closeable;
+import io.LogUtils;
+import io.libp2p.routing.Providers;
 import lite.Peer;
 import threads.server.Settings;
 import threads.server.core.blocks.BLOCKS;

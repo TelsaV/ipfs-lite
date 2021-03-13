@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.exchange.Interface;

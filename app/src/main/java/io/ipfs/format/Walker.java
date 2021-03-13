@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 import java.util.Objects;
 import java.util.Stack;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.unixfs.FSNode;
 
 public class Walker {

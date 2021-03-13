@@ -48,8 +48,8 @@ import java.io.ByteArrayInputStream;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.ipfs.Closeable;
-import io.ipfs.LogUtils;
+import io.Closeable;
+import io.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;

@@ -71,7 +71,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;

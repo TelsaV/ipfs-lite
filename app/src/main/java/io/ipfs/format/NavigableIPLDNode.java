@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.cid.Cid;
 
 public class NavigableIPLDNode implements NavigableNode {

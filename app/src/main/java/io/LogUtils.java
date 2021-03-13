@@ -1,4 +1,4 @@
-package io.ipfs;
+package io;
 
 import android.util.Log;
 

@@ -2,7 +2,7 @@ package io.ipfs.bitswap.network;
 
 import androidx.annotation.NonNull;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.bitswap.message.BitSwapMessage;
 
 public interface Receiver {

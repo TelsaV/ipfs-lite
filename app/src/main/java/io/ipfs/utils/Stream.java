@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import java.util.List;
 import java.util.Objects;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.Storage;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.blockstore.Blockstore;

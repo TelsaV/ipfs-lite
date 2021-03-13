@@ -3,7 +3,7 @@ package io.ipfs.blockservice;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.blocks.Block;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;

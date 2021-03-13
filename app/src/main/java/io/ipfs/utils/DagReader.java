@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.format.NavigableIPLDNode;
 import io.ipfs.format.NavigableNode;
 import io.ipfs.format.Node;

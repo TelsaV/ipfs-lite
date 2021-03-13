@@ -21,7 +21,7 @@ import androidx.work.WorkerParameters;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.DOCS;

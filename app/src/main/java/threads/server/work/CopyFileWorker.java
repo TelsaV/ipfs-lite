@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.Content;

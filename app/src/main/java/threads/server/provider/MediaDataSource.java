@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 
 import java.io.IOException;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import io.ipfs.Storage;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.exchange.Interface;

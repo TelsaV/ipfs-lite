@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import java.util.Objects;
 
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
+import io.LogUtils;
 
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;

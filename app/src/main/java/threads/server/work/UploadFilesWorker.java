@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;

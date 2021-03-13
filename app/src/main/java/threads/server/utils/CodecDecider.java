@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import java.net.URI;
 import java.util.Objects;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.core.Content;
 import io.ipfs.IPFS;
 

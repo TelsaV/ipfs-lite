@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import io.ipfs.utils.Link;
 
 import static junit.framework.TestCase.assertEquals;

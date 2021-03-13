@@ -17,7 +17,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Hashtable;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.MainActivity;
 import threads.server.core.DOCS;
 

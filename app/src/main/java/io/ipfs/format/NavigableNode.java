@@ -1,6 +1,6 @@
 package io.ipfs.format;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 
 public interface NavigableNode {
 

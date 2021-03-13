@@ -2,7 +2,7 @@ package io.ipfs.bitswap;
 
 import androidx.annotation.NonNull;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.blocks.Block;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;

@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
-import io.ipfs.routing.Providers;
+import io.LogUtils;
+import io.libp2p.routing.Providers;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.TimeoutProgress;
 

@@ -31,10 +31,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.Closeable;
+import io.LogUtils;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
-import io.ipfs.routing.ContentRouting;
 import io.ipfs.utils.Deleter;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
@@ -45,6 +46,7 @@ import io.ipfs.utils.ReaderProgress;
 import io.ipfs.utils.ReaderStream;
 import io.ipfs.utils.Resolver;
 import io.ipfs.utils.Stream;
+import io.libp2p.routing.ContentRouting;
 import ipns.pb.IpnsProtos;
 import lite.Listener;
 import lite.Node;
@@ -496,7 +498,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
 
 
     public void dhtFindProviders(@NonNull String cid, int numProviders,
-                                 @NonNull io.ipfs.routing.Providers providers) throws ClosedException {
+                                 @NonNull io.libp2p.routing.Providers providers) throws ClosedException {
         if (!isDaemonRunning()) {
             return;
         }
@@ -1284,7 +1286,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
     }
 
     @Override
-    public void FindProvidersAsync(@NonNull io.ipfs.routing.Providers providers, @NonNull Cid cid, int number) {
+    public void FindProvidersAsync(@NonNull io.libp2p.routing.Providers providers, @NonNull Cid cid, int number) {
 
         try {
             dhtFindProviders(cid.String(), number, providers);

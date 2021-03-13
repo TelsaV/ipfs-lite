@@ -13,7 +13,7 @@ import androidx.work.WorkerParameters;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import lite.PeerInfo;
 import threads.server.Settings;
 import threads.server.core.Content;

@@ -14,7 +14,7 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.util.Optional;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.magic.ContentInfo;

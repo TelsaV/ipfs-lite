@@ -56,7 +56,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.MainActivity;
 import threads.server.PlayerActivity;
 import threads.server.R;

@@ -29,7 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Objects;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.DOCS;

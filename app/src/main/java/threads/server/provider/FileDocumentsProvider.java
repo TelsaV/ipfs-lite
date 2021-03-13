@@ -33,9 +33,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import io.ipfs.utils.Reader;
 import threads.server.BuildConfig;
 import threads.server.InitApplication;

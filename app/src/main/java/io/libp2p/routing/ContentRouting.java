@@ -1,8 +1,8 @@
-package io.ipfs.routing;
+package io.libp2p.routing;
 
 import androidx.annotation.NonNull;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.cid.Cid;
 
 public interface ContentRouting {

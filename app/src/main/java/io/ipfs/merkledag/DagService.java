@@ -3,7 +3,7 @@ package io.ipfs.merkledag;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import io.ipfs.Closeable;
+import io.Closeable;
 import io.ipfs.blocks.Block;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.cid.Cid;

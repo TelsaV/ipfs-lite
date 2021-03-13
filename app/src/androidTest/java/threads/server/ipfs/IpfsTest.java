@@ -17,7 +17,7 @@ import java.util.Objects;
 import io.ipfs.ClosedException;
 import io.ipfs.DnsAddrResolver;
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.TimeoutProgress;
 import lite.PeerInfo;

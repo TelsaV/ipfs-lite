@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import lite.PeerInfo;
 import threads.server.core.Content;
 

@@ -25,7 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import threads.server.R;
 import threads.server.core.peers.User;
 import threads.server.services.MimeTypeService;

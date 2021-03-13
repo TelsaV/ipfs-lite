@@ -8,7 +8,6 @@ import androidx.room.Room;
 
 import java.util.List;
 
-import io.ipfs.LogUtils;
 import io.ipfs.Storage;
 import threads.server.Settings;
 

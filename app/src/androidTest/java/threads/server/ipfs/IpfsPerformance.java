@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.ipfs.IPFS;
-import io.ipfs.LogUtils;
+import io.LogUtils;
 import io.ipfs.utils.Progress;
 import io.ipfs.utils.TimeoutProgress;
 
