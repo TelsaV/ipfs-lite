@@ -2,6 +2,7 @@ package io.ipfs.utils;
 
 import androidx.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,6 +44,28 @@ public class Stream {
 
 
         return fileAdder;
+    }
+
+
+    public static void Rm(@NonNull Closeable closeable, @NonNull Storage storage, @NonNull String cid, boolean recursively) {
+
+        Blockstore bs = Blockstore.NewBlockstore(storage);
+        Interface exchange = new Exchange(bs);
+        BlockService blockservice = BlockService.New(bs, exchange);
+        DagService dags = new DagService(blockservice);
+        io.ipfs.format.Node top = Resolver.ResolveNode(closeable, dags, Path.New(cid));
+
+        List<Cid> cids = new ArrayList<>();
+        if (recursively) {
+            RefWriter rw = new RefWriter(true, -1);
+
+            rw.EvalRefs(top);
+            cids.addAll(rw.getCids());
+        }
+
+        cids.add(top.Cid());
+        bs.DeleteBlocks(cids);
+
     }
 
     public static boolean IsDir(@NonNull Closeable closeable,

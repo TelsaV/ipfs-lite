@@ -6,7 +6,8 @@ import androidx.annotation.NonNull;
 
 import io.ipfs.format.Node;
 import io.ipfs.merkledag.DagBuilderHelper;
-import unixfs.pb.UnixfsProtos;
+import io.protos.unixfs.UnixfsProtos;
+
 
 public class Trickle {
 

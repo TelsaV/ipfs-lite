@@ -11,8 +11,9 @@ import io.ipfs.format.ProtoNode;
 import io.ipfs.format.RawNode;
 import io.ipfs.unixfs.FSNode;
 import io.ipfs.utils.Splitter;
+import io.protos.unixfs.UnixfsProtos;
 import threads.server.Settings;
-import unixfs.pb.UnixfsProtos;
+
 
 public class DagBuilderHelper {
     private final DagService dagService;

@@ -3,7 +3,8 @@ package io.ipfs.unixfs;
 
 import io.ipfs.format.Node;
 import io.ipfs.format.ProtoNode;
-import unixfs.pb.UnixfsProtos;
+import io.protos.unixfs.UnixfsProtos;
+
 
 public class Unixfs {
 

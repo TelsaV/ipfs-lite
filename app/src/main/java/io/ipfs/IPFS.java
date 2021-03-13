@@ -36,7 +36,6 @@ import io.LogUtils;
 import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
-import io.ipfs.utils.Deleter;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
 import io.ipfs.utils.Progress;
@@ -47,7 +46,7 @@ import io.ipfs.utils.ReaderStream;
 import io.ipfs.utils.Resolver;
 import io.ipfs.utils.Stream;
 import io.libp2p.routing.ContentRouting;
-import ipns.pb.IpnsProtos;
+import io.protos.ipns.IpnsProtos;
 import lite.Listener;
 import lite.Node;
 import lite.Peer;
@@ -759,7 +758,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
 
     public void rm(@NonNull String cid, boolean recursively) {
         try {
-            Deleter.rm(() -> false, blocks, cid, recursively);
+            Stream.Rm(() -> false, blocks, cid, recursively);
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         }

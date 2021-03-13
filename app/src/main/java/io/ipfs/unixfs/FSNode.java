@@ -7,7 +7,7 @@ import com.google.protobuf.ByteString;
 import io.ipfs.format.Node;
 import io.ipfs.format.ProtoNode;
 import io.ipfs.format.RawNode;
-import unixfs.pb.UnixfsProtos;
+import io.protos.unixfs.UnixfsProtos;
 
 public class FSNode {
     private UnixfsProtos.Data data;

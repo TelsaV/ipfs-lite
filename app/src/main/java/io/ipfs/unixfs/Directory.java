@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
 import io.ipfs.format.ProtoNode;
-import unixfs.pb.UnixfsProtos;
+import io.protos.unixfs.UnixfsProtos;
 
 
 public interface Directory {

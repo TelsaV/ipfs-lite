@@ -16,7 +16,8 @@ import java.util.Objects;
 import io.LogUtils;
 import io.ipfs.cid.Builder;
 import io.ipfs.cid.Cid;
-import merkledag.pb.MerkledagProtos;
+import io.protos.merkledag.MerkledagProtos;
+
 
 public class ProtoNode implements Node {
     private static final String TAG = ProtoNode.class.getSimpleName();

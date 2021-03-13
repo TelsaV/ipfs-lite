@@ -4,15 +4,12 @@ import androidx.annotation.NonNull;
 
 import io.Closeable;
 import io.ipfs.bitswap.message.BitSwapMessage;
+import io.libp2p.peer.ID;
 
-public interface Receiver {
+public interface Receiver extends ConnectionListener {
     void ReceiveMessage(@NonNull Closeable closeable,
-                        @NonNull String sender,
+                        @NonNull ID sender,
                         @NonNull BitSwapMessage incoming);
 
-    //ReceiveError(error)
 
-    // Connected/Disconnected warns bitswap about peer connections.
-    //PeerConnected(peer.ID)
-    //PeerDisconnected(peer.ID)
 }
