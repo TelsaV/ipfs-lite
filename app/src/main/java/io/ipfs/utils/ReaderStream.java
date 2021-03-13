@@ -5,10 +5,9 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 
-import io.ipfs.LogUtils;
 
-public class ReaderStream extends InputStream implements AutoCloseable {
-    private static final String TAG = ReaderStream.class.getSimpleName();
+public class ReaderStream extends InputStream {
+
     private final Reader reader;
     private int position = 0;
     private byte[] data = null;
@@ -67,11 +66,5 @@ public class ReaderStream extends InputStream implements AutoCloseable {
         return data != null;
     }
 
-    public void close() {
-        try {
-            reader.close();
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
+
 }

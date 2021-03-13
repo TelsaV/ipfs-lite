@@ -5,9 +5,7 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 
-import io.ipfs.LogUtils;
-
-public class ProgressStream extends InputStream implements AutoCloseable {
+public class ProgressStream extends InputStream {
     private static final String TAG = ProgressStream.class.getSimpleName();
     private final Reader mReader;
     private final Progress mProgress;
@@ -88,11 +86,4 @@ public class ProgressStream extends InputStream implements AutoCloseable {
         return data != null;
     }
 
-    public void close() {
-        try {
-            mReader.close();
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
-    }
 }

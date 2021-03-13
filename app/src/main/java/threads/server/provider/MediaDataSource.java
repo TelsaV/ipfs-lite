@@ -49,11 +49,8 @@ public class MediaDataSource extends android.media.MediaDataSource {
             LogUtils.error(TAG, throwable);
 
         } finally {
-
             try {
-
                 retriever.release();
-
             } catch (RuntimeException throwable) {
                 LogUtils.error(TAG, throwable);
             }
@@ -64,30 +61,23 @@ public class MediaDataSource extends android.media.MediaDataSource {
 
     @Override
     public void close() throws IOException {
-
         try {
-            if (fileReader != null) {
-                fileReader.close();
-            }
+            fileReader = null;
         } catch (Exception e) {
             throw new IOException(e);
-        } finally {
-            fileReader = null;
         }
     }
 
     @Override
     public int readAt(long position, byte[] buffer, int offset, int size) throws IOException {
         try {
-
-            byte[] data = fileReader.readAt(position, size);
+            byte[] data = new byte[size];
+            fileReader.readNextData(position, size, data);
             System.arraycopy(data, 0, buffer, offset, data.length);
             return data.length;
-
         } catch (Throwable throwable) {
             throw new IOException(throwable);
         }
-
     }
 
     @Override

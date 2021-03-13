@@ -1005,8 +1005,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
         long totalRead = 0L;
         int remember = 0;
 
-        try (io.ipfs.utils.Reader reader = getReader(cid, progress)) {
-
+            io.ipfs.utils.Reader reader = getReader(cid, progress);
             long size = reader.getSize();
             byte[] buf = reader.loadNextData();
             while (buf != null && buf.length > 0) {
@@ -1032,20 +1031,21 @@ public class IPFS implements Listener, Interface, ContentRouting {
                 buf = reader.loadNextData();
 
             }
-        }
+
 
     }
 
     public void storeToOutputStream(@NonNull OutputStream os, @NonNull String cid, @NonNull Closeable closeable) throws Exception {
 
-        try (io.ipfs.utils.Reader reader = getReader(cid, closeable)) {
+
+            io.ipfs.utils.Reader reader = getReader(cid, closeable);
             byte[] buf = reader.loadNextData();
             while (buf != null && buf.length > 0) {
 
                 os.write(buf, 0, buf.length);
                 buf = reader.loadNextData();
             }
-        }
+
 
     }
 

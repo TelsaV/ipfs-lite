@@ -21,7 +21,7 @@ import io.ipfs.format.Visitor;
 import io.ipfs.format.Walker;
 import io.ipfs.unixfs.FSNode;
 
-public class DagReader implements java.io.Closeable {
+public class DagReader {
     private static final String TAG = DagReader.class.getSimpleName();
 
     private final long size;
@@ -111,10 +111,6 @@ public class DagReader implements java.io.Closeable {
         return size;
     }
 
-    @Override
-    public void close() {
-        // TODO
-    }
 
     public void Seek(@NonNull Closeable closeable, long offset) {
         Pair<Stack<Stage>, Long> result = dagWalker.Seek(closeable, offset);

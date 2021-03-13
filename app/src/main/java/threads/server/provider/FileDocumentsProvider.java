@@ -28,7 +28,6 @@ import androidx.annotation.RequiresApi;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -690,12 +689,35 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 Objects.requireNonNull(cid);
 
 
-                return getParcelFileDescriptor(cid, mode, signal);
+                Closeable closeable = () -> false;
+                if (signal != null) {
+                    closeable = signal::isCanceled;
+                }
 
-                /*
-                return ParcelFileDescriptor.open(
-                        FileProvider.getFile(Objects.requireNonNull(getContext()), cid, idx),
-                        ParcelFileDescriptor.MODE_READ_ONLY);*/
+                final Reader reader = ipfs.getReader(cid, closeable);
+                Handler handler = new Handler(getContext().getMainLooper());
+
+                return mStorageManager.openProxyFileDescriptor(
+                        ParcelFileDescriptor.parseMode(mode),
+                        new ProxyFileDescriptorCallback() {
+
+                            public long onGetSize() {
+                                return reader.getSize();
+                            }
+
+                            public int onRead(long offset, int size, byte[] data) throws ErrnoException {
+                                try {
+                                    return reader.readNextData(offset, size, data);
+                                } catch (Throwable throwable) {
+                                    LogUtils.error(TAG, throwable);
+                                    throw new ErrnoException(throwable.getLocalizedMessage(), OsConstants.EBADF);
+                                }
+                            }
+
+                            @Override
+                            public void onRelease() {
+                            }
+                        }, handler);
 
             }
         } catch (Throwable throwable) {
@@ -716,77 +738,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         docs = DOCS.getInstance(context);
         InitApplication.syncData(context);
         return true;
-    }
-
-    private ParcelFileDescriptor getParcelFileDescriptor(@NonNull String cid, @NonNull String mode,
-                                                         @Nullable CancellationSignal signal) throws IOException {
-
-
-        Closeable closeable = () -> false;
-        if (signal != null) {
-            closeable = signal::isCanceled;
-        }
-
-        final Reader reader = ipfs.getReader(cid, closeable);
-        Handler handler = new Handler(getContext().getMainLooper());
-
-        return mStorageManager.openProxyFileDescriptor(
-                ParcelFileDescriptor.parseMode(mode),
-                new ProxyFileDescriptorCallback() {
-
-                    /**
-                     * Returns size of bytes provided by the file descriptor.
-                     *
-                     * @return Size of bytes.
-                     */
-                    public long onGetSize() {
-                        return reader.getSize();
-                    }
-
-                    /**
-                     * Provides bytes read from file descriptor.
-                     * It needs to return exact requested size of bytes unless it reaches file end.
-                     *
-                     * @param offset Offset in bytes from the file head specifying where to read bytes. If a seek
-                     *               operation is conducted on the file descriptor, then a read operation is requested, the
-                     *               offset refrects the proper position of requested bytes.
-                     * @param size   Size for read bytes.
-                     * @param data   Byte array to store read bytes.
-                     * @return Size of bytes returned by the function.
-                     */
-                    public int onRead(long offset, int size, byte[] data) throws ErrnoException {
-
-                        try {
-                            reader.seek(offset);
-                            byte[] bytes = reader.loadNextData();
-                            if (bytes != null) {
-                                int min = Math.min(bytes.length, size);
-                                System.arraycopy(bytes, 0, data, 0, min);
-                                if (min < size) {
-                                    int remain = size - min;
-                                    bytes = reader.loadNextData();
-                                    if (bytes != null) {
-                                        System.arraycopy(bytes, 0, data, min, remain);
-                                        return size;
-                                    } else {
-                                        return min;
-                                    }
-                                }
-                                return min;
-                            }
-                        } catch (Throwable throwable) {
-                            LogUtils.error(TAG, throwable);
-                            throw new ErrnoException(throwable.getLocalizedMessage(), OsConstants.EBADF);
-                        }
-                        return 0;
-                    }
-
-                    @Override
-                    public void onRelease() {
-                    }
-                }, handler);
-
-
     }
 
 }
