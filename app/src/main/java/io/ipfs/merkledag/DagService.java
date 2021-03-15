@@ -4,9 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import io.Closeable;
-import io.ipfs.blocks.Block;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.cid.Cid;
+import io.ipfs.format.Block;
 import io.ipfs.format.Decoder;
 import io.ipfs.format.Node;
 import io.ipfs.format.NodeAdder;

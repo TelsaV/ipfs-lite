@@ -7,8 +7,8 @@ import java.util.Objects;
 
 import io.Closeable;
 import io.ipfs.blockservice.BlockService;
-import io.ipfs.blockstore.Blockstore;
 import io.ipfs.exchange.Interface;
+import io.ipfs.format.Blockstore;
 import io.ipfs.merkledag.DagService;
 
 public class Reader {

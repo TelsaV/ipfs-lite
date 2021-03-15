@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.Closeable;
 import io.ipfs.IPFS;
@@ -689,11 +690,12 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 Objects.requireNonNull(cid);
 
 
-                Closeable closeable = () -> false;
+
+                final AtomicBoolean release = new AtomicBoolean(false);
+                Closeable closeable = release::get;
                 if (signal != null) {
                     closeable = signal::isCanceled;
                 }
-
                 final Reader reader = ipfs.getReader(cid, closeable);
                 Handler handler = new Handler(getContext().getMainLooper());
 
@@ -716,6 +718,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
 
                             @Override
                             public void onRelease() {
+                                release.set(true);
                             }
                         }, handler);
 

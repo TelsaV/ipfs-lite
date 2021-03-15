@@ -12,4 +12,5 @@ public interface Receiver extends ConnectionListener {
                         @NonNull BitSwapMessage incoming);
 
 
+    void ReceiveError(@NonNull ID from, @NonNull String error);
 }

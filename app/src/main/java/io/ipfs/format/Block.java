@@ -1,4 +1,4 @@
-package io.ipfs.blocks;
+package io.ipfs.format;
 
 import androidx.annotation.NonNull;
 

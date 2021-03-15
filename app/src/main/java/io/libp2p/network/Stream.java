@@ -1,16 +1,19 @@
 package io.libp2p.network;
 
-import io.libp2p.mux.MuxedStream;
-import io.libp2p.protocol.ID;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-public interface Stream extends MuxedStream {
-    void Reset();
+import io.libp2p.peer.ID;
 
-    void Close();
+public interface Stream {
 
-    ID Protocol();
 
-    Conn Conn();
+    @NonNull
+    ID RemotePeer();
 
-    byte[] getData();
+    byte[] GetData();
+
+    @Nullable
+    String GetError();
+
 }

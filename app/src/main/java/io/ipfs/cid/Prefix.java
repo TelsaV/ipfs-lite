@@ -1,7 +1,9 @@
 package io.ipfs.cid;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.MessageDigest;
 
 import io.ipfs.multihash.Multihash;
@@ -81,5 +83,43 @@ public class Prefix implements Builder {
             Version = 1;
         }
         return this;
+    }
+
+    public static Prefix PrefixFromBytes(byte[] buf) {
+
+        try (InputStream inputStream = new ByteArrayInputStream(buf)) {
+            long version = Multihash.readVarint(inputStream);
+            if (version != 1) {
+                throw new Exception("invalid version");
+            }
+            long codec = Multihash.readVarint(inputStream);
+            if (!(codec == Cid.DagProtobuf || codec == Cid.Raw || codec == Cid.Libp2pKey)) {
+                throw new Exception("not supported codec");
+            }
+
+            long mhtype = Multihash.readVarint(inputStream);
+
+            long mhlen = Multihash.readVarint(inputStream);
+
+            return new Prefix(codec, mhlen, mhtype, version);
+
+
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    public byte[] Bytes() {
+
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Multihash.putUvarint(out, Version);
+            Multihash.putUvarint(out, Codec);
+            Multihash.putUvarint(out, MhType);
+            Multihash.putUvarint(out, MhLength);
+            return out.toByteArray();
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
     }
 }

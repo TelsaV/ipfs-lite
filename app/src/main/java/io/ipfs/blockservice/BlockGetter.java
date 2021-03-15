@@ -4,8 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import io.Closeable;
-import io.ipfs.blocks.Block;
 import io.ipfs.cid.Cid;
+import io.ipfs.format.Block;
 
 public interface BlockGetter {
     @Nullable

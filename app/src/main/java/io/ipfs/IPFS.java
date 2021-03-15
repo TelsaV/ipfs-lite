@@ -33,11 +33,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.Closeable;
 import io.LogUtils;
-import io.ipfs.blockstore.Blockstore;
+import io.ipfs.bitswap.BitSwap;
+import io.ipfs.bitswap.BitSwapNetwork;
+import io.ipfs.bitswap.LiteHost;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
+import io.ipfs.format.Blockstore;
+import io.ipfs.format.Metrics;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
+import io.ipfs.utils.MetricsBlockstore;
 import io.ipfs.utils.Progress;
 import io.ipfs.utils.ProgressStream;
 import io.ipfs.utils.Reachable;
@@ -45,6 +50,9 @@ import io.ipfs.utils.ReaderProgress;
 import io.ipfs.utils.ReaderStream;
 import io.ipfs.utils.Resolver;
 import io.ipfs.utils.Stream;
+import io.libp2p.host.Host;
+import io.libp2p.network.StreamHandler;
+import io.libp2p.peer.ID;
 import io.libp2p.routing.ContentRouting;
 import io.protos.ipns.IpnsProtos;
 import lite.Listener;
@@ -56,11 +64,14 @@ import lite.ResolveInfo;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.blocks.BLOCKS;
-import threads.server.core.blocks.Block;
 import threads.server.core.events.EVENTS;
 
-public class IPFS implements Listener, Interface, ContentRouting {
+public class IPFS implements Listener, ContentRouting, Metrics {
+    public static final int WRITE_TIMEOUT = 60;
+    public static final int EngineBlockstoreWorkerCount = 128;
 
+    private static final io.libp2p.protocol.ID ProtocolLite = new io.libp2p.protocol.ID("/ipfs/lite/1.0.0");
+    private static final io.libp2p.protocol.ID ProtocolBitswap = new io.libp2p.protocol.ID("/ipfs/bitswap/1.2.0");
     private static final String PREF_KEY = "prefKey";
     private static final String PID_KEY = "pidKey";
     private static final String PRIVATE_NETWORK_KEY = "privateNetworkKey";
@@ -80,6 +91,8 @@ public class IPFS implements Listener, Interface, ContentRouting {
     private long seeding = 0L;
     private long leeching = 0L;
     private Pusher pusher;
+    private Interface exchange;
+
 
     @NonNull
     private Reachable reachable = Reachable.UNKNOWN;
@@ -346,35 +359,11 @@ public class IPFS implements Listener, Interface, ContentRouting {
 
     }
 
-    @Override
-    public void blockPut(String key, byte[] bytes) {
-        blocks.insertBlock(key, bytes);
-    }
-
 
     public void swarmReduce(@NonNull String pid) {
         swarm.remove(pid);
     }
-
-    @Override
-    public boolean shouldConnect(String pid) {
-        return swarm.contains(pid);
-    }
-
-    @Override
-    public boolean shouldGate(String pid) {
-        return !swarm.contains(pid);
-    }
-
-    @Override
-    public long blockSize(String key) {
-        //LogUtils.error(TAG, "size " + key);
-        Block block = blocks.getBlock(key);
-        if (block != null) {
-            return block.getSize();
-        }
-        return -1;
-    }
+    private StreamHandler handler;
 
 
     public void swarmEnhance(@NonNull String pid) {
@@ -406,6 +395,10 @@ public class IPFS implements Listener, Interface, ContentRouting {
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
+    }
+
+    public boolean shouldConnect(@NonNull String pid) {
+        return swarm.contains(pid);
     }
 
     public void startDaemon(boolean privateSharing) {
@@ -440,9 +433,89 @@ public class IPFS implements Listener, Interface, ContentRouting {
                     if (failure.get()) {
                         throw new RuntimeException(exception.get());
                     }
+
+
+                    if (node.getRunning()) {
+                        io.libp2p.protocol.ID protocol = ProtocolBitswap;
+                        ContentRouting contentRouting = this;
+                        if (privateSharing) {
+                            protocol = ProtocolLite;
+                            contentRouting = null;
+                        }
+
+                        BitSwapNetwork bsm = LiteHost.NewLiteHost(new Host() {
+                            @Override
+                            public void TagPeer(@NonNull ID peer, @NonNull String tag, int weight) {
+                                // TODO node.tagPeer(peer.String(), tag, weight);
+                            }
+
+                            @Override
+                            public void UntagPeer(@NonNull ID peer, @NonNull String tag) {
+                                // TODO node.untagPeer(peer.String(), tag);
+                            }
+
+                            @Override
+                            public boolean Connect(@NonNull Closeable closeable, @NonNull ID peer) {
+                                try {
+                                    if (!isConnected(peer.String())) {
+                                        return node.swarmConnect(Content.P2P_PATH + peer.String(),
+                                                closeable::isClosed);
+                                    }
+                                    return true;
+                                } catch (Throwable throwable){
+                                    return false;
+                                }
+                            }
+
+                            @Override
+                            public void WriteMessage(@NonNull Closeable closeable,
+                                                     @NonNull ID peer,
+                                                     @NonNull io.libp2p.protocol.ID protocol,
+                                                     @NonNull byte[] data) {
+                                try {
+                                    node.writeMessage(peer.String(), data, protocol.String(),
+                                            WRITE_TIMEOUT, closeable::isClosed);
+                                } catch (Throwable throwable) {
+                                    // TODO
+                                    LogUtils.error(TAG, throwable);
+                                    throw new RuntimeException(throwable);
+                                }
+                            }
+
+                            @Override
+                            public void SetStreamHandler(@NonNull io.libp2p.protocol.ID proto,
+                                                         @NonNull StreamHandler handler) {
+                                setStreamHandler(handler);
+                                node.setStreamHandler(proto.String());
+
+                            }
+
+                            @Override
+                            public ID Self() {
+                                return new ID(getPeerID());
+                            }
+                        }, contentRouting, pid -> {
+                            if (privateSharing) {
+                                return shouldConnect(pid);
+                            }
+                            return true;
+                        }, protocol);
+
+
+                        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+
+                        MetricsBlockstore metricsBlockstore =
+                                new MetricsBlockstore(blockstore, this);
+
+                        exchange = BitSwap.New(() -> !isDaemonRunning(), bsm, metricsBlockstore);
+                    }
                 }
             }
         }
+    }
+
+    private void setStreamHandler(@NonNull StreamHandler streamHandler) {
+        this.handler = streamHandler;
     }
 
     @NonNull
@@ -840,7 +913,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
         String result = "";
 
         try {
-            result = Resolver.resolve(closeable, blocks, this, path);
+            result = Resolver.resolve(closeable, blocks, exchange, path);
         } catch (Throwable ignore) {
             // common use case not resolve a a path
         }
@@ -865,7 +938,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
         boolean result;
         try {
             Blockstore blockstore = Blockstore.NewBlockstore(blocks);
-            result = Stream.IsDir(closeable, blockstore, this, cid);
+            result = Stream.IsDir(closeable, blockstore, exchange, cid);
 
         } catch (Throwable e) {
             result = false;
@@ -951,7 +1024,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
                     infoList.add(link);
                     LogUtils.error(TAG, link.toString());
                 }
-            }, blockstore, this, cid, resolveChildren);
+            }, blockstore, exchange, cid, resolveChildren);
 
         } catch (Throwable e) {
             if (closeable.isClosed()) {
@@ -978,7 +1051,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
     @NonNull
     public io.ipfs.utils.Reader getReader(@NonNull String cid, @NonNull Closeable closeable) {
         Blockstore blockstore = Blockstore.NewBlockstore(blocks);
-        return io.ipfs.utils.Reader.getReader(closeable, blockstore, this, cid);
+        return io.ipfs.utils.Reader.getReader(closeable, blockstore, exchange, cid);
     }
 
     private void getToOutputStream(@NonNull OutputStream outputStream, @NonNull String cid,
@@ -1147,11 +1220,49 @@ public class IPFS implements Listener, Interface, ContentRouting {
     }
 
     @Override
-    public void blockDelete(String key) {
-        // LogUtils.error(TAG, "del " + key);
+    public void bitSwapData(String pid, byte[] bytes) {
+        Objects.requireNonNull(handler);
+        handler.handle(() -> false, new io.libp2p.network.Stream() {
+            @NonNull
+            @Override
+            public ID RemotePeer() {
+                return new ID(pid);
+            }
 
-        blocks.deleteBlock(key);
+            @Override
+            public byte[] GetData() {
+                return bytes;
+            }
 
+            @Nullable
+            @Override
+            public String GetError() {
+                return null;
+            }
+        });
+    }
+
+    @Override
+    public void bitSwapError(String pid, String error) {
+        Objects.requireNonNull(handler);
+        handler.handle(() -> false, new io.libp2p.network.Stream() {
+            @NonNull
+            @Override
+            public ID RemotePeer() {
+                return new ID(pid);
+            }
+
+            @Override
+            public byte[] GetData() {
+                return null;
+            }
+
+            @Nullable
+            @Override
+            public String GetError() {
+                return error;
+            }
+        });
     }
 
     @Override
@@ -1159,22 +1270,6 @@ public class IPFS implements Listener, Interface, ContentRouting {
         if (message != null && !message.isEmpty()) {
             LogUtils.error(TAG, "error " + message);
         }
-    }
-
-    @Override
-    public byte[] blockGet(String key) {
-        //LogUtils.error(TAG, "get " + key);
-        Block block = blocks.getBlock(key);
-        if (block != null) {
-            return block.getData();
-        }
-        return null;
-    }
-
-    @Override
-    public boolean blockHas(String key) {
-        //LogUtils.error(TAG, "has " + key);
-        return blocks.hasBlock(key);
     }
 
     @Override
@@ -1228,7 +1323,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
     }
 
     @Override
-    public void seeding(long amount) {
+    public void seeding(int amount) {
         seeding += amount;
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -1239,7 +1334,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
     }
 
     @Override
-    public void leeching(long amount) {
+    public void leeching(int amount) {
         leeching += amount;
 
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -1261,8 +1356,9 @@ public class IPFS implements Listener, Interface, ContentRouting {
         return leeching;
     }
 
+    /*
     @Override
-    public io.ipfs.blocks.Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
+    public io.ipfs.format.Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
 
         if (!isDaemonRunning()) {
             return null;
@@ -1282,7 +1378,7 @@ public class IPFS implements Listener, Interface, ContentRouting {
             throw new RuntimeException(new ClosedException());
         }
         return null;
-    }
+    }*/
 
     @Override
     public void FindProvidersAsync(@NonNull io.libp2p.routing.Providers providers, @NonNull Cid cid, int number) {

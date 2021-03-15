@@ -4,11 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import io.Closeable;
-import io.ipfs.blocks.Block;
-import io.ipfs.blockstore.Blockstore;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Fetcher;
 import io.ipfs.exchange.Interface;
+import io.ipfs.format.Block;
+import io.ipfs.format.Blockstore;
 
 public interface BlockService extends BlockGetter {
 

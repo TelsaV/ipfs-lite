@@ -7,10 +7,11 @@ import android.media.MediaMetadataRetriever;
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.LogUtils;
 import io.ipfs.Storage;
-import io.ipfs.blockstore.Blockstore;
+import io.ipfs.format.Blockstore;
 import io.ipfs.exchange.Interface;
 import io.ipfs.offline.Exchange;
 import io.ipfs.utils.Reader;
@@ -19,12 +20,12 @@ import threads.server.core.blocks.BLOCKS;
 public class MediaDataSource extends android.media.MediaDataSource {
     private static final String TAG = MediaDataSource.class.getSimpleName();
     private Reader fileReader;
-
+    private final AtomicBoolean release = new AtomicBoolean(false);
 
     public MediaDataSource(@NonNull Storage storage, @NonNull String cid) {
         Blockstore blockstore = Blockstore.NewBlockstore(storage);
         Interface exchange = new Exchange(blockstore);
-        this.fileReader = Reader.getReader(()-> false, blockstore, exchange, cid);
+        this.fileReader = Reader.getReader(release::get, blockstore, exchange, cid);
     }
 
     public static Bitmap getVideoFrame(@NonNull Context context, @NonNull String cid, long time) {
@@ -62,6 +63,7 @@ public class MediaDataSource extends android.media.MediaDataSource {
     @Override
     public void close() throws IOException {
         try {
+            release.set(true);
             fileReader = null;
         } catch (Exception e) {
             throw new IOException(e);

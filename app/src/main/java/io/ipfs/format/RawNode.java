@@ -9,8 +9,6 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ipfs.blocks.BasicBlock;
-import io.ipfs.blocks.Block;
 import io.ipfs.cid.Builder;
 import io.ipfs.cid.Cid;
 

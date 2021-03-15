@@ -1,12 +1,10 @@
-package io.ipfs.blockstore;
+package io.ipfs.format;
 
 import androidx.annotation.NonNull;
 
 import java.util.List;
 
 import io.ipfs.Storage;
-import io.ipfs.blocks.BasicBlock;
-import io.ipfs.blocks.Block;
 import io.ipfs.cid.Cid;
 import io.ipfs.datastore.Dshelp;
 
@@ -32,6 +30,12 @@ public interface Blockstore {
                 storage.insertBlock(key, block.RawData());
             }
 
+            @Override
+            public int GetSize(@NonNull Cid cid) {
+                String key = Dshelp.CidToDsKey(cid).String();
+                return storage.sizeBlock(key);
+            }
+
             public void DeleteBlock(@NonNull Cid cid) {
                 String key = Dshelp.CidToDsKey(cid).String();
                 storage.deleteBlock(key);
@@ -55,6 +59,7 @@ public interface Blockstore {
 
     void Put(@NonNull Block block);
 
+    int GetSize(@NonNull Cid cid);
 }
 
 

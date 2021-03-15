@@ -7,7 +7,6 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 
-import io.ipfs.blocks.Block;
 import io.ipfs.cid.Builder;
 import io.ipfs.cid.Cid;
 import io.ipfs.cid.Prefix;

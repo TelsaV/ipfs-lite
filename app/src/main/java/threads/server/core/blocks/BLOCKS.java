@@ -72,6 +72,11 @@ public class BLOCKS implements Storage {
         getBlocksDatabase().blockDao().deleteBlock(Settings.BLOCKS + id);
     }
 
+    @Override
+    public int sizeBlock(@NonNull String id) {
+        return (int) getBlockSize(id);
+    }
+
     public void insertBlock(@NonNull String id, @NonNull byte[] bytes) {
         //LogUtils.error(TAG, "insertBlock " +  id);
         storeBlock(createBlock(id, bytes));

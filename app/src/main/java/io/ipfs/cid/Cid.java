@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Objects;
 
 import io.ipfs.multibase.Multibase;
@@ -20,6 +21,19 @@ public class Cid {
     public static long Libp2pKey = 0x72;
 
     private final byte[] multihash;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Cid cid = (Cid) o;
+        return Arrays.equals(multihash, cid.multihash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(multihash);
+    }
 
     public Cid(byte[] multihash) {
         this.multihash = multihash;
@@ -149,5 +163,32 @@ public class Cid {
 
     public boolean Defined() {
         return multihash != null;
+    }
+
+    public Prefix Prefix() {
+
+        if (Version() == 0) {
+            return new Prefix(DagProtobuf, 32, Multihash.Type.sha2_256.index, 0);
+        }
+        try (InputStream inputStream = new ByteArrayInputStream(Bytes())) {
+            long version = Multihash.readVarint(inputStream);
+            if (version != 1) {
+                throw new Exception("invalid version");
+            }
+            long codec = Multihash.readVarint(inputStream);
+            if (!(codec == Cid.DagProtobuf || codec == Cid.Raw || codec == Cid.Libp2pKey)) {
+                throw new Exception("not supported codec");
+            }
+
+            long mhtype = Multihash.readVarint(inputStream);
+
+            long mhlen = Multihash.readVarint(inputStream);
+
+            return new Prefix(codec, mhlen, mhtype, version);
+
+
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
     }
 }

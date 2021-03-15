@@ -2,7 +2,6 @@ package io.ipfs.format;
 
 import androidx.annotation.NonNull;
 
-import io.ipfs.blocks.Block;
 import io.ipfs.cid.Cid;
 
 public class Decoder {
