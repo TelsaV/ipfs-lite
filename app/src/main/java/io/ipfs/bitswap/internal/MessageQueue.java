@@ -11,8 +11,8 @@ import java.util.List;
 
 import io.Closeable;
 import io.ipfs.ClosedException;
+import io.ipfs.bitswap.BitSwapNetwork;
 import io.ipfs.bitswap.message.BitSwapMessage;
-import io.ipfs.bitswap.network.MessageSender;
 import io.ipfs.bitswap.wantlist.Entry;
 import io.ipfs.bitswap.wantlist.Wantlist;
 import io.ipfs.cid.Cid;
@@ -48,10 +48,7 @@ public class MessageQueue {
 
     // MessageQueue implements queue of want messages to send to peers.
 
-    private final Closeable ctx;
-    // TODO shutdown     func()
-    private final ID p;
-    private final MessageNetwork network;
+
 
     // Take lock whenever any of these variables are modified
     // TODO wllock    sync.Mutex
@@ -89,38 +86,14 @@ public class MessageQueue {
     // TODO type OnDontHaveTimeout func(peer.ID, []cid.Cid)
 
 
-    private MessageQueue(@NonNull Closeable closeable, @NonNull ID p,
-                         @NonNull MessageNetwork messageNetwork) {
-        this.ctx = closeable;
-        this.p = p;
-        this.network = messageNetwork;
+    public MessageQueue() {
+
         this.maxMessageSize = MaxMessageSize;
         this.sendErrorBackoff = SendErrorBackoff;
         this.maxValidLatency = MaxValidLatency;
         // For performance reasons we just clear out the fields of the message
         // after using it, instead of creating a new one every time.
         this.msg = BitSwapMessage.New(false);
-    }
-
-    // New creates a new MessageQueue.
-    public static MessageQueue New(Closeable ctx, ID p, MessageNetwork network) {
-
-        return newMessageQueue(ctx, p, network);
-    }
-
-    // This constructor is used by the tests
-    private static MessageQueue newMessageQueue(Closeable ctx, ID p, MessageNetwork network) {
-
-        return new MessageQueue(ctx, p, network);
-        /* TODO
-        return  new MessageQueue{
-                    shutdown:            cancel,
-
-                    outgoingWork:        make(chan time.Time, 1),
-                    responses:           make(chan []cid.Cid, 8),
-            rebroadcastInterval: defaultRebroadcastInterval,
-                    sendErrorBackoff:    sendErrorBackoff,
-        }*/
     }
 
 
@@ -362,11 +335,11 @@ public class MessageQueue {
         }
     }*/
 
-    public void sendMessage() throws ClosedException {
+    public void sendMessage(@NonNull Closeable closeable, @NonNull BitSwapNetwork network,
+                            @NonNull ID peer) throws ClosedException {
 
-        MessageSender sender = network.NewMessageSender(ctx, p);
 
-        Stream stream = sender.NewStream(ctx);
+        Stream stream = network.NewStream(closeable, peer);
 
         // Make sure the DONT_HAVE timeout manager has started
         // Note: Start is idempotent
@@ -374,7 +347,8 @@ public class MessageQueue {
 
         // Convert want lists to a Bitswap Message
 
-        Pair<BitSwapMessage, OnSent> result = extractOutgoingMessage(sender.SupportsHave(stream));
+        Pair<BitSwapMessage, OnSent> result = extractOutgoingMessage(
+                network.SupportsHave(stream));
 
         BitSwapMessage message = result.first;
         OnSent onSent = result.second;
@@ -389,7 +363,7 @@ public class MessageQueue {
         // TODO mq.logOutgoingMessage(wantlist)
 
 
-        sender.SendMsg(ctx, stream, message);
+        network.SendMessage(stream, message);
 
 
         // Record sent time so as to calculate message latency
@@ -405,6 +379,7 @@ public class MessageQueue {
         if mq.hasPendingWork() {
             mq.signalWorkReady()
         }*/
+
     }
         /*
     // If want-block times out, simulate a DONT_HAVE reponse.

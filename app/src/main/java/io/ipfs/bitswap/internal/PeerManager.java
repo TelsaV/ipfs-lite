@@ -92,10 +92,14 @@ public class PeerManager {
     }
 
     public void runWriteMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull Cid cid) throws ClosedException {
-        MessageQueue messageQueue = MessageQueue.New(closeable, peer, network);
-        messageQueue.AddWants(Collections.singletonList(cid), Collections.singletonList(cid));
-
-        messageQueue.sendMessage();
+        // TODO think if protext
+        if (network.ConnectTo(closeable, peer, false)) {
+            MessageQueue messageQueue = new MessageQueue();
+            messageQueue.AddWants(Collections.singletonList(cid), Collections.singletonList(cid));
+            messageQueue.sendMessage(closeable, network, peer);
+        } else {
+            // TODO think what to do
+        }
 
     }
 

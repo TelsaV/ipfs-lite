@@ -6,7 +6,6 @@ import io.Closeable;
 import io.ipfs.ClosedException;
 import io.ipfs.bitswap.internal.MessageNetwork;
 import io.ipfs.bitswap.message.BitSwapMessage;
-import io.ipfs.bitswap.network.Receiver;
 import io.libp2p.host.ConnManager;
 import io.libp2p.peer.ID;
 import io.libp2p.routing.ContentRouting;
@@ -15,7 +14,7 @@ import lite.Stream;
 public interface BitSwapNetwork extends ContentRouting, MessageNetwork {
 
 
-    boolean SupportsHave(@NonNull String protocol);
+    boolean SupportsHave(@NonNull Stream stream);
 
     // SendMessage sends a BitSwap message to a peer.
     void SendMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull BitSwapMessage message);

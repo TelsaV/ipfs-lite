@@ -1,4 +1,4 @@
-package io.ipfs.bitswap.network;
+package io.ipfs.bitswap;
 
 import androidx.annotation.NonNull;
 
@@ -7,9 +7,7 @@ import io.ipfs.bitswap.message.BitSwapMessage;
 import io.libp2p.peer.ID;
 
 public interface Receiver {
-    void ReceiveMessage(@NonNull Closeable closeable, @NonNull ID peer,
-                        @NonNull BitSwapMessage incoming);
-
+    void ReceiveMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull BitSwapMessage incoming);
 
     void ReceiveError(@NonNull ID peer, @NonNull String error);
 }

@@ -39,7 +39,6 @@ import io.ipfs.utils.Link;
 import io.libp2p.routing.Providers;
 import lite.Peer;
 import threads.server.Settings;
-import threads.server.core.blocks.BLOCKS;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
 import threads.server.core.pages.PAGES;
@@ -61,7 +60,6 @@ public class DOCS {
     private final IPFS ipfs;
     private final BOOKS books;
     private final THREADS threads;
-    private final BLOCKS blocks;
     private final PAGES pages;
     private final String host;
     private final Hashtable<String, String> resolves = new Hashtable<>();
@@ -72,7 +70,6 @@ public class DOCS {
     private DOCS(@NonNull Context context) {
         ipfs = IPFS.getInstance(context);
         threads = THREADS.getInstance(context);
-        blocks = BLOCKS.getInstance(context);
         pages = PAGES.getInstance(context);
         books = BOOKS.getInstance(context);
         host = ipfs.getHost();
@@ -238,7 +235,6 @@ public class DOCS {
     public void releaseThreads() {
         synchronized (TAG.intern()) {
             runs.clear();
-            ipfs.reset();
         }
     }
 

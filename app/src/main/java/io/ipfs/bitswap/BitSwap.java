@@ -11,7 +11,6 @@ import io.ipfs.IPFS;
 import io.ipfs.bitswap.decision.Engine;
 import io.ipfs.bitswap.internal.PeerManager;
 import io.ipfs.bitswap.message.BitSwapMessage;
-import io.ipfs.bitswap.network.Receiver;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.Block;

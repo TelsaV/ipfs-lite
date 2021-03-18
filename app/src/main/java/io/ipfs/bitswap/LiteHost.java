@@ -11,9 +11,6 @@ import io.LogUtils;
 import io.ipfs.ClosedException;
 import io.ipfs.IPFS;
 import io.ipfs.bitswap.message.BitSwapMessage;
-import io.ipfs.bitswap.network.DefaultMessageSender;
-import io.ipfs.bitswap.network.MessageSender;
-import io.ipfs.bitswap.network.Receiver;
 import io.ipfs.cid.Cid;
 import io.ipfs.utils.Connector;
 import io.libp2p.host.ConnManager;
@@ -66,8 +63,8 @@ public class LiteHost implements BitSwapNetwork {
 
 
     @Override
-    public boolean SupportsHave(@NonNull String proto) {
-        io.libp2p.protocol.ID protocol = io.libp2p.protocol.ID.Evaluate(proto);
+    public boolean SupportsHave(@NonNull lite.Stream stream) {
+        io.libp2p.protocol.ID protocol = io.libp2p.protocol.ID.Evaluate(stream.protocol());
         return protocol.isSupportHas();
     }
 
@@ -174,22 +171,6 @@ public class LiteHost implements BitSwapNetwork {
         }
     }
 
-
-    public MessageSender NewMessageSender(@NonNull Closeable ctx, @NonNull ID peer) throws ClosedException {
-
-        if (!connector.ShouldConnect(peer.String())) {
-            throw new RuntimeException("unknown user");
-        }
-
-
-        MessageSender sender = new DefaultMessageSender(this, peer);
-
-        // TODO invoke form the outside
-        sender.Connect(ctx, false);
-
-
-        return sender;
-    }
 
 
     @Override
