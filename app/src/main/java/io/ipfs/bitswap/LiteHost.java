@@ -10,7 +10,6 @@ import io.Closeable;
 import io.LogUtils;
 import io.ipfs.ClosedException;
 import io.ipfs.IPFS;
-import io.ipfs.bitswap.message.BitSwapMessage;
 import io.ipfs.cid.Cid;
 import io.ipfs.utils.Connector;
 import io.libp2p.host.ConnManager;

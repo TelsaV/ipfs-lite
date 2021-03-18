@@ -53,20 +53,4 @@ public class RecallWantlist {
         return true;
     }
 
-    // SentAt records the time at which a want was sent
-    public void SentAt(@NonNull Cid c, long at) {
-        // The want may have been cancelled in the interim
-        Long sent = sentAt.get(c);
-        if (sent != null) {
-            sent = at;
-        }
-    }
-
-    // ClearSentAt clears out the record of the time a want was sent.
-// We clear the sent at time when we receive a response for a key as we
-// only need the first response for latency measurement.
-    public void ClearSentAt(@NonNull Cid c) {
-        sentAt.remove(c);
-    }
-
 }

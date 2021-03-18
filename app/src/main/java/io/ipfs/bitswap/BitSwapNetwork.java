@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import io.Closeable;
 import io.ipfs.ClosedException;
 import io.ipfs.bitswap.internal.MessageNetwork;
-import io.ipfs.bitswap.message.BitSwapMessage;
 import io.libp2p.host.ConnManager;
 import io.libp2p.peer.ID;
 import io.libp2p.routing.ContentRouting;

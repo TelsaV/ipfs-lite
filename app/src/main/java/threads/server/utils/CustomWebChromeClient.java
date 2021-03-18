@@ -107,7 +107,6 @@ public class CustomWebChromeClient extends WebChromeClient {
             Uri uri = docs.getOriginalUri(Uri.parse(view.getUrl()));
             if (title != null && !title.isEmpty()) {
                 titles.put(uri.toString(), title);
-                docs.updateBookmarkTitle(uri, title);
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -119,7 +118,6 @@ public class CustomWebChromeClient extends WebChromeClient {
             Uri uri = docs.getOriginalUri(Uri.parse(view.getUrl()));
             if (icon != null) {
                 icons.put(uri.toString(), icon);
-                docs.updateBookmarkIcon(uri, icon);
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);

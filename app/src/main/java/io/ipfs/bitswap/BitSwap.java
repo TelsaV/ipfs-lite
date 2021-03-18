@@ -8,9 +8,7 @@ import java.util.List;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.IPFS;
-import io.ipfs.bitswap.decision.Engine;
 import io.ipfs.bitswap.internal.PeerManager;
-import io.ipfs.bitswap.message.BitSwapMessage;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.Block;
@@ -86,7 +84,7 @@ public class BitSwap implements Interface, Receiver {
         }
 
         // TODO check if necessary (what it is doing)
-        //engine.ReceiveFrom(closeable, from, wanted, haves);
+        engine.ReceiveFrom(closeable, from, wanted, haves);
 
         peerManager.HaveResponseReceived(from, haves);
 

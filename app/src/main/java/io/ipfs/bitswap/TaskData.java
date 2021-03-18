@@ -1,4 +1,4 @@
-package io.ipfs.bitswap.decision;
+package io.ipfs.bitswap;
 
 public class TaskData {
 

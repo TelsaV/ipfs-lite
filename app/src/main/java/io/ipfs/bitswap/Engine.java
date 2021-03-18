@@ -1,4 +1,4 @@
-package io.ipfs.bitswap.decision;
+package io.ipfs.bitswap;
 
 import android.util.Pair;
 
@@ -16,8 +16,6 @@ import java.util.Set;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.IPFS;
-import io.ipfs.bitswap.BitSwapNetwork;
-import io.ipfs.bitswap.message.BitSwapMessage;
 import io.ipfs.bitswap.peertask.PeerTaskQueue;
 import io.ipfs.bitswap.peertask.Task;
 import io.ipfs.bitswap.peertask.TaskMerger;

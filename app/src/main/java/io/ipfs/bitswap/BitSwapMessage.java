@@ -1,4 +1,4 @@
-package io.ipfs.bitswap.message;
+package io.ipfs.bitswap;
 
 import androidx.annotation.NonNull;
 
