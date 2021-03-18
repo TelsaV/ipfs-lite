@@ -1,4 +1,9 @@
 package io.libp2p.host;
 
-public interface ConnManager extends PeerTagger {
+import java.util.List;
+
+import io.libp2p.peer.ID;
+
+public interface ConnManager {
+    List<ID> getPeers();
 }

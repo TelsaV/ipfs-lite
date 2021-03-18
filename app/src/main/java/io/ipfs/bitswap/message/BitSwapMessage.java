@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,15 +15,50 @@ import io.ipfs.cid.Cid;
 import io.ipfs.cid.Prefix;
 import io.ipfs.format.BasicBlock;
 import io.ipfs.format.Block;
+import io.ipfs.format.Node;
+import io.ipfs.multihash.Multihash;
 import io.protos.bitswap.BitswapProtos;
 
 public interface BitSwapMessage {
+
+    int MaxEntrySize = maxEntrySize();
+
+    static int maxEntrySize() {
+
+        int maxInt32 = Integer.MAX_VALUE;
+
+        try {
+            Cid cid = Node.PrefixForCidVersion(0).Sum("cid".getBytes());
+
+            //Cid c = Cid.NewCidV0(u.Hash([]byte("cid")))
+
+            Entry e = new Entry();
+            e.Cid = cid;
+            e.Priority = maxInt32;
+            e.WantType = BitswapProtos.Message.Wantlist.WantType.Have;
+            e.SendDontHave = true;
+            e.Cancel = true;
+
+            return e.Size();
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+
+
+    }
 
     static int BlockPresenceSize(@NonNull Cid c) {
         return BitswapProtos.Message.BlockPresence.newBuilder()
                 .setCid(ByteString.copyFrom(c.Bytes()))
                 .setType(BitswapProtos.Message.BlockPresenceType.Have).build().getSerializedSize();
     }
+
+
+    // New returns a new, empty bitswap message
+    static BitSwapMessage New(boolean full) {
+        return new BitSwapMessageImpl(full);
+    }
+
 
     static BitSwapMessage newMessageFromProto(BitswapProtos.Message pbm) {
         BitSwapMessageImpl m = new BitSwapMessageImpl(pbm.getWantlist().getFull());
@@ -136,6 +172,8 @@ public interface BitSwapMessage {
     // Clone the message fields
     BitSwapMessage Clone();
 
+    byte[] ToNetV0();
+
 
     // Entry is a wantlist entry in a Bitswap message, with flags indicating
 // - whether message is a cancel
@@ -174,6 +212,7 @@ public interface BitSwapMessage {
 
     class BitSwapMessageImpl implements BitSwapMessage {
 
+        private static final String TAG = BitSwapMessage.class.getSimpleName();
         boolean full;
         HashMap<Cid, Entry> wantlist = new HashMap<>();
         HashMap<Cid, Block> blocks = new HashMap<>();
@@ -361,20 +400,23 @@ public interface BitSwapMessage {
 
             BitswapProtos.Message.Builder builder = BitswapProtos.Message.newBuilder();
 
-            BitswapProtos.Message.Wantlist.Builder wantlistBuilder = BitswapProtos.Message.Wantlist.newBuilder();
-            wantlistBuilder.setFull(full);
+            BitswapProtos.Message.Wantlist.Builder wantBuilder =
+                    BitswapProtos.Message.Wantlist.newBuilder();
+
 
             for (Entry entry : wantlist.values()) {
-                wantlistBuilder.addEntries(entry.ToPB());
+                wantBuilder.addEntries(entry.ToPB());
             }
+            wantBuilder.setFull(full);
+            builder.setWantlist(wantBuilder.build());
 
-            builder.setWantlist(wantlistBuilder.build());
 
             for (Block block : Blocks()) {
                 builder.addPayload(BitswapProtos.Message.Block.newBuilder()
                         .setData(ByteString.copyFrom(block.RawData()))
                         .setPrefix(ByteString.copyFrom(block.Cid().Prefix().Bytes())).build());
             }
+
 
             for (Map.Entry<Cid, BitswapProtos.Message.BlockPresenceType> mapEntry :
                     blockPresences.entrySet()) {
@@ -391,7 +433,48 @@ public interface BitSwapMessage {
 
         @Override
         public byte[] ToNetV1() {
-            return new byte[0];
+            try {
+                byte[] data = ToProtoV1().toByteArray();
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                Multihash.putUvarint(buf, data.length);
+                buf.write(data);
+                return buf.toByteArray();
+            } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
+        }
+
+        @Override
+        public byte[] ToNetV0() {
+            try {
+                byte[] data = ToProtoV0().toByteArray();
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                Multihash.putUvarint(buf, data.length);
+                buf.write(data);
+                return buf.toByteArray();
+            } catch (Throwable throwable) {
+                throw new RuntimeException(throwable);
+            }
+        }
+
+        private BitswapProtos.Message ToProtoV0() {
+            BitswapProtos.Message.Builder builder = BitswapProtos.Message.newBuilder();
+
+            BitswapProtos.Message.Wantlist.Builder wantBuilder = BitswapProtos.Message.Wantlist.newBuilder();
+
+
+            for (Entry entry : wantlist.values()) {
+                wantBuilder.addEntries(entry.ToPB());
+            }
+            wantBuilder.setFull(full);
+            builder.setWantlist(wantBuilder.build());
+
+
+            for (Block block : Blocks()) {
+                builder.addBlocks(ByteString.copyFrom(block.RawData()));
+            }
+
+            return builder.build();
         }
 
         @Override
@@ -412,5 +495,6 @@ public interface BitSwapMessage {
             msg.pendingBytes = pendingBytes;
             return msg;
         }
+
     }
 }

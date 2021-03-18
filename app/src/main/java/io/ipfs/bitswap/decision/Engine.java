@@ -3,47 +3,54 @@ package io.ipfs.bitswap.decision;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import io.Closeable;
 import io.LogUtils;
+import io.ipfs.IPFS;
+import io.ipfs.bitswap.BitSwapNetwork;
 import io.ipfs.bitswap.message.BitSwapMessage;
 import io.ipfs.bitswap.peertask.PeerTaskQueue;
 import io.ipfs.bitswap.peertask.Task;
 import io.ipfs.bitswap.peertask.TaskMerger;
 import io.ipfs.cid.Cid;
+import io.ipfs.format.Block;
 import io.ipfs.format.Blockstore;
-import io.libp2p.host.PeerTagger;
 import io.libp2p.peer.ID;
 import io.protos.bitswap.BitswapProtos;
 
 public class Engine {
     public static final int MaxBlockSizeReplaceHasWithBlock = 1024;
     private static final String TAG = Engine.class.getSimpleName();
-    private static final int queuedTagWeight = 10;
-    private final BlockStoreManager bsm;
+    private final Blockstore blockstore;
     private final PeerTaskQueue peerRequestQueue;
     private final ID self;
-    private final PeerTagger peerTagger;
+
+
     // maxBlockSizeReplaceHasWithBlock is the maximum size of the block in
     // bytes up to which we will replace a want-have with a want-block
     private final int maxBlockSizeReplaceHasWithBlock;
-    private final List<Task> activeEntries = new ArrayList<>();
-    private final String tagQueued = UUID.randomUUID().toString();
-    private boolean sendDontHaves;
 
-    private Engine(@NonNull Blockstore bs, @NonNull PeerTagger peerTagger, int bstoreWorkerCount,
+
+    private boolean sendDontHaves;
+    @NonNull
+    private final BitSwapNetwork network;
+
+    private Engine(@NonNull Blockstore bs, @NonNull BitSwapNetwork network, int bstoreWorkerCount,
                    @NonNull ID self, int maxReplaceSize) {
-        this.bsm = BlockStoreManager.NewBlockStoreManager(bs, bstoreWorkerCount);
-        this.peerTagger = peerTagger;
+        this.blockstore = bs;
+        this.network = network;
+
         this.self = self;
-        this.sendDontHaves = true;
+        this.sendDontHaves = IPFS.SEND_DONT_HAVES;
         this.maxBlockSizeReplaceHasWithBlock = maxReplaceSize;
         this.peerRequestQueue = new PeerTaskQueue(
                 this::onPeerAdded,
@@ -114,19 +121,78 @@ public class Engine {
     }
 
     // NewEngine creates a new block sending engine for the given block store
-    public static Engine NewEngine(@NonNull Blockstore bs, @NonNull PeerTagger peerTagger,
+    public static Engine NewEngine(@NonNull Blockstore bs, @NonNull BitSwapNetwork network,
+
                                    int bstoreWorkerCount, @NonNull ID self) {
-        return new Engine(bs, peerTagger, bstoreWorkerCount, self, MaxBlockSizeReplaceHasWithBlock);
+        return new Engine(bs, network, bstoreWorkerCount, self, MaxBlockSizeReplaceHasWithBlock);
         // TODO
         //return newEngine(bs, bstoreWorkerCount, peerTagger, self, maxBlockSizeReplaceHasWithBlock, scoreLedger)
     }
 
+
+    private BitSwapMessage createMessage(@NonNull List<Task> nextTasks, int pendingBytes) {
+
+        // Create a new message
+        BitSwapMessage msg = BitSwapMessage.New(false);
+
+        LogUtils.verbose(TAG,
+                "Bitswap process tasks" + " local " + self.String() +
+                        " taskCount " + nextTasks.size());
+
+        // Amount of data in the request queue still waiting to be popped
+        msg.SetPendingBytes(pendingBytes);
+
+        // Split out want-blocks, want-haves and DONT_HAVEs
+        List<Cid> blockCids = new ArrayList<>();
+        Map<Cid, TaskData> blockTasks = new HashMap<>();
+
+        for (Task t : nextTasks) {
+            Cid c = t.Topic;
+            TaskData td = (TaskData) t.Data;
+            if (td.HaveBlock) {
+                if (td.IsWantBlock) {
+                    blockCids.add(c);
+                    blockTasks.put(c, td);
+                } else {
+                    // Add HAVES to the message
+                    msg.AddHave(c);
+                }
+            } else {
+                // Add DONT_HAVEs to the message
+                msg.AddDontHave(c);
+            }
+        }
+
+        // Fetch blocks from datastore
+
+        Map<Cid, Block> blks = getBlocks(blockCids);
+        for (Map.Entry<Cid, TaskData> entry : blockTasks.entrySet()) {
+            Block blk = blks.get(entry.getKey());
+            // If the block was not found (it has been removed)
+            if (blk == null) {
+                // If the client requested DONT_HAVE, add DONT_HAVE to the message
+                if (entry.getValue().SendDontHave) {
+                    msg.AddDontHave(entry.getKey());
+                }
+            } else {
+
+                LogUtils.error(TAG, "Block added to message " + blk.Cid().String());
+
+                // Add the block to the message
+                // log.Debugf("  make evlp %s->%s block: %s (%d bytes)", e.self, p, c, len(blk.RawData()))
+                msg.AddBlock(blk);
+            }
+        }
+        return msg;
+
+    }
+
     public void onPeerRemoved(@NonNull ID p) {
-        peerTagger.UntagPeer(p, tagQueued);
+
     }
 
     public void onPeerAdded(@NonNull ID p) {
-        peerTagger.TagPeer(p, tagQueued, queuedTagWeight);
+
     }
 
     // Split the want-have / want-block entries from the cancel entries
@@ -181,7 +247,7 @@ public class Engine {
             LogUtils.info(TAG, "received empty message from " + peer);
         }
 
-
+        final List<Task> activeEntries = new ArrayList<>(); // TODO it was global
         boolean newWorkExists = false;
         /* TODO
         defer func() {
@@ -201,7 +267,7 @@ public class Engine {
         }
 
 
-        HashMap<Cid, Integer> blockSizes = bsm.getBlockSizes(ctx, wantKs);
+        HashMap<Cid, Integer> blockSizes = getBlockSizes(ctx, wantKs);
 
 
         /* TODO
@@ -241,7 +307,10 @@ public class Engine {
 
             // If the block was not found
             if (blockSize == null) {
-                // log.Debugw("Bitswap engine: block not found", "local", e.self, "from", p, "cid", entry.Cid, "sendDontHave", entry.SendDontHave);
+                LogUtils.verbose(TAG,
+                        "Bitswap engine: block not found" + " local " + self.String()
+                                + " from " + peer.String() + " cid " + entry.Cid.String()
+                                + " sendDontHave " + entry.SendDontHave);
 
                 // Only add the task to the queue if the requester wants a DONT_HAVE
                 if (sendDontHaves && entry.SendDontHave) {
@@ -254,7 +323,6 @@ public class Engine {
                     Task task = new Task(c, entry.Priority, BitSwapMessage.BlockPresenceSize(c),
                             new TaskData(0, false, isWantBlock, entry.SendDontHave));
                     activeEntries.add(task);
-
                 }
             } else {
                 // The block was found, add it to the queue
@@ -285,7 +353,14 @@ public class Engine {
 
         // Push entries onto the request queue
         if (activeEntries.size() > 0) {
-            peerRequestQueue.PushTasks(peer, activeEntries);
+
+            // TODO pendingBytes (replace with org code)
+            BitSwapMessage msg = createMessage(activeEntries, 0);
+            if (!msg.Empty()) {
+                network.SendMessage(ctx, peer, msg);
+            }
+
+            // TODO peerRequestQueue.PushTasks(peer, activeEntries);
         }
     }
 
@@ -293,4 +368,113 @@ public class Engine {
         boolean isWantBlock = wantType == BitswapProtos.Message.Wantlist.WantType.Block;
         return isWantBlock || blockSize <= maxBlockSizeReplaceHasWithBlock;
     }
+
+
+    // ReceiveFrom is called when new blocks are received and added to the block
+// store, meaning there may be peers who want those blocks, so we should send
+// the blocks to them.
+//
+// This function also updates the receive side of the ledger.
+    public void ReceiveFrom(@NonNull Closeable ctx, @Nullable ID from, @NonNull List<Block> blks, @NonNull List<Cid> haves) {
+
+
+        if (blks.size() == 0) {
+            return;
+        }
+
+        if (from != null) {
+            /* TODO
+            l := e.findOrCreate(from);
+            l.lk.Lock()
+
+            // Record how many bytes were received in the ledger
+            for _, blk := range blks {
+                log.Debugw("Bitswap engine <- block", "local", e.self, "from", from, "cid", blk.Cid(), "size", len(blk.RawData()))
+                e.scoreLedger.AddToReceivedBytes(l.Partner, len(blk.RawData()))
+            }
+
+            l.lk.Unlock()*/
+        }
+
+        // Get the size of each block
+        Map<Cid, Integer> blockSizes = new HashMap<>();
+        for (Block blk : blks) {
+            blockSizes.put(blk.Cid(), blk.RawData().length);
+        }
+
+
+        // Check each peer to see if it wants one of the blocks we received
+        boolean work = false;
+        // TODO e.lock.RLock()
+
+        // TODO for _, l := range e.ledgerMap {
+        // TODO    l.lk.RLock()
+        for (Block b : blks) {
+            Cid k = b.Cid();
+
+            // TODO  if entry, ok := l.WantListContains(k); ok {
+            work = true;
+
+            Integer blockSize = blockSizes.get(k);
+            boolean isWantBlock = true; // TODO sendAsBlock(entry.WantType, blockSize);
+
+            Integer entrySize = blockSize;
+            if (!isWantBlock) {
+                entrySize = BitSwapMessage.BlockPresenceSize(k);
+            }
+
+            Task task = new Task(k, 1, entrySize,
+                    new TaskData(blockSize, true, isWantBlock, false));
+            List<Task> activeEntries = Collections.singletonList(task);
+            BitSwapMessage msg = createMessage(activeEntries, 0);
+            if (!msg.Empty()) {
+                network.SendMessage(ctx, from, msg);
+            }
+
+                    /* TODO
+                    peerRequestQueue.PushTasks(l.Partner, peertask.Task{
+                        Topic:    entry.Cid,
+                                Priority: int(entry.Priority),
+                                Work:     entrySize,
+                                Data: &taskData{
+                            BlockSize:    blockSize,
+                                    HaveBlock:    true,
+                                    IsWantBlock:  isWantBlock,
+                                    SendDontHave: false,
+                        },
+                    })*/
+        }
+        // }
+        // TODO l.lk.RUnlock()
+        // TODO }
+        // TODO e.lock.RUnlock()
+
+        if (work) {
+            // TODO    e.signalNewWork()
+        }
+    }
+
+    public Map<Cid, Block> getBlocks(@NonNull List<Cid> cids) {
+        Map<Cid, Block> blks = new HashMap<>();
+        for (Cid c : cids) {
+            Block block = blockstore.Get(c);
+            if (block != null) {
+                blks.put(c, block);
+            }
+        }
+        return blks;
+    }
+
+    public HashMap<Cid, Integer> getBlockSizes(@NonNull Closeable ctx, @NonNull Set<Cid> wantKs) {
+
+        HashMap<Cid, Integer> blocksizes = new HashMap<>();
+        for (Cid cid : wantKs) {
+            int size = blockstore.GetSize(cid);
+            if (size > 0) {
+                blocksizes.put(cid, size);
+            }
+        }
+        return blocksizes;
+    }
+
 }

@@ -24,12 +24,19 @@ import io.ipfs.unixfs.FSNode;
 
 public class Resolver {
 
-    public static String resolve(@NonNull Closeable closeable, @NonNull Storage storage,
-                                 @NonNull Interface exchange, @NonNull String path) {
+    public static Node resolveNode(@NonNull Closeable closeable, @NonNull Storage storage,
+                                  @NonNull Interface exchange, @NonNull String path) {
         Blockstore bs = Blockstore.NewBlockstore(storage);
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dags = new DagService(blockservice);
-        return Resolver.ResolveNode(closeable, dags, Path.New(path)).Cid().String();
+        return Resolver.ResolveNode(closeable, dags, Path.New(path));
+    }
+
+    public static String resolve(@NonNull Closeable closeable, @NonNull Storage storage,
+                                 @NonNull Interface exchange, @NonNull String path) {
+        Node resolved = resolveNode(closeable, storage, exchange, path);
+        Objects.requireNonNull(resolved);
+        return resolved.Cid().String();
     }
 
     public static Cid ResolvePath(@NonNull Closeable ctx, @NonNull NodeGetter dag, @NonNull Path p) {

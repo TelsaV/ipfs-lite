@@ -31,6 +31,11 @@ import java.util.concurrent.TimeUnit;
 
 import io.Closeable;
 import io.LogUtils;
+import io.ipfs.ClosedException;
+import io.ipfs.DnsAddrResolver;
+import io.ipfs.IPFS;
+import io.ipfs.format.Node;
+import io.ipfs.utils.Link;
 import io.libp2p.routing.Providers;
 import lite.Peer;
 import threads.server.Settings;
@@ -41,10 +46,6 @@ import threads.server.core.pages.PAGES;
 import threads.server.core.pages.Page;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import io.ipfs.ClosedException;
-import io.ipfs.DnsAddrResolver;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Link;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
 import threads.server.services.MimeTypeService;
@@ -237,6 +238,7 @@ public class DOCS {
     public void releaseThreads() {
         synchronized (TAG.intern()) {
             runs.clear();
+            ipfs.reset();
         }
     }
 
@@ -819,10 +821,11 @@ public class DOCS {
 
 
         } else {
-            String cid = ipfs.resolve(root, paths, closeable);
-            if (cid.isEmpty()) {
+            Node node = ipfs.resolveNode(root, paths, closeable);
+            if (node == null) {
                 throw new ContentException(uri.toString());
             }
+            String cid = node.Cid().String();
             if (ipfs.isDir(cid, closeable)) {
                 List<Link> links = ipfs.links(cid, closeable);
                 String answer = generateDirectoryHtml(uri, root, paths, links);
@@ -831,7 +834,7 @@ public class DOCS {
 
             } else {
                 String mimeType = getMimeType(context, uri, cid, closeable);
-                long size = ipfs.getSize(cid, closeable);
+                long size = node.Size();
                 return getContentResponse(cid, mimeType, size, closeable);
             }
 
@@ -1169,7 +1172,7 @@ public class DOCS {
 
 
     @NonNull
-    public Pair<Uri, Boolean> redirectUri(@NonNull Context context, @NonNull Uri uri, @NonNull Closeable closeable)
+    public Pair<Uri, Boolean> redirectUri(@NonNull Uri uri, @NonNull Closeable closeable)
             throws ResolveNameException, InvalidNameException, ClosedException {
 
 
@@ -1217,7 +1220,7 @@ public class DOCS {
                                 for (String path : paths) {
                                     builder.appendPath(path);
                                 }
-                                return redirectUri(context, builder.build(), closeable);
+                                return redirectUri(builder.build(), closeable);
                             }
 
                         }
@@ -1232,7 +1235,7 @@ public class DOCS {
                             for (String path : paths) {
                                 builder.appendPath(path);
                             }
-                            return redirectUri(context, builder.build(), closeable);
+                            return redirectUri(builder.build(), closeable);
                         }
 
                     }

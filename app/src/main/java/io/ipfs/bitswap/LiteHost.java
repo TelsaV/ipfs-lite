@@ -3,14 +3,16 @@ package io.ipfs.bitswap;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.Closeable;
+import io.LogUtils;
+import io.ipfs.ClosedException;
+import io.ipfs.IPFS;
 import io.ipfs.bitswap.message.BitSwapMessage;
-import io.ipfs.bitswap.network.ConnectEventManager;
 import io.ipfs.bitswap.network.DefaultMessageSender;
 import io.ipfs.bitswap.network.MessageSender;
-import io.ipfs.bitswap.network.MessageSenderOpts;
 import io.ipfs.bitswap.network.Receiver;
 import io.ipfs.cid.Cid;
 import io.ipfs.utils.Connector;
@@ -31,78 +33,52 @@ public class LiteHost implements BitSwapNetwork {
     private final Connector connector;
     @Nullable
     private final ContentRouting contentRouting;
-    private final io.libp2p.protocol.ID protocol;
-    private ConnectEventManager connectEventManager;
+    private final List<io.libp2p.protocol.ID> protocols = new ArrayList<>();
 
     private LiteHost(@NonNull Host host,
                      @Nullable ContentRouting contentRouting,
                      @NonNull Connector connector,
-                     @NonNull io.libp2p.protocol.ID protocol) {
+                     @NonNull List<io.libp2p.protocol.ID> protos) {
         this.host = host;
         this.contentRouting = contentRouting;
         this.connector = connector;
-        this.protocol = protocol;
+        this.protocols.addAll(protos);
     }
 
     public static BitSwapNetwork NewLiteHost(@NonNull Host host,
                                              @Nullable ContentRouting contentRouting,
                                              @NonNull Connector connector,
-                                             @NonNull io.libp2p.protocol.ID protocol) {
-        return new LiteHost(host, contentRouting, connector, protocol);
+                                             @NonNull List<io.libp2p.protocol.ID> protocols) {
+        return new LiteHost(host, contentRouting, connector, protocols);
     }
 
-    public boolean ConnectTo(@NonNull Closeable closeable, @NonNull ID peer) {
+    @Override
+    public boolean ConnectTo(@NonNull Closeable closeable, @NonNull ID peer, boolean protect) throws ClosedException {
         if (connector.ShouldConnect(peer.String())) {
-            return host.Connect(closeable, peer);
+            return host.Connect(closeable, peer, protect);
         }
-        throw new RuntimeException("unknown user");
+        return false;
+    }
+
+    public lite.Stream NewStream(@NonNull Closeable closeable, @NonNull ID peer) throws ClosedException {
+        return host.NewStream(closeable, peer, protocols);
     }
 
 
     @Override
-    public boolean SupportsHave(@NonNull io.libp2p.protocol.ID protocol) {
-
-        return true;
+    public boolean SupportsHave(@NonNull String proto) {
+        io.libp2p.protocol.ID protocol = io.libp2p.protocol.ID.Evaluate(proto);
+        return protocol.isSupportHas();
     }
 
-    public void msgToStream(@NonNull Closeable closeable, @NonNull ID to,
-                            @NonNull BitSwapMessage message) {
-
-
-        // Older Bitswap versions use a slightly different wire format so we need
-        // to convert the message to the appropriate format depending on the remote
-        // peer's Bitswap version.
-        byte[] data = message.ToNetV1();
-        // TODO only support one protocol
-        host.WriteMessage(closeable, to, protocol, data);
-
-        /* TODO
-        io.libp2p.protocol.ID id = stream.Protocol();
-        if (LiteHost.ProtocolBitswapOneOne.equals(id) ||
-                LiteHost.ProtocolBitswap.equals(id) ||
-                LiteHost.ProtocolLite.equals(id)) {
-            byte[] data = message.ToNetV1();
-            stream.WriteData(data, timeout);
-        } else if (LiteHost.ProtocolBitswapNoVers.equals(id) ||
-                LiteHost.ProtocolBitswapOneZero.equals(id)) {
-            byte[] data = message.ToNetV0();
-            stream.WriteData(data, timeout);
-        } else {
-            throw new RuntimeException("unrecognized protocol on remote: " + stream.Protocol());
-        }*/
-
-    }
 
     @Override
     public void SetDelegate(@NonNull Receiver receiver) {
         this.receiver = receiver;
 
-        this.connectEventManager = new ConnectEventManager(receiver);
-
-        host.SetStreamHandler(protocol, this::handleNewStream);
-
-
-        // TODO host.Network().Notify((*netNotifiee)(bsnet))
+        for (io.libp2p.protocol.ID protocol : protocols) {
+            host.SetStreamHandler(protocol, this::handleNewStream);
+        }
 
     }
 
@@ -111,11 +87,6 @@ public class LiteHost implements BitSwapNetwork {
         throw new RuntimeException("should not be invoked");
     }
 
-    @Nullable
-    @Override
-    public ConnectEventManager getConnectEventManager() {
-        return connectEventManager;
-    }
 
     @NonNull
     @Override
@@ -141,36 +112,48 @@ public class LiteHost implements BitSwapNetwork {
                 BitSwapMessage received = BitSwapMessage.fromData(data);
 
                 if (connector.ShouldConnect(peer.String())) {
-                    connectEventManager.OnMessage(peer);
                     receiver.ReceiveMessage(closeable, peer, received);
-                    // TODO atomic.AddUint64( & bsnet.stats.MessagesRecvd, 1)
                 }
             } else {
-                receiver.ReceiveError(peer, stream.GetError());
+                String error = stream.GetError();
+                if (error != null) {
+                    receiver.ReceiveError(peer, error);
+                }
             }
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable); // TODO check
+        }
+    }
 
-            // TODO
-            /*
-            reader:=msgio.NewVarintReaderSize(s, network.MessageSizeMax)
-            for {
-                received, err :=bsmsg.FromMsgReader(reader)
-                if err != nil {
-                    if err != io.EOF {
-                        _ = s.Reset()
-                        bsnet.receiver.ReceiveError(err)
-                        log.Debugf("bitswap net handleNewStream from %s error: %s", s.Conn().RemotePeer(), err)
-                    }
-                    return
+
+    @Override
+    public void SendMessage(@NonNull lite.Stream stream, @NonNull BitSwapMessage message) {
+
+
+        try {
+
+            try {
+                byte[] data;
+                io.libp2p.protocol.ID evaluate = io.libp2p.protocol.ID.Evaluate(stream.protocol());
+                if (io.libp2p.protocol.ID.ProtocolBitswap.equals(evaluate) ||
+                        io.libp2p.protocol.ID.ProtocolBitswapOneOne.equals(evaluate) ||
+                        io.libp2p.protocol.ID.ProtocolLite.equals(evaluate)) {
+                    data = message.ToNetV1();
+                } else {
+                    LogUtils.error(TAG, "ToNetV0");
+                    data = message.ToNetV0();
                 }
 
-                p:=s.Conn().RemotePeer()
-                if !bsnet.listener.ShouldGate(p.String()) {
-                    ctx:=context.Background()
-                    bsnet.connectEvtMgr.OnMessage(s.Conn().RemotePeer())
-                    bsnet.receiver.ReceiveMessage(ctx, p, received)
-                    atomic.AddUint64( & bsnet.stats.MessagesRecvd, 1)
-                }
-            }*/
+                LogUtils.error(TAG, "Write message  size " + data.length);
+                long res = stream.writeMessage(data, IPFS.WRITE_TIMEOUT);
+                LogUtils.error(TAG, "Write message size " + res);
+            } catch (Throwable throwable) {
+                stream.reset();
+                LogUtils.error(TAG, throwable);
+                throw new RuntimeException(throwable);
+            } finally {
+                stream.close();
+            }
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
@@ -183,33 +166,26 @@ public class LiteHost implements BitSwapNetwork {
             throw new RuntimeException("unknown user");
         }
 
-        msgToStream(closeable, peer, message);
-
+        try {
+            lite.Stream stream = host.NewStream(closeable, peer, protocols);
+            SendMessage(stream, message);
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
     }
 
 
-    private MessageSenderOpts setDefaultOpts(@NonNull MessageSenderOpts opts) {
-        MessageSenderOpts copy = new MessageSenderOpts();
-        if (opts.MaxRetries == 0) {
-            copy.MaxRetries = 3;
-        }
-        if (opts.SendErrorBackoff == null) {
-            copy.SendErrorBackoff = Duration.ofMillis(100);
-        }
-        return copy;
-    }
-
-
-    public MessageSender NewMessageSender(@NonNull Closeable ctx, @NonNull ID peer, @NonNull MessageSenderOpts opts) {
+    public MessageSender NewMessageSender(@NonNull Closeable ctx, @NonNull ID peer) throws ClosedException {
 
         if (!connector.ShouldConnect(peer.String())) {
             throw new RuntimeException("unknown user");
         }
 
-        MessageSenderOpts copy = setDefaultOpts(opts);
-        MessageSender sender = new DefaultMessageSender(this, copy, peer);
 
-        sender.multiAttempt(ctx, () -> sender.Connect(ctx));
+        MessageSender sender = new DefaultMessageSender(this, peer);
+
+        // TODO invoke form the outside
+        sender.Connect(ctx, false);
 
 
         return sender;
@@ -217,7 +193,7 @@ public class LiteHost implements BitSwapNetwork {
 
 
     @Override
-    public void FindProvidersAsync(@NonNull Providers providers, @NonNull Cid cid, int number) {
+    public void FindProvidersAsync(@NonNull Providers providers, @NonNull Cid cid, int number) throws ClosedException {
         if (contentRouting != null) {
             contentRouting.FindProvidersAsync(providers, cid, number);
         }

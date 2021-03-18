@@ -2,72 +2,48 @@ package io.ipfs.bitswap.network;
 
 import androidx.annotation.NonNull;
 
-import java.util.Objects;
-
 import io.Closeable;
+import io.ipfs.ClosedException;
 import io.ipfs.bitswap.BitSwapNetwork;
-import io.ipfs.bitswap.ErrNotSupported;
 import io.ipfs.bitswap.message.BitSwapMessage;
 import io.libp2p.peer.ID;
+import lite.Stream;
 
 public class DefaultMessageSender implements MessageSender {
     private final BitSwapNetwork bitSwapNetwork;
-    private final MessageSenderOpts opts;
     private final ID to;
 
-    public DefaultMessageSender(@NonNull BitSwapNetwork bitSwapNetwork, @NonNull MessageSenderOpts opts, @NonNull ID to) {
+    private static final String TAG = DefaultMessageSender.class.getSimpleName();
+
+
+    public DefaultMessageSender(@NonNull BitSwapNetwork bitSwapNetwork, @NonNull ID to) {
         this.bitSwapNetwork = bitSwapNetwork;
-        this.opts = opts;
         this.to = to;
     }
 
-
     @Override
-    public void SendMsg(@NonNull Closeable closeable, @NonNull BitSwapMessage message) {
-        multiAttempt(closeable, () -> send(closeable, message));
+    public Stream NewStream(@NonNull Closeable closeable) throws ClosedException {
+        return bitSwapNetwork.NewStream(closeable, to);
     }
 
-    private void send(@NonNull Closeable closeable, @NonNull BitSwapMessage message) {
+    @Override
+    public void SendMsg(@NonNull Closeable closeable, @NonNull Stream stream, @NonNull BitSwapMessage message) throws ClosedException {
+        /// TODO invoke form the outside
+        Connect(closeable, false);
 
-
-        Connect(closeable);
-
-        // The send timeout includes the time required to connect
-        // (although usually we will already have connected - we only need to
-        // connect after a failed attempt to send)
-        bitSwapNetwork.msgToStream(closeable, to, message);
+        bitSwapNetwork.SendMessage(stream, message);
     }
 
 
     @Override
-    public boolean SupportsHave() {
-        return true;
+    public boolean SupportsHave(@NonNull Stream stream) {
 
-    }
+        return bitSwapNetwork.SupportsHave(stream.protocol());
 
-    public void multiAttempt(@NonNull Closeable closeable, @NonNull Attempt attempt) {
-        // Try to call the function repeatedly
-        for (int i = 0; i < opts.MaxRetries; i++) {
-            try {
-                attempt.invoke();
-                return; // success
-            } catch (Throwable throwable) {
-                // Attempt failed
-
-                if (throwable instanceof ErrNotSupported) {
-                    Objects.requireNonNull(bitSwapNetwork.getConnectEventManager()).MarkUnresponsive(to);
-                    throw throwable;
-                }
-
-            }
-
-        }
-        Objects.requireNonNull(bitSwapNetwork.getConnectEventManager()).MarkUnresponsive(to);
-        throw new RuntimeException("failed multi attempt");
     }
 
     @Override
-    public void Connect(@NonNull Closeable closeable) {
-        bitSwapNetwork.ConnectTo(closeable, to);
+    public void Connect(@NonNull Closeable closeable, boolean protect) throws ClosedException {
+        bitSwapNetwork.ConnectTo(closeable, to, protect);
     }
 }

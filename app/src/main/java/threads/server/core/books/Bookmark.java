@@ -80,4 +80,8 @@ public class Bookmark {
     public String getTitle() {
         return title;
     }
+
+    public void resetBitmapIcon() {
+        icon = null;
+    }
 }

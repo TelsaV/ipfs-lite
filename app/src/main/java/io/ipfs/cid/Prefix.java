@@ -89,7 +89,7 @@ public class Prefix implements Builder {
 
         try (InputStream inputStream = new ByteArrayInputStream(buf)) {
             long version = Multihash.readVarint(inputStream);
-            if (version != 1) {
+            if (version != 1 && version != 0) {
                 throw new Exception("invalid version");
             }
             long codec = Multihash.readVarint(inputStream);

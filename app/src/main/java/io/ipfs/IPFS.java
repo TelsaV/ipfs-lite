@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -69,9 +70,9 @@ import threads.server.core.events.EVENTS;
 public class IPFS implements Listener, ContentRouting, Metrics {
     public static final int WRITE_TIMEOUT = 60;
     public static final int EngineBlockstoreWorkerCount = 128;
+    public static final boolean SEND_DONT_HAVES = false;
 
-    private static final io.libp2p.protocol.ID ProtocolLite = new io.libp2p.protocol.ID("/ipfs/lite/1.0.0");
-    private static final io.libp2p.protocol.ID ProtocolBitswap = new io.libp2p.protocol.ID("/ipfs/bitswap/1.2.0");
+
     private static final String PREF_KEY = "prefKey";
     private static final String PID_KEY = "pidKey";
     private static final String PRIVATE_NETWORK_KEY = "privateNetworkKey";
@@ -401,118 +402,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         return swarm.contains(pid);
     }
 
-    public void startDaemon(boolean privateSharing) {
-        if (!node.getRunning()) {
-            synchronized (locker) {
-                if (!node.getRunning()) {
-                    AtomicBoolean failure = new AtomicBoolean(false);
-                    ExecutorService executor = Executors.newSingleThreadExecutor();
-                    AtomicReference<String> exception = new AtomicReference<>("");
-                    executor.submit(() -> {
-                        try {
-
-                            long port = node.getPort();
-                            if (!isLocalPortFree((int) port)) {
-                                node.setPort(nextFreePort());
-                            }
-                            LogUtils.error(TAG, "start daemon...");
-                            node.daemon(privateSharing);
-                            LogUtils.error(TAG, "stop daemon...");
-                        } catch (Throwable e) {
-                            failure.set(true);
-                            exception.set("" + e.getLocalizedMessage());
-                            LogUtils.error(TAG, e);
-                        }
-                    });
-
-                    while (!node.getRunning()) {
-                        if (failure.get()) {
-                            break;
-                        }
-                    }
-                    if (failure.get()) {
-                        throw new RuntimeException(exception.get());
-                    }
-
-
-                    if (node.getRunning()) {
-                        io.libp2p.protocol.ID protocol = ProtocolBitswap;
-                        ContentRouting contentRouting = this;
-                        if (privateSharing) {
-                            protocol = ProtocolLite;
-                            contentRouting = null;
-                        }
-
-                        BitSwapNetwork bsm = LiteHost.NewLiteHost(new Host() {
-                            @Override
-                            public void TagPeer(@NonNull ID peer, @NonNull String tag, int weight) {
-                                // TODO node.tagPeer(peer.String(), tag, weight);
-                            }
-
-                            @Override
-                            public void UntagPeer(@NonNull ID peer, @NonNull String tag) {
-                                // TODO node.untagPeer(peer.String(), tag);
-                            }
-
-                            @Override
-                            public boolean Connect(@NonNull Closeable closeable, @NonNull ID peer) {
-                                try {
-                                    if (!isConnected(peer.String())) {
-                                        return node.swarmConnect(Content.P2P_PATH + peer.String(),
-                                                closeable::isClosed);
-                                    }
-                                    return true;
-                                } catch (Throwable throwable){
-                                    return false;
-                                }
-                            }
-
-                            @Override
-                            public void WriteMessage(@NonNull Closeable closeable,
-                                                     @NonNull ID peer,
-                                                     @NonNull io.libp2p.protocol.ID protocol,
-                                                     @NonNull byte[] data) {
-                                try {
-                                    node.writeMessage(peer.String(), data, protocol.String(),
-                                            WRITE_TIMEOUT, closeable::isClosed);
-                                } catch (Throwable throwable) {
-                                    // TODO
-                                    LogUtils.error(TAG, throwable);
-                                    throw new RuntimeException(throwable);
-                                }
-                            }
-
-                            @Override
-                            public void SetStreamHandler(@NonNull io.libp2p.protocol.ID proto,
-                                                         @NonNull StreamHandler handler) {
-                                setStreamHandler(handler);
-                                node.setStreamHandler(proto.String());
-
-                            }
-
-                            @Override
-                            public ID Self() {
-                                return new ID(getPeerID());
-                            }
-                        }, contentRouting, pid -> {
-                            if (privateSharing) {
-                                return shouldConnect(pid);
-                            }
-                            return true;
-                        }, protocol);
-
-
-                        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
-
-                        MetricsBlockstore metricsBlockstore =
-                                new MetricsBlockstore(blockstore, this);
-
-                        exchange = BitSwap.New(() -> !isDaemonRunning(), bsm, metricsBlockstore);
-                    }
-                }
-            }
-        }
-    }
+    final ExecutorService READER = Executors.newFixedThreadPool(4);
 
     private void setStreamHandler(@NonNull StreamHandler streamHandler) {
         this.handler = streamHandler;
@@ -649,7 +539,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
             swarmEnhance(pid);
         }
         try {
-            return node.swarmConnect(multiAddress, closeable::isClosed);
+            return node.swarmConnect(multiAddress, true, closeable::isClosed);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, multiAddress + " connection failed");
         }
@@ -667,7 +557,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
             if (pid != null) {
                 swarmEnhance(pid);
             }
-            return node.swarmConnectTimeout(multiAddress, timeout);
+            return node.swarmConnectTimeout(multiAddress, timeout, true);
         } catch (Throwable e) {
             LogUtils.error(TAG, multiAddress + " " + e.getLocalizedMessage());
         }
@@ -906,6 +796,34 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     }
 
+    @Nullable
+    public io.ipfs.format.Node resolveNode(@NonNull String root, @NonNull List<String> path, @NonNull Closeable closeable) throws ClosedException {
+
+        String resultPath = Content.IPFS_PATH + root;
+        for (String name : path) {
+            resultPath = resultPath.concat("/").concat(name);
+        }
+
+        return resolveNode(resultPath, closeable);
+
+    }
+    @Nullable
+    public io.ipfs.format.Node resolveNode(@NonNull String path, @NonNull Closeable closeable) throws ClosedException {
+        if (!isDaemonRunning()) {
+            return null;
+        }
+
+        try {
+            return Resolver.resolveNode(closeable, blocks, exchange, path);
+        } catch (Throwable ignore) {
+            // common use case not resolve a a path
+        }
+        if (closeable.isClosed()) {
+            throw new ClosedException();
+        }
+        return null;
+    }
+
     public String resolve(@NonNull String path, @NonNull Closeable closeable) throws ClosedException {
         if (!isDaemonRunning()) {
             return "";
@@ -965,8 +883,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     @Nullable
     public List<Link> links(@NonNull String cid, @NonNull Closeable closeable) throws ClosedException {
 
-        LogUtils.info(TAG, "Lookup CID : " + cid);
-
         List<Link> links = ls(cid, closeable, false);
         if (links == null) {
             LogUtils.info(TAG, "no links");
@@ -975,7 +891,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
         List<Link> result = new ArrayList<>();
         for (Link link : links) {
-            LogUtils.info(TAG, "Link : " + link.toString());
             if (!link.isRaw()) {
                 result.add(link);
             }
@@ -1022,7 +937,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                 @Override
                 public void info(@NonNull Link link) {
                     infoList.add(link);
-                    LogUtils.error(TAG, link.toString());
                 }
             }, blockstore, exchange, cid, resolveChildren);
 
@@ -1219,31 +1133,176 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         }
     }
 
+    public void startDaemon(boolean privateSharing) {
+        if (!node.getRunning()) {
+            synchronized (locker) {
+                if (!node.getRunning()) {
+                    AtomicBoolean failure = new AtomicBoolean(false);
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    AtomicReference<String> exception = new AtomicReference<>("");
+                    executor.submit(() -> {
+                        try {
+
+                            long port = node.getPort();
+                            if (!isLocalPortFree((int) port)) {
+                                node.setPort(nextFreePort());
+                            }
+                            LogUtils.error(TAG, "start daemon...");
+                            node.daemon(privateSharing);
+                            LogUtils.error(TAG, "stop daemon...");
+                        } catch (Throwable e) {
+                            failure.set(true);
+                            exception.set("" + e.getLocalizedMessage());
+                            LogUtils.error(TAG, e);
+                        }
+                    });
+
+                    while (!node.getRunning()) {
+                        if (failure.get()) {
+                            break;
+                        }
+                    }
+                    if (failure.get()) {
+                        throw new RuntimeException(exception.get());
+                    }
+
+
+                    if (node.getRunning()) {
+                        List< io.libp2p.protocol.ID> protocols = new ArrayList<>();
+
+                        ContentRouting contentRouting = this;
+                        if (privateSharing) {
+                            protocols.add(io.libp2p.protocol.ID.ProtocolLite);
+                            contentRouting = null;
+                        } else {
+                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswapNoVers);
+                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswapOneZero);
+                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswapOneOne);
+                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswap);
+                        }
+
+                        BitSwapNetwork bsm = LiteHost.NewLiteHost(new Host() {
+                            @Override
+                            public List<ID> getPeers() {
+                                List<ID> peers = new ArrayList<>();
+                                for (String p : swarm_peers()) {
+                                    peers.add(new ID(p));
+                                }
+                                return peers;
+                            }
+
+                            @Override
+                            public boolean Connect(@NonNull Closeable closeable,
+                                                   @NonNull ID peer, boolean protect) throws ClosedException {
+                                try {
+                                    if (!isConnected(peer.String())) {
+                                        return node.swarmConnect(Content.P2P_PATH + peer.String(), protect,
+                                                closeable::isClosed);
+                                    }
+                                    return true;
+                                } catch (Throwable throwable) {
+
+                                    if(closeable.isClosed()){
+                                        throw new ClosedException();
+                                    }
+
+                                    return false;
+                                }
+                            }
+
+                            @Override
+                            public lite.Stream NewStream(@NonNull Closeable closeable,
+                                                         @NonNull ID peer,
+                                                         @NonNull List<io.libp2p.protocol.ID> protocols) throws ClosedException {
+
+                                try {
+
+                                    String protos = "";
+                                    for (int i = 0; i < protocols.size(); i++) {
+                                        if(i > 1){
+                                            protos = protos.concat(";");
+                                        }
+                                        protos = protos.concat(protocols.get(i).String());
+                                    }
+                                    return node.newStream(peer.String(), protos, closeable::isClosed);
+                                } catch (Throwable throwable){
+                                    if (closeable.isClosed()) {
+                                        throw new ClosedException();
+                                    } else {
+                                        throw new RuntimeException(throwable);
+                                    }
+                                }
+                            }
+
+
+                            @Override
+                            public void SetStreamHandler(@NonNull io.libp2p.protocol.ID proto,
+                                                         @NonNull StreamHandler handler) {
+                                setStreamHandler(handler);
+                                node.setStreamHandler(proto.String());
+
+                            }
+
+                            @Override
+                            public ID Self() {
+                                return new ID(getPeerID());
+                            }
+                        }, contentRouting, pid -> {
+                            if (privateSharing) {
+                                return shouldConnect(pid);
+                            }
+                            return true;
+                        }, protocols);
+
+
+                        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+
+                        MetricsBlockstore metricsBlockstore =
+                                new MetricsBlockstore(blockstore, this);
+
+                        exchange = BitSwap.New(bsm, metricsBlockstore);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void bitSwapData(String pid, byte[] bytes) {
+        LogUtils.verbose(TAG, "Receive message from " + pid + " data " + bytes.length);
         Objects.requireNonNull(handler);
-        handler.handle(() -> false, new io.libp2p.network.Stream() {
-            @NonNull
-            @Override
-            public ID RemotePeer() {
-                return new ID(pid);
-            }
 
-            @Override
-            public byte[] GetData() {
-                return bytes;
-            }
+        final byte[] data = Arrays.copyOf(bytes, bytes.length);
 
-            @Nullable
-            @Override
-            public String GetError() {
-                return null;
+        READER.execute(() -> {
+            try {
+                handler.handle(() -> false, new io.libp2p.network.Stream() {
+                    @NonNull
+                    @Override
+                    public ID RemotePeer() {
+                        return new ID(pid);
+                    }
+
+                    @Override
+                    public byte[] GetData() {
+                        return data;
+                    }
+
+                    @Nullable
+                    @Override
+                    public String GetError() {
+                        return null;
+                    }
+                });
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, throwable);
             }
         });
     }
 
     @Override
     public void bitSwapError(String pid, String error) {
+        LogUtils.error(TAG, "Receive error from " + pid + " error " + error);
         Objects.requireNonNull(handler);
         handler.handle(() -> false, new io.libp2p.network.Stream() {
             @NonNull
@@ -1381,13 +1440,10 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     }*/
 
     @Override
-    public void FindProvidersAsync(@NonNull io.libp2p.routing.Providers providers, @NonNull Cid cid, int number) {
+    public void FindProvidersAsync(@NonNull io.libp2p.routing.Providers providers, @NonNull Cid cid, int number) throws ClosedException {
 
-        try {
-            dhtFindProviders(cid.String(), number, providers);
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
+        dhtFindProviders(cid.String(), number, providers);
+
     }
 
     @Override
@@ -1398,6 +1454,16 @@ public class IPFS implements Listener, ContentRouting, Metrics {
             throw new RuntimeException(throwable);
         }
 
+    }
+
+    public void reset() {
+        try {
+            if(exchange != null) {
+                exchange.reset();
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
     }
 
 

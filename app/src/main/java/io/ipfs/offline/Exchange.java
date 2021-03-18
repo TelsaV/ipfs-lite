@@ -19,4 +19,9 @@ public class Exchange implements Interface {
     public Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
         return blockstore.Get(cid);
     }
+
+    @Override
+    public void reset() {
+        // nothing to do here
+    }
 }
