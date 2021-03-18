@@ -86,7 +86,7 @@ public class BitSwap implements Interface, Receiver {
         }
 
         // TODO check if necessary (what it is doing)
-        engine.ReceiveFrom(closeable, from, wanted, haves);
+        //engine.ReceiveFrom(closeable, from, wanted, haves);
 
         peerManager.HaveResponseReceived(from, haves);
 

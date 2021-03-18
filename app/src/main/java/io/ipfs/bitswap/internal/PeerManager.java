@@ -42,6 +42,7 @@ public class PeerManager {
             ConcurrentLinkedQueue<ID> queue = searches.get(cid);
             if (queue != null) {
                 queue.add(peer);
+                faulty.remove(peer);
                 priority.add(peer);
             }
         }
@@ -72,6 +73,7 @@ public class PeerManager {
                                 throw closedException;
                             } catch (Throwable throwable) {
                                 LogUtils.error(TAG, throwable);
+                                priority.remove(peer);
                                 faulty.add(peer);
                             }
                         }
@@ -118,7 +120,9 @@ public class PeerManager {
             }
 
             for (ID peer : priority) {
-                queue.offer(peer);
+                if (!handled.contains(peer)){
+                    queue.offer(peer);
+                }
             }
 
             List<ID> cons = network.ConnectionManager().getPeers();
@@ -157,6 +161,7 @@ public class PeerManager {
                 throw closedException;
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
+                priority.remove(peer);
                 faulty.add(peer);
             }
 
@@ -209,6 +214,7 @@ public class PeerManager {
         ConcurrentLinkedQueue<ID> queue = searches.get(cid);
         if (queue != null) {
             notify.Publish(block);
+            faulty.remove(peer);
             priority.add(peer);
             queue.clear();
 
