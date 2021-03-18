@@ -16,6 +16,7 @@ import io.Closeable;
 import io.LogUtils;
 import io.ipfs.ClosedException;
 import io.ipfs.bitswap.BitSwapNetwork;
+import io.ipfs.bitswap.message.MessageWriter;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;
 import io.libp2p.peer.ID;
@@ -94,7 +95,7 @@ public class PeerManager {
     public void runWriteMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull Cid cid) throws ClosedException {
         // TODO think if protext
         if (network.ConnectTo(closeable, peer, false)) {
-            MessageQueue messageQueue = new MessageQueue();
+            MessageWriter messageQueue = new MessageWriter();
             messageQueue.AddWants(Collections.singletonList(cid), Collections.singletonList(cid));
             messageQueue.sendMessage(closeable, network, peer);
         } else {

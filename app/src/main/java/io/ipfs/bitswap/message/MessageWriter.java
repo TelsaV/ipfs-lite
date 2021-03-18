@@ -1,4 +1,4 @@
-package io.ipfs.bitswap.internal;
+package io.ipfs.bitswap.message;
 
 import android.util.Pair;
 
@@ -12,6 +12,8 @@ import java.util.List;
 import io.Closeable;
 import io.ipfs.ClosedException;
 import io.ipfs.bitswap.BitSwapNetwork;
+import io.ipfs.bitswap.internal.OnSent;
+import io.ipfs.bitswap.internal.RecallWantlist;
 import io.ipfs.bitswap.message.BitSwapMessage;
 import io.ipfs.bitswap.wantlist.Entry;
 import io.ipfs.bitswap.wantlist.Wantlist;
@@ -20,7 +22,7 @@ import io.libp2p.peer.ID;
 import io.protos.bitswap.BitswapProtos;
 import lite.Stream;
 
-public class MessageQueue {
+public class MessageWriter {
 
     public static Duration DefaultRebroadcastInterval = Duration.ofSeconds(30);
     // maxRetries is the number of times to attempt to send a message before
@@ -86,7 +88,7 @@ public class MessageQueue {
     // TODO type OnDontHaveTimeout func(peer.ID, []cid.Cid)
 
 
-    public MessageQueue() {
+    public MessageWriter() {
 
         this.maxMessageSize = MaxMessageSize;
         this.sendErrorBackoff = SendErrorBackoff;
@@ -143,8 +145,6 @@ public class MessageQueue {
             cancels.remove(c);
         }
 
-        // Schedule a message send
-        //mq.signalWorkReady()
     }
     /*
     // Add cancel messages for the given keys.
