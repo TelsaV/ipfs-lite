@@ -9,7 +9,7 @@ import io.ipfs.ClosedException;
 import io.libp2p.network.StreamHandler;
 import io.libp2p.peer.PeerID;
 import io.libp2p.protocol.Protocol;
-import lite.Stream;
+
 
 public interface Host {
     boolean Connect(@NonNull Closeable ctx, @NonNull PeerID peer, boolean protect) throws ClosedException;
@@ -19,9 +19,6 @@ public interface Host {
                       @NonNull List<Protocol> protocols,
                       @NonNull byte[] bytes) throws ClosedException;
 
-
-    Stream NewStream(@NonNull Closeable closeable, @NonNull PeerID peer,
-                     @NonNull List<Protocol> protocols) throws ClosedException;
 
     // SetStreamHandler sets the protocol handler on the Host's Mux.
     // This is equivalent to:

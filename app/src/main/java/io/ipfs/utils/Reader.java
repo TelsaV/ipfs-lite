@@ -28,7 +28,7 @@ public class Reader {
         DagService dags = new DagService(blockservice);
         io.ipfs.format.Node top = Resolver.ResolveNode(closeable, dags, Path.New(cid));
         Objects.requireNonNull(top);
-        DagReader dagReader = DagReader.NewDagReader(top, dags);
+        DagReader dagReader = DagReader.create(top, dags);
 
         return new Reader(closeable, dagReader);
     }

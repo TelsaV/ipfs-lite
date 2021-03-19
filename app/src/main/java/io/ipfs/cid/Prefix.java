@@ -23,10 +23,7 @@ public class Prefix implements Builder {
 
     @Override
     public Cid Sum(byte[] data) {
-        long length = MhLength;
-        if (MhType == Cid.IDENTITY) {
-            length = -1;
-        }
+
 
         if (Version == 0 && (MhType != Multihash.Type.sha2_256.index) ||
                 (MhLength != 32 && MhLength != -1)) {

@@ -114,8 +114,6 @@ public class ContentManager {
                             if (network.ConnectTo(closeable, peer, true)) {
                                 MessageWriter.sendWantsMessage(closeable, network, peer,
                                         Collections.singletonList(cid));
-                            } else {
-                                // TODO think what to do
                             }
                         } catch (ClosedException closedException) {
                             // ignore
@@ -140,22 +138,20 @@ public class ContentManager {
                         handled.add(peer);
 
                         WANTS.execute(() -> {
-                        try {
-                            long start = System.currentTimeMillis();
-                            if (network.ConnectTo(() -> closeable.isClosed()
-                                    || ((System.currentTimeMillis() - start) > TIMEOUT), peer, false)) {
-                                MessageWriter.sendWantsMessage(closeable, network, peer,
-                                        Collections.singletonList(cid));
-                            } else {
-                                // TODO think what to do
+                            try {
+                                long start = System.currentTimeMillis();
+                                if (network.ConnectTo(() -> closeable.isClosed()
+                                        || ((System.currentTimeMillis() - start) > TIMEOUT), peer, false)) {
+                                    MessageWriter.sendWantsMessage(closeable, network, peer,
+                                            Collections.singletonList(cid));
+                                }
+                            } catch (ClosedException closedException) {
+                                // ignore
+                            } catch (Throwable throwable) {
+                                // LogUtils.error(TAG, throwable);
+                                faulty.add(peer);
                             }
-                        } catch (ClosedException closedException) {
-                            // ignore
-                        } catch (Throwable throwable) {
-                            // LogUtils.error(TAG, throwable);
-                            faulty.add(peer);
-                        }
-                        } );
+                        });
                         // check priority after each run
                         break;
 

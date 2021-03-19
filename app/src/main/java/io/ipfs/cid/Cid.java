@@ -14,11 +14,11 @@ import io.ipfs.multihash.Multihash;
 
 public class Cid {
     public static final String TAG = Cid.class.getSimpleName();
-    public static long IDENTITY = 0x00;
-    public static long Raw = 0x55;
-    public static long DagProtobuf = 0x70;
-    public static long DagCBOR = 0x71;
-    public static long Libp2pKey = 0x72;
+    public static final long IDENTITY = 0x00;
+    public static final long Raw = 0x55;
+    public static final long DagProtobuf = 0x70;
+    public static final long DagCBOR = 0x71;
+    public static final long Libp2pKey = 0x72;
 
     private final byte[] multihash;
 

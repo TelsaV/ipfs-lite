@@ -9,7 +9,7 @@ import io.ipfs.cid.Cid;
 import io.ipfs.datastore.Dshelp;
 
 public interface BlockStore {
-    String TAG = BlockStore.class.getSimpleName();
+
 
     static BlockStore NewBlockstore(@NonNull final Storage storage) {
         return new BlockStore() {

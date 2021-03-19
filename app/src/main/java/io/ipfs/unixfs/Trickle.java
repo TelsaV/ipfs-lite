@@ -11,7 +11,7 @@ import io.protos.unixfs.UnixfsProtos;
 
 public class Trickle {
 
-    public static int depthRepeat = 4;
+    public static final int depthRepeat = 4;
 
     public static Node Layout(@NonNull DagBuilderHelper db) {
         DagBuilderHelper.FSNodeOverDag newRoot =

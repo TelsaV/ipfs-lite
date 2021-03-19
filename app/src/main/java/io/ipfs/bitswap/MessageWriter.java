@@ -9,11 +9,10 @@ import io.ipfs.ClosedException;
 import io.ipfs.cid.Cid;
 import io.libp2p.peer.PeerID;
 import io.protos.bitswap.BitswapProtos;
-import lite.Stream;
 
 public class MessageWriter {
 
-    public static int MaxPriority = Integer.MAX_VALUE;
+    public static final int MaxPriority = Integer.MAX_VALUE;
 
 
     public static void sendHaveMessage(@NonNull Closeable closeable,
@@ -27,19 +26,12 @@ public class MessageWriter {
         int priority = MaxPriority;
 
         BitSwapMessage message = BitSwapMessage.New(false);
-        Stream stream = network.NewStream(closeable, peer);
 
         for (Cid c : wantHaves) {
 
             // Broadcast wants are sent as want-have
             BitswapProtos.Message.Wantlist.WantType wantType =
                     BitswapProtos.Message.Wantlist.WantType.Have;
-
-            // If the remote peer doesn't support HAVE / DONT_HAVE messages,
-            // send a want-block instead
-            if (!network.SupportsHave(stream)) {
-                wantType = BitswapProtos.Message.Wantlist.WantType.Block;
-            }
 
             message.AddEntry(c, priority, wantType, false);
 
@@ -50,7 +42,7 @@ public class MessageWriter {
             return;
         }
 
-        network.SendMessage(stream, message);
+        network.WriteMessage(closeable, peer, message);
 
 
     }

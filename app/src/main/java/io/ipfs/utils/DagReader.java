@@ -28,7 +28,7 @@ public class DagReader {
     private final Visitor visitor;
 
     private final Walker dagWalker;
-    public AtomicInteger atomicLeft = new AtomicInteger(0);
+    public final AtomicInteger atomicLeft = new AtomicInteger(0);
 
     public DagReader(@NonNull Walker dagWalker, long size) {
         this.dagWalker = dagWalker;
@@ -37,7 +37,7 @@ public class DagReader {
 
     }
 
-    public static DagReader NewDagReader(@NonNull Node node, @NonNull NodeGetter serv) {
+    public static DagReader create(@NonNull Node node, @NonNull NodeGetter serv) {
         long size = 0;
 
 
@@ -51,56 +51,10 @@ public class DagReader {
                 case File:
                     size = fsNode.FileSize();
                     break;
-                /*
-                case Directory, HAMTShard:
-                    // Dont allow reading directories
-                    return nil, ErrIsDir
-
-                case Metadata:
-                    if len(n.Links()) == 0 {
-                    return nil, errors.New("incorrectly formatted metadata object")
-                }
-                child, err := n.Links()[0].GetNode(ctx, serv)
-                if err != nil {
-                    return nil, err
-                }
-
-                childpb, ok := child.(*mdag.ProtoNode)
-                if !ok {
-                    return nil, mdag.ErrNotProtobuf
-                }
-                return NewDagReader(ctx, childpb, serv)
-                case Symlink:
-                    return nil, ErrCantReadSymlinks
-                default:
-                    throw new RuntimeException("type not supported");*/
             }
         } else {
             throw new RuntimeException("type not supported");
         }
-
-
-
-/*
-        switch n := n.(type) {
-        case *mdag.RawNode:
-            size = uint64(len(n.RawData()))
-
-        case *mdag.ProtoNode:
-            fsNode, err := unixfs.FSNodeFromBytes(n.Data())
-            if err != nil {
-            return nil, err
-        }
-
-        switch fsNode.Type() {
-
-        }
-        default:
-            return nil, ErrUnkownNodeType
-
-
-        //ctxWithCancel, cancel := context.WithCancel(ctx)
-        */
 
         Walker dagWalker = Walker.NewWalker(NavigableIPLDNode.NewNavigableIPLDNode(node, serv));
         return new DagReader(dagWalker, size);

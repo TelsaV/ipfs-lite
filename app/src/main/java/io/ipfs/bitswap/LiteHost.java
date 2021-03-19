@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 import io.Closeable;
-import io.LogUtils;
 import io.ipfs.ClosedException;
-import io.ipfs.IPFS;
 import io.ipfs.cid.Cid;
 import io.ipfs.utils.Connector;
 import io.libp2p.host.Host;
@@ -23,15 +21,14 @@ import io.libp2p.routing.Providers;
 
 public class LiteHost implements BitSwapNetwork {
 
-    private static final String TAG = LiteHost.class.getSimpleName();
     @NonNull
     private final Host host;
-    private Receiver receiver;
     @NonNull
     private final Connector connector;
     @Nullable
     private final ContentRouting contentRouting;
     private final List<Protocol> protocols = new ArrayList<>();
+    private Receiver receiver;
 
     private LiteHost(@NonNull Host host,
                      @Nullable ContentRouting contentRouting,
@@ -56,17 +53,6 @@ public class LiteHost implements BitSwapNetwork {
             return host.Connect(closeable, peer, protect);
         }
         return false;
-    }
-
-    public lite.Stream NewStream(@NonNull Closeable closeable, @NonNull PeerID peer) throws ClosedException {
-        return host.NewStream(closeable, peer, protocols);
-    }
-
-
-    @Override
-    public boolean SupportsHave(@NonNull lite.Stream stream) {
-        Protocol protocol = Protocol.create(stream.protocol());
-        return protocol.isSupportHas();
     }
 
 
@@ -117,53 +103,6 @@ public class LiteHost implements BitSwapNetwork {
         }
     }
 
-
-    @Override
-    public void SendMessage(@NonNull lite.Stream stream, @NonNull BitSwapMessage message) {
-
-
-        try {
-            try {
-                byte[] data;
-                Protocol evaluate = Protocol.create(stream.protocol());
-                if (Protocol.ProtocolBitswap.equals(evaluate) ||
-                        Protocol.ProtocolBitswapOneOne.equals(evaluate) ||
-                        Protocol.ProtocolLite.equals(evaluate)) {
-                    data = message.ToNetV1();
-                } else {
-                    LogUtils.error(TAG, "ToNetV0");
-                    data = message.ToNetV0();
-                }
-
-                LogUtils.error(TAG, "Write message  size " + data.length);
-                long res = stream.writeMessage(data, IPFS.WRITE_TIMEOUT);
-                LogUtils.error(TAG, "Write message size " + res);
-            } catch (Throwable throwable) {
-                stream.reset();
-                LogUtils.error(TAG, throwable);
-                throw new RuntimeException(throwable);
-            } finally {
-                stream.close();
-            }
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
-    }
-
-    @Override
-    public void SendMessage(@NonNull Closeable closeable, @NonNull PeerID peer, @NonNull BitSwapMessage message) {
-
-        if (!connector.ShouldConnect(peer.String())) {
-            throw new RuntimeException("Connection not allowed");
-        }
-
-        try {
-            lite.Stream stream = host.NewStream(closeable, peer, protocols);
-            SendMessage(stream, message);
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
-    }
 
     @Override
     public void WriteMessage(@NonNull Closeable closeable, @NonNull PeerID peer, @NonNull BitSwapMessage message) throws ClosedException {

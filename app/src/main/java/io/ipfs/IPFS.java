@@ -795,34 +795,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     }
 
-    @Nullable
-    public io.ipfs.format.Node resolveNode(@NonNull String root, @NonNull List<String> path, @NonNull Closeable closeable) throws ClosedException {
-
-        String resultPath = Content.IPFS_PATH + root;
-        for (String name : path) {
-            resultPath = resultPath.concat("/").concat(name);
-        }
-
-        return resolveNode(resultPath, closeable);
-
-    }
-    @Nullable
-    public io.ipfs.format.Node resolveNode(@NonNull String path, @NonNull Closeable closeable) throws ClosedException {
-        if (!isDaemonRunning()) {
-            return null;
-        }
-
-        try {
-            return Resolver.resolveNode(closeable, blocks, exchange, path);
-        } catch (Throwable ignore) {
-            // common use case not resolve a a path
-        }
-        if (closeable.isClosed()) {
-            throw new ClosedException();
-        }
-        return null;
-    }
-
     public String resolve(@NonNull String path, @NonNull Closeable closeable) throws ClosedException {
         if (!isDaemonRunning()) {
             return "";
@@ -1174,8 +1146,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             protocols.add(Protocol.ProtocolLite);
                             contentRouting = null;
                         } else {
-                            protocols.add(Protocol.ProtocolBitswapNoVers);
-                            protocols.add(Protocol.ProtocolBitswapOneZero);
                             protocols.add(Protocol.ProtocolBitswapOneOne);
                             protocols.add(Protocol.ProtocolBitswap);
                         }
@@ -1221,30 +1191,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                                     return node.writeMessage(closeable::isClosed, peer.String(),
                                             protos, bytes, IPFS.WRITE_TIMEOUT);
                                 } catch (Throwable throwable) {
-                                    if (closeable.isClosed()) {
-                                        throw new ClosedException();
-                                    } else {
-                                        throw new RuntimeException(throwable);
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public lite.Stream NewStream(@NonNull Closeable closeable,
-                                                         @NonNull PeerID peer,
-                                                         @NonNull List<Protocol> protocols) throws ClosedException {
-
-                                try {
-
-                                    String protos = "";
-                                    for (int i = 0; i < protocols.size(); i++) {
-                                        if(i > 1){
-                                            protos = protos.concat(";");
-                                        }
-                                        protos = protos.concat(protocols.get(i).String());
-                                    }
-                                    return node.newStream(peer.String(), protos, closeable::isClosed);
-                                } catch (Throwable throwable){
                                     if (closeable.isClosed()) {
                                         throw new ClosedException();
                                     } else {

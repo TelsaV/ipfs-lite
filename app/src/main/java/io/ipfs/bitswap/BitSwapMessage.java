@@ -28,7 +28,6 @@ public interface BitSwapMessage {
     }
 
 
-    // New returns a new, empty bitswap message
     static BitSwapMessage New(boolean full) {
         return new BitSwapMessageImpl(full);
     }
@@ -135,9 +134,6 @@ public interface BitSwapMessage {
     void SetPendingBytes(int pendingBytes);
 
 
-    BitswapProtos.Message ToProtoV1();
-
-
     byte[] ToNetV1();
 
     // Reset the values in the message back to defaults, so it can be reused
@@ -145,8 +141,6 @@ public interface BitSwapMessage {
 
     // Clone the message fields
     BitSwapMessage Clone();
-
-    byte[] ToNetV0();
 
 
     // Entry is a wantlist entry in a Bitswap message, with flags indicating
@@ -188,9 +182,9 @@ public interface BitSwapMessage {
 
         private static final String TAG = BitSwapMessage.class.getSimpleName();
         boolean full;
-        HashMap<Cid, Entry> wantlist = new HashMap<>();
-        HashMap<Cid, Block> blocks = new HashMap<>();
-        HashMap<Cid, BitswapProtos.Message.BlockPresenceType> blockPresences = new HashMap<>();
+        final HashMap<Cid, Entry> wantlist = new HashMap<>();
+        final HashMap<Cid, Block> blocks = new HashMap<>();
+        final HashMap<Cid, BitswapProtos.Message.BlockPresenceType> blockPresences = new HashMap<>();
         int pendingBytes;
 
         public BitSwapMessageImpl(boolean full) {
@@ -369,8 +363,7 @@ public interface BitSwapMessage {
         }
 
 
-        @Override
-        public BitswapProtos.Message ToProtoV1() {
+        private BitswapProtos.Message ToProtoV1() {
 
             BitswapProtos.Message.Builder builder = BitswapProtos.Message.newBuilder();
 
@@ -409,19 +402,6 @@ public interface BitSwapMessage {
         public byte[] ToNetV1() {
             try {
                 byte[] data = ToProtoV1().toByteArray();
-                ByteArrayOutputStream buf = new ByteArrayOutputStream();
-                Multihash.putUvarint(buf, data.length);
-                buf.write(data);
-                return buf.toByteArray();
-            } catch (Throwable throwable) {
-                throw new RuntimeException(throwable);
-            }
-        }
-
-        @Override
-        public byte[] ToNetV0() {
-            try {
-                byte[] data = ToProtoV0().toByteArray();
                 ByteArrayOutputStream buf = new ByteArrayOutputStream();
                 Multihash.putUvarint(buf, data.length);
                 buf.write(data);

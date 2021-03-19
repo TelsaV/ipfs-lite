@@ -15,8 +15,7 @@ public class ProgressStream extends InputStream {
     private int remember = 0;
     private long totalRead = 0L;
 
-    public ProgressStream(@NonNull Reader reader,
-                          @NonNull Progress progress) {
+    public ProgressStream(@NonNull Reader reader, @NonNull Progress progress) {
         mReader = reader;
         mProgress = progress;
         size = reader.getSize();

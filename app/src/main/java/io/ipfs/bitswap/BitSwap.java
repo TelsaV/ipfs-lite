@@ -49,7 +49,7 @@ public class BitSwap implements Interface, Receiver {
     @Override
     public void ReceiveMessage(@NonNull PeerID peer, @NonNull Protocol protocol, @NonNull BitSwapMessage incoming) {
 
-        LogUtils.error(TAG,  "ReceiveMessage " + peer.String() + " " +  protocol.String() );
+        LogUtils.error(TAG, "ReceiveMessage " + peer.String() + " " + protocol.String());
 
         engine.MessageReceived(peer, protocol, incoming);
 
@@ -71,7 +71,7 @@ public class BitSwap implements Interface, Receiver {
                                    @NonNull List<Cid> haves) {
 
 
-        LogUtils.error(TAG,  "ReceiveBlocks " + peer.String());
+        LogUtils.error(TAG, "ReceiveBlocks " + peer.String());
         // Put wanted blocks into block store
         if (wanted.size() > 0) {
             for (Block block : wanted) {
@@ -93,7 +93,7 @@ public class BitSwap implements Interface, Receiver {
     public void ReceiveError(@NonNull PeerID peer, @NonNull Protocol protocol, @NonNull String error) {
 
         // TODO handle error
-        LogUtils.error(TAG,  "ReceiveError " + peer.String() + " " +  protocol.String() + " " + error);
+        LogUtils.error(TAG, "ReceiveError " + peer.String() + " " + protocol.String() + " " + error);
     }
 
 

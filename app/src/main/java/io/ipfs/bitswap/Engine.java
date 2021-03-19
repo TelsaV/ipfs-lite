@@ -73,8 +73,8 @@ public class Engine {
             }
         } else {
             // Add DONT_HAVEs to the message
-                msg.AddDontHave(c);
-            }
+            msg.AddDontHave(c);
+        }
 
 
         Map<Cid, Block> blks = getBlocks(blockCids);
@@ -94,6 +94,7 @@ public class Engine {
         return msg;
 
     }
+
     // Split the want-have / want-block entries from the cancel entries
     public Pair<List<BitSwapMessage.Entry>, List<BitSwapMessage.Entry>> splitWantsCancels(
             @NonNull List<BitSwapMessage.Entry> es) {
@@ -182,15 +183,15 @@ public class Engine {
                         isWantBlock = true;
                     }
 
-                    Task task = new Task(c, entry.Priority, BitSwapMessage.BlockPresenceSize(c),
-                            new TaskData(0, false, isWantBlock, entry.SendDontHave));
+                    Task task = new Task(c,
+                            new TaskData(false, isWantBlock, entry.SendDontHave));
                     BitSwapMessage msg = createMessage(task);
                     if (!msg.Empty()) {
                         // TODO closable
                         Closeable closeable = () -> false;
                         try {
                             network.WriteMessage(closeable, peer, protocol, msg);
-                        } catch (Throwable throwable){
+                        } catch (Throwable throwable) {
                             LogUtils.error(TAG, throwable);
                         }
                     }
@@ -205,24 +206,15 @@ public class Engine {
                                 "from " + peer + " cid " + entry.Cid.String()
                                 + " isWantBlock " + isWantBlock);
 
-                // entrySize is the amount of space the entry takes up in the
-                // message we send to the recipient. If we're sending a block, the
-                // entrySize is the size of the block. Otherwise it's the size of
-                // a block presence entry.
-                int entrySize = blockSize;
-                if (!isWantBlock) {
-                    entrySize = BitSwapMessage.BlockPresenceSize(c);
-                }
 
-                Task task = new Task(c, entry.Priority, entrySize,
-                        new TaskData(blockSize, true, isWantBlock, entry.SendDontHave));
+                Task task = new Task(c, new TaskData(true, isWantBlock, entry.SendDontHave));
                 BitSwapMessage msg = createMessage(task);
                 if (!msg.Empty()) {
                     // TODO closable
                     Closeable closeable = () -> false;
                     try {
                         network.WriteMessage(closeable, peer, protocol, msg);
-                    } catch (Throwable throwable){
+                    } catch (Throwable throwable) {
                         LogUtils.error(TAG, throwable);
                     }
                 }
@@ -235,7 +227,6 @@ public class Engine {
         boolean isWantBlock = wantType == BitswapProtos.Message.Wantlist.WantType.Block;
         return isWantBlock || blockSize <= MaxBlockSizeReplaceHasWithBlock;
     }
-
 
 
     public Map<Cid, Block> getBlocks(@NonNull List<Cid> cids) {
@@ -264,21 +255,12 @@ public class Engine {
 
     private static class Task {
         // Topic for the task
-        public Cid Topic;
-        // Priority of the task
-        public int Priority;
-        // The size of the task
-        // - peers with most active work are deprioritized
-        // - peers with most pending work are prioritized
-        public int Work;
+        public final Cid Topic;
         // Arbitrary data associated with this Task by the client
-        public TaskData Data;
+        public final TaskData Data;
 
-
-        public Task(@NonNull Cid topic, int priority, int work, @NonNull TaskData data) {
+        public Task(@NonNull Cid topic, @NonNull TaskData data) {
             this.Topic = topic;
-            this.Priority = priority;
-            this.Work = work;
             this.Data = data;
         }
 
@@ -286,18 +268,14 @@ public class Engine {
 
 
     private static class TaskData {
-
         // Tasks can be want-have or want-block
-        boolean IsWantBlock;
+        final boolean IsWantBlock;
         // Whether to immediately send a response if the block is not found
-        boolean SendDontHave;
-        // The size of the block corresponding to the task
-        int BlockSize;
+        final boolean SendDontHave;
         // Whether the block was found
-        boolean HaveBlock;
+        final boolean HaveBlock;
 
-        public TaskData(int blockSize, boolean haveBlock, boolean isWantBlock, boolean sendDontHave) {
-            this.BlockSize = blockSize;
+        public TaskData(boolean haveBlock, boolean isWantBlock, boolean sendDontHave) {
             this.SendDontHave = sendDontHave;
             this.IsWantBlock = isWantBlock;
             this.HaveBlock = haveBlock;
