@@ -23,7 +23,7 @@ public class Settings {
     public static final String AGENT = "/go-ipfs/0.9.0-dev/lite";
     public static final int TIMEOUT_BOOTSTRAP = 5;
     public static final int LOW_WATER = 50;
-    public static final int HIGH_WATER = 500;
+    public static final int HIGH_WATER = 150;
     public static final String GRACE_PERIOD = "10s";
     public static final int MIN_PEERS = 10;
     public static final long RESOLVE_MAX_TIME = 20000; // 20 sec

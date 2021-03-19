@@ -401,7 +401,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         return swarm.contains(pid);
     }
 
-    final ExecutorService READER = Executors.newFixedThreadPool(8);
+    final ExecutorService READER = Executors.newFixedThreadPool(4);
 
     private void setStreamHandler(@NonNull StreamHandler streamHandler) {
         this.handler = streamHandler;
@@ -1146,7 +1146,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             protocols.add(Protocol.ProtocolLite);
                             contentRouting = null;
                         } else {
-                            protocols.add(Protocol.ProtocolBitswapOneOne);
                             protocols.add(Protocol.ProtocolBitswap);
                         }
 

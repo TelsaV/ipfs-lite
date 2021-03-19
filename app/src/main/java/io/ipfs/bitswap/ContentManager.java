@@ -21,7 +21,7 @@ public class ContentManager {
     public static final int PROVIDERS = 10;
     private static final int TIMEOUT = 5000;
     private static final String TAG = ContentManager.class.getSimpleName();
-    private static final ExecutorService WANTS = Executors.newFixedThreadPool(32);
+    private static final ExecutorService WANTS = Executors.newFixedThreadPool(8);
     private final ConcurrentLinkedQueue<Cid> searches = new ConcurrentLinkedQueue<>();
     private final CopyOnWriteArraySet<PeerID> faulty = new CopyOnWriteArraySet<>();
     private final CopyOnWriteArraySet<PeerID> priority = new CopyOnWriteArraySet<>();
@@ -109,21 +109,18 @@ public class ContentManager {
                 if (!handled.contains(peer)) {
                     handled.add(peer);
                     hasRun = true;
-                    WANTS.execute(() -> {
-                        try {
-                            if (network.ConnectTo(closeable, peer, true)) {
-                                MessageWriter.sendWantsMessage(closeable, network, peer,
-                                        Collections.singletonList(cid));
-                            }
-                        } catch (ClosedException closedException) {
-                            // ignore
-                        } catch (Throwable throwable) {
-                            LogUtils.error(TAG, throwable);
-                            priority.remove(peer);
-                            faulty.add(peer);
+                    try {
+                        if (network.ConnectTo(closeable, peer, true)) {
+                            MessageWriter.sendWantsMessage(closeable, network, peer,
+                                    Collections.singletonList(cid));
                         }
-                    });
-
+                    } catch (ClosedException closedException) {
+                        throw closedException;
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                        priority.remove(peer);
+                        faulty.add(peer);
+                    }
                 }
             }
 

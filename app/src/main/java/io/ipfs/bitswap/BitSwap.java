@@ -18,14 +18,14 @@ public class BitSwap implements Interface, Receiver {
 
     private static final String TAG = BitSwap.class.getSimpleName();
 
-    private final Engine engine;
+    private final BitSwapEngine engine;
     private final BlockStore blockstore;
     private final ContentManager contentManager;
 
 
     public BitSwap(@NonNull BlockStore blockstore, @NonNull BitSwapNetwork network) {
         this.blockstore = blockstore;
-        engine = Engine.NewEngine(blockstore, network, network.Self());
+        engine = BitSwapEngine.NewEngine(blockstore, network, network.Self());
         contentManager = new ContentManager(network);
     }
 
@@ -49,9 +49,7 @@ public class BitSwap implements Interface, Receiver {
     @Override
     public void ReceiveMessage(@NonNull PeerID peer, @NonNull Protocol protocol, @NonNull BitSwapMessage incoming) {
 
-        LogUtils.error(TAG, "ReceiveMessage " + peer.String() + " " + protocol.String());
-
-        engine.MessageReceived(peer, protocol, incoming);
+        LogUtils.verbose(TAG, "ReceiveMessage " + peer.String() + " " + protocol.String());
 
         List<Block> blocks = incoming.Blocks();
         List<Cid> haves = incoming.Haves();
@@ -63,6 +61,8 @@ public class BitSwap implements Interface, Receiver {
                 LogUtils.error(TAG, throwable);
             }
         }
+
+        engine.MessageReceived(peer, protocol, incoming);
     }
 
 
@@ -78,9 +78,6 @@ public class BitSwap implements Interface, Receiver {
                 blockstore.Put(block);
             }
         }
-
-        // TODO check if necessary (what it is doing)
-        //engine.ReceiveFrom(closeable, from, wanted, haves);
 
         contentManager.HaveResponseReceived(peer, haves);
 

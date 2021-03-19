@@ -21,9 +21,9 @@ import io.libp2p.peer.PeerID;
 import io.libp2p.protocol.Protocol;
 import io.protos.bitswap.BitswapProtos;
 
-public class Engine {
+public class BitSwapEngine {
     public static final int MaxBlockSizeReplaceHasWithBlock = 1024;
-    private static final String TAG = Engine.class.getSimpleName();
+    private static final String TAG = BitSwapEngine.class.getSimpleName();
     private final BlockStore blockstore;
 
     private final PeerID self;
@@ -32,8 +32,8 @@ public class Engine {
     @NonNull
     private final BitSwapNetwork network;
 
-    private Engine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network,
-                   @NonNull PeerID self) {
+    private BitSwapEngine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network,
+                          @NonNull PeerID self) {
         this.blockstore = bs;
         this.network = network;
         this.self = self;
@@ -41,8 +41,8 @@ public class Engine {
     }
 
     // NewEngine creates a new block sending engine for the given block store
-    public static Engine NewEngine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network, @NonNull PeerID self) {
-        return new Engine(bs, network, self);
+    public static BitSwapEngine NewEngine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network, @NonNull PeerID self) {
+        return new BitSwapEngine(bs, network, self);
     }
 
     private BitSwapMessage createMessage(@NonNull Task task) {
@@ -62,7 +62,7 @@ public class Engine {
 
 
         Cid c = task.Topic;
-        TaskData td = (TaskData) task.Data;
+        TaskData td = task.Data;
         if (td.HaveBlock) {
             if (td.IsWantBlock) {
                 blockCids.add(c);
