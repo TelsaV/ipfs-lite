@@ -1,4 +1,4 @@
-package io.ipfs.bitswap.internal;
+package io.ipfs.bitswap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

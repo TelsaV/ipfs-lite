@@ -12,7 +12,6 @@ import java.util.concurrent.Executors;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.ClosedException;
-import io.ipfs.bitswap.internal.Pubsub;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;
 import io.libp2p.peer.ID;
