@@ -892,7 +892,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
         List<Link> result = new ArrayList<>();
         for (Link link : links) {
-            if (!link.isRaw()) {
+            if (!link.getName().isEmpty()) {
                 result.add(link);
             }
         }
