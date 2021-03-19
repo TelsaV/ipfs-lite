@@ -123,7 +123,7 @@ public class DOCS {
                 });
 
             } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable.getMessage());
+                LogUtils.error(TAG, throwable);
             } finally {
                 LogUtils.info(TAG, "Finish " + cid +
                         " onStart [" + (System.currentTimeMillis() - start) + "]...");
@@ -188,7 +188,7 @@ public class DOCS {
 
                 LogUtils.error(TAG, "Connect " + pid + " " + connected);
             } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable.getMessage());
+                LogUtils.error(TAG, throwable);
             } finally {
                 LogUtils.info(TAG, " finish onStart ...");
             }
@@ -309,9 +309,6 @@ public class DOCS {
             Thread thread = threads.getThreadByIdx(idx);
             if (thread != null) {
                 if (thread.isDeleting()) {
-
-                    LogUtils.error(TAG, "Delete thread " + thread.getName());
-
                     String cid = thread.getContent();
                     threads.removeThread(thread);
                     if (cid != null) {
@@ -816,7 +813,7 @@ public class DOCS {
 
         } else {
             String cid = ipfs.resolve(root, paths, closeable);
-            if (cid == null) {
+            if (cid.isEmpty()) {
                 throw new ContentException(uri.toString());
             }
             if (ipfs.isDir(cid, closeable)) {
@@ -1384,8 +1381,8 @@ public class DOCS {
                 }
             }
 
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
         }
 
     }

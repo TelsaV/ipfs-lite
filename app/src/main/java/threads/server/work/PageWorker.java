@@ -19,14 +19,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import io.LogUtils;
+import io.ipfs.ClosedException;
+import io.ipfs.IPFS;
+import io.ipfs.utils.Link;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.pages.Page;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Link;
 import threads.server.services.ConnectService;
 import threads.server.services.LiteService;
 
@@ -90,6 +91,7 @@ public class PageWorker extends Worker {
                     publishPage();
                 }
             }
+        } catch (ClosedException ignore) {
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         } finally {
@@ -131,18 +133,18 @@ public class PageWorker extends Worker {
         });
     }
 
-    private void publishPage() {
-        try {
+    private void publishPage() throws ClosedException {
 
-            Page page = docs.getPinsPage();
-            if (page != null) {
 
-                String content = page.getContent();
-                Objects.requireNonNull(content);
+        Page page = docs.getPinsPage();
+        if (page != null) {
 
-                if (!IPFS.isPrivateSharingEnabled(getApplicationContext())) {
-                    Executors.newSingleThreadExecutor().execute(() -> publishContent(content));
-                }
+            String content = page.getContent();
+            Objects.requireNonNull(content);
+
+            if (!IPFS.isPrivateSharingEnabled(getApplicationContext())) {
+                Executors.newSingleThreadExecutor().execute(() -> publishContent(content));
+            }
 
                 LogUtils.error(TAG, "Start publish name " + content);
 
@@ -153,15 +155,8 @@ public class PageWorker extends Worker {
                 publishSequence(content, seq);
 
                 ipfs.publishName(content, this::isStopped, seq);
-
-
-                LogUtils.error(TAG, "End publish name " + content);
-
-
             }
-        } catch (Throwable e) {
-            LogUtils.error(TAG, e);
-        }
+
     }
 
     private void publishContent(@NonNull String content) {
