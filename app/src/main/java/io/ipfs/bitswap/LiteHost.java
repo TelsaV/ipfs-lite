@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +14,6 @@ import io.ipfs.ClosedException;
 import io.ipfs.IPFS;
 import io.ipfs.cid.Cid;
 import io.ipfs.utils.Connector;
-import io.libp2p.host.ConnManager;
 import io.libp2p.host.Host;
 import io.libp2p.network.Stream;
 import io.libp2p.peer.PeerID;
@@ -80,15 +80,15 @@ public class LiteHost implements BitSwapNetwork {
 
     }
 
-    @NonNull
-    @Override
-    public ConnManager ConnectionManager() {
-        return host;
-    }
-
     @Override
     public PeerID Self() {
         return host.Self();
+    }
+
+    @NonNull
+    @Override
+    public List<PeerID> getPeers() {
+        return host.getPeers();
     }
 
     private void handleNewStream(@NonNull Stream stream) {
@@ -104,12 +104,12 @@ public class LiteHost implements BitSwapNetwork {
                 BitSwapMessage received = BitSwapMessage.fromData(data);
 
                 if (connector.ShouldConnect(peer.String())) {
-                    receiver.ReceiveMessage(peer, received);
+                    receiver.ReceiveMessage(peer, stream.Protocol(), received);
                 }
             } else {
                 String error = stream.GetError();
                 if (error != null) {
-                    receiver.ReceiveError(peer, error);
+                    receiver.ReceiveError(peer, stream.Protocol(), error);
                 }
             }
         } catch (Throwable throwable) {
@@ -174,6 +174,25 @@ public class LiteHost implements BitSwapNetwork {
 
         byte[] data = message.ToNetV1();
         long res = host.WriteMessage(closeable, peer, protocols, data);
+        if (Objects.equals(data.length, res)) {
+            throw new RuntimeException("Message not fully written");
+        }
+
+    }
+
+
+    @Override
+    public void WriteMessage(@NonNull Closeable closeable,
+                             @NonNull PeerID peer,
+                             @NonNull Protocol protocol,
+                             @NonNull BitSwapMessage message) throws ClosedException {
+
+        if (!connector.ShouldConnect(peer.String())) {
+            throw new RuntimeException("Connection not allowed");
+        }
+
+        byte[] data = message.ToNetV1();
+        long res = host.WriteMessage(closeable, peer, Collections.singletonList(protocol), data);
         if (Objects.equals(data.length, res)) {
             throw new RuntimeException("Message not fully written");
         }

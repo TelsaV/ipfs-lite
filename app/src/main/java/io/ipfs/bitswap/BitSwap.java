@@ -7,12 +7,12 @@ import java.util.List;
 
 import io.Closeable;
 import io.LogUtils;
-import io.ipfs.IPFS;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.Block;
 import io.ipfs.format.BlockStore;
 import io.libp2p.peer.PeerID;
+import io.libp2p.protocol.Protocol;
 
 public class BitSwap implements Interface, Receiver {
 
@@ -25,7 +25,7 @@ public class BitSwap implements Interface, Receiver {
 
     public BitSwap(@NonNull BlockStore blockstore, @NonNull BitSwapNetwork network) {
         this.blockstore = blockstore;
-        engine = Engine.NewEngine(blockstore, network, IPFS.EngineBlockstoreWorkerCount, network.Self());
+        engine = Engine.NewEngine(blockstore, network, network.Self());
         contentManager = new ContentManager(network);
     }
 
@@ -47,11 +47,11 @@ public class BitSwap implements Interface, Receiver {
     }
 
     @Override
-    public void ReceiveMessage(@NonNull PeerID peer, @NonNull BitSwapMessage incoming) {
+    public void ReceiveMessage(@NonNull PeerID peer, @NonNull Protocol protocol, @NonNull BitSwapMessage incoming) {
 
+        LogUtils.error(TAG,  "ReceiveMessage " + peer.String() + " " +  protocol.String() );
 
-
-        engine.MessageReceived(peer, incoming);
+        engine.MessageReceived(peer, protocol, incoming);
 
         List<Block> blocks = incoming.Blocks();
         List<Cid> haves = incoming.Haves();
@@ -90,10 +90,10 @@ public class BitSwap implements Interface, Receiver {
     }
 
     @Override
-    public void ReceiveError(@NonNull PeerID peer, @NonNull String error) {
+    public void ReceiveError(@NonNull PeerID peer, @NonNull Protocol protocol, @NonNull String error) {
 
         // TODO handle error
-        LogUtils.error(TAG,  "ReceiveError " + peer.String() + " " + error);
+        LogUtils.error(TAG,  "ReceiveError " + peer.String() + " " +  protocol.String() + " " + error);
     }
 
 

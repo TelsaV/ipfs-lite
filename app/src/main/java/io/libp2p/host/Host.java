@@ -11,7 +11,7 @@ import io.libp2p.peer.PeerID;
 import io.libp2p.protocol.Protocol;
 import lite.Stream;
 
-public interface Host extends ConnManager {
+public interface Host {
     boolean Connect(@NonNull Closeable ctx, @NonNull PeerID peer, boolean protect) throws ClosedException;
 
     long WriteMessage(@NonNull Closeable closeable,
@@ -30,4 +30,6 @@ public interface Host extends ConnManager {
     void SetStreamHandler(@NonNull Protocol proto, @NonNull StreamHandler handler);
 
     PeerID Self();
+
+    List<PeerID> getPeers();
 }

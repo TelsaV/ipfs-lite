@@ -134,7 +134,7 @@ public class ContentManager {
             }
 
             if (!hasRun) {
-                List<PeerID> cons = network.ConnectionManager().getPeers();
+                List<PeerID> cons = network.getPeers();
                 for (PeerID peer : cons) {
                     if (!faulty.contains(peer) && !handled.contains(peer) && !priority.contains(peer)) {
                         handled.add(peer);

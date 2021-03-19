@@ -15,37 +15,11 @@ import io.ipfs.cid.Cid;
 import io.ipfs.cid.Prefix;
 import io.ipfs.format.BasicBlock;
 import io.ipfs.format.Block;
-import io.ipfs.format.Node;
 import io.ipfs.multihash.Multihash;
 import io.protos.bitswap.BitswapProtos;
 
 public interface BitSwapMessage {
 
-    int MaxEntrySize = maxEntrySize();
-
-    static int maxEntrySize() {
-
-        int maxInt32 = Integer.MAX_VALUE;
-
-        try {
-            Cid cid = Node.PrefixForCidVersion(0).Sum("cid".getBytes());
-
-            //Cid c = Cid.NewCidV0(u.Hash([]byte("cid")))
-
-            Entry e = new Entry();
-            e.Cid = cid;
-            e.Priority = maxInt32;
-            e.WantType = BitswapProtos.Message.Wantlist.WantType.Have;
-            e.SendDontHave = true;
-            e.Cancel = true;
-
-            return e.Size();
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
-
-
-    }
 
     static int BlockPresenceSize(@NonNull Cid c) {
         return BitswapProtos.Message.BlockPresence.newBuilder()
@@ -179,7 +153,7 @@ public interface BitSwapMessage {
 // - whether message is a cancel
 // - whether requester wants a DONT_HAVE message
 // - whether requester wants a HAVE message (instead of the block)
-    class Entry extends io.ipfs.bitswap.wantlist.Entry {
+    class Entry extends io.ipfs.bitswap.Entry {
         public boolean Cancel;
         public boolean SendDontHave;
 

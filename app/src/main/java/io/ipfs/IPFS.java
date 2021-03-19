@@ -69,9 +69,7 @@ import threads.server.core.events.EVENTS;
 
 public class IPFS implements Listener, ContentRouting, Metrics {
     public static final int WRITE_TIMEOUT = 60;
-    public static final int EngineBlockstoreWorkerCount = 128;
     public static final boolean SEND_DONT_HAVES = false;
-    public static final int PRELOAD_CID = 5;
 
 
     private static final String PREF_KEY = "prefKey";
@@ -1297,6 +1295,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         READER.execute(() -> {
             try {
                 handler.handle(new io.libp2p.network.Stream() {
+                    @NonNull
                     @Override
                     public Protocol Protocol() {
                         return Protocol.create(proto);
@@ -1330,6 +1329,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         LogUtils.error(TAG, "Receive error from " + pid + " proto " + proto + " error " + error);
         Objects.requireNonNull(handler);
         handler.handle(new io.libp2p.network.Stream() {
+            @NonNull
             @Override
             public Protocol Protocol() {
                 return Protocol.create(proto);

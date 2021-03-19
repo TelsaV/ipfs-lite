@@ -1,4 +1,4 @@
-package io.ipfs.bitswap.wantlist;
+package io.ipfs.bitswap;
 
 import io.protos.bitswap.BitswapProtos;
 

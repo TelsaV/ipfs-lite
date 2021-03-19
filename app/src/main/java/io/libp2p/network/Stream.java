@@ -8,6 +8,7 @@ import io.libp2p.protocol.Protocol;
 
 public interface Stream {
 
+    @NonNull
     Protocol Protocol();
 
     @NonNull
