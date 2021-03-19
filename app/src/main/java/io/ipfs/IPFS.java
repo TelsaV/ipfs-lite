@@ -39,11 +39,11 @@ import io.ipfs.bitswap.BitSwapNetwork;
 import io.ipfs.bitswap.LiteHost;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 import io.ipfs.format.Metrics;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
-import io.ipfs.utils.MetricsBlockstore;
+import io.ipfs.utils.MetricsBlockStore;
 import io.ipfs.utils.Progress;
 import io.ipfs.utils.ProgressStream;
 import io.ipfs.utils.Reachable;
@@ -71,6 +71,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public static final int WRITE_TIMEOUT = 60;
     public static final int EngineBlockstoreWorkerCount = 128;
     public static final boolean SEND_DONT_HAVES = false;
+    public static final int PRELOAD_CID = 5;
 
 
     private static final String PREF_KEY = "prefKey";
@@ -855,7 +856,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         }
         boolean result;
         try {
-            Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+            BlockStore blockstore = BlockStore.NewBlockstore(blocks);
             result = Stream.IsDir(closeable, blockstore, exchange, cid);
 
         } catch (Throwable e) {
@@ -926,7 +927,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         }
         List<Link> infoList = new ArrayList<>();
         try {
-            Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+            BlockStore blockstore = BlockStore.NewBlockstore(blocks);
             Stream.Ls(new LinkCloseable() {
 
                 @Override
@@ -964,7 +965,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     @NonNull
     public io.ipfs.utils.Reader getReader(@NonNull String cid, @NonNull Closeable closeable) {
-        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+        BlockStore blockstore = BlockStore.NewBlockstore(blocks);
         return io.ipfs.utils.Reader.getReader(closeable, blockstore, exchange, cid);
     }
 
@@ -1195,18 +1196,38 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             public boolean Connect(@NonNull Closeable closeable,
                                                    @NonNull ID peer, boolean protect) throws ClosedException {
                                 try {
-                                    if (!isConnected(peer.String())) {
-                                        return node.swarmConnect(Content.P2P_PATH + peer.String(), protect,
-                                                closeable::isClosed);
-                                    }
-                                    return true;
+                                    return node.swarmConnect(Content.P2P_PATH + peer.String(),
+                                            protect, closeable::isClosed);
                                 } catch (Throwable throwable) {
-
-                                    if(closeable.isClosed()){
+                                    if (closeable.isClosed()) {
                                         throw new ClosedException();
                                     }
-
                                     return false;
+                                }
+                            }
+
+                            @Override
+                            public long WriteMessage(@NonNull Closeable closeable,
+                                                     @NonNull ID peer,
+                                                     @NonNull List<io.libp2p.protocol.ID> protocols,
+                                                     @NonNull byte[] bytes) throws ClosedException {
+
+                                try {
+                                    String protos = "";
+                                    for (int i = 0; i < protocols.size(); i++) {
+                                        if (i > 1) {
+                                            protos = protos.concat(";");
+                                        }
+                                        protos = protos.concat(protocols.get(i).String());
+                                    }
+                                    return node.writeMessage(closeable::isClosed, peer.String(),
+                                            protos, bytes, IPFS.WRITE_TIMEOUT);
+                                } catch (Throwable throwable) {
+                                    if (closeable.isClosed()) {
+                                        throw new ClosedException();
+                                    } else {
+                                        throw new RuntimeException(throwable);
+                                    }
                                 }
                             }
 
@@ -1255,10 +1276,10 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                         }, protocols);
 
 
-                        Blockstore blockstore = Blockstore.NewBlockstore(blocks);
+                        BlockStore blockstore = BlockStore.NewBlockstore(blocks);
 
-                        MetricsBlockstore metricsBlockstore =
-                                new MetricsBlockstore(blockstore, this);
+                        MetricsBlockStore metricsBlockstore =
+                                new MetricsBlockStore(blockstore, this);
 
                         exchange = BitSwap.New(bsm, metricsBlockstore);
                     }

@@ -21,14 +21,14 @@ import io.ipfs.bitswap.peertask.Task;
 import io.ipfs.bitswap.peertask.TaskMerger;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 import io.libp2p.peer.ID;
 import io.protos.bitswap.BitswapProtos;
 
 public class Engine {
     public static final int MaxBlockSizeReplaceHasWithBlock = 1024;
     private static final String TAG = Engine.class.getSimpleName();
-    private final Blockstore blockstore;
+    private final BlockStore blockstore;
     private final PeerTaskQueue peerRequestQueue;
     private final ID self;
 
@@ -42,7 +42,7 @@ public class Engine {
     @NonNull
     private final BitSwapNetwork network;
 
-    private Engine(@NonNull Blockstore bs, @NonNull BitSwapNetwork network, int bstoreWorkerCount,
+    private Engine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network, int bstoreWorkerCount,
                    @NonNull ID self, int maxReplaceSize) {
         this.blockstore = bs;
         this.network = network;
@@ -119,7 +119,7 @@ public class Engine {
     }
 
     // NewEngine creates a new block sending engine for the given block store
-    public static Engine NewEngine(@NonNull Blockstore bs, @NonNull BitSwapNetwork network,
+    public static Engine NewEngine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network,
 
                                    int bstoreWorkerCount, @NonNull ID self) {
         return new Engine(bs, network, bstoreWorkerCount, self, MaxBlockSizeReplaceHasWithBlock);

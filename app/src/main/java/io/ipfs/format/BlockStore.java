@@ -8,11 +8,17 @@ import io.ipfs.Storage;
 import io.ipfs.cid.Cid;
 import io.ipfs.datastore.Dshelp;
 
-public interface Blockstore {
-    String TAG = Blockstore.class.getSimpleName();
+public interface BlockStore {
+    String TAG = BlockStore.class.getSimpleName();
 
-    static Blockstore NewBlockstore(@NonNull final Storage storage) {
-        return new Blockstore() {
+    static BlockStore NewBlockstore(@NonNull final Storage storage) {
+        return new BlockStore() {
+            @Override
+            public boolean Has(@NonNull Cid cid) {
+                String key = Dshelp.CidToDsKey(cid).String();
+                return storage.hasBlock(key);
+            }
+
             @Override
             public Block Get(@NonNull Cid cid) {
 
@@ -50,6 +56,8 @@ public interface Blockstore {
 
         };
     }
+
+    boolean Has(@NonNull Cid cid);
 
     Block Get(@NonNull Cid cid);
 

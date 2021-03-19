@@ -5,9 +5,11 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.LogUtils;
+
 
 public class ReaderStream extends InputStream {
-
+    private static final String TAG = ReaderStream.class.getSimpleName();
     private final Reader reader;
     private int position = 0;
     private byte[] data = null;
@@ -15,6 +17,7 @@ public class ReaderStream extends InputStream {
     public ReaderStream(@NonNull Reader reader) {
         this.reader = reader;
     }
+
 
     @Override
     public int available() {
@@ -48,9 +51,8 @@ public class ReaderStream extends InputStream {
                     return -1;
                 }
             }
-
-
         } catch (Throwable e) {
+            LogUtils.error(TAG, e);
             throw new IOException(e);
         }
     }

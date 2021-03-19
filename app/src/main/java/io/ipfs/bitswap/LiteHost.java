@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.Closeable;
 import io.LogUtils;
@@ -78,12 +79,6 @@ public class LiteHost implements BitSwapNetwork {
 
     }
 
-    @Override
-    public void DisconnectFrom(@NonNull Closeable closeable, @NonNull ID peer) {
-        throw new RuntimeException("should not be invoked");
-    }
-
-
     @NonNull
     @Override
     public ConnManager ConnectionManager() {
@@ -127,7 +122,6 @@ public class LiteHost implements BitSwapNetwork {
 
 
         try {
-
             try {
                 byte[] data;
                 io.libp2p.protocol.ID evaluate = io.libp2p.protocol.ID.Evaluate(stream.protocol());
@@ -159,7 +153,7 @@ public class LiteHost implements BitSwapNetwork {
     public void SendMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull BitSwapMessage message) {
 
         if (!connector.ShouldConnect(peer.String())) {
-            throw new RuntimeException("unknown user");
+            throw new RuntimeException("Connection not allowed");
         }
 
         try {
@@ -170,6 +164,20 @@ public class LiteHost implements BitSwapNetwork {
         }
     }
 
+    @Override
+    public void WriteMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull BitSwapMessage message) throws ClosedException {
+
+        if (!connector.ShouldConnect(peer.String())) {
+            throw new RuntimeException("Connection not allowed");
+        }
+
+        byte[] data = message.ToNetV1();
+        long res = host.WriteMessage(closeable, peer, protocols, data);
+        if (Objects.equals(data.length, res)) {
+            throw new RuntimeException("Message not fully written");
+        }
+
+    }
 
 
     @Override

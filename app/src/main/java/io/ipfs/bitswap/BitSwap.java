@@ -8,11 +8,10 @@ import java.util.List;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.IPFS;
-import io.ipfs.bitswap.internal.PeerManager;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.Block;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 import io.libp2p.peer.ID;
 
 public class BitSwap implements Interface, Receiver {
@@ -20,17 +19,17 @@ public class BitSwap implements Interface, Receiver {
     private static final String TAG = BitSwap.class.getSimpleName();
 
     private final Engine engine;
-    private final Blockstore blockstore;
-    private final PeerManager peerManager;
+    private final BlockStore blockstore;
+    private final ContentManager contentManager;
 
 
-    public BitSwap(@NonNull Blockstore blockstore, @NonNull BitSwapNetwork network) {
+    public BitSwap(@NonNull BlockStore blockstore, @NonNull BitSwapNetwork network) {
         this.blockstore = blockstore;
         engine = Engine.NewEngine(blockstore, network, IPFS.EngineBlockstoreWorkerCount, network.Self());
-        peerManager = new PeerManager(network);
+        contentManager = new ContentManager(network);
     }
 
-    public static Interface New(@NonNull BitSwapNetwork bitSwapNetwork, @NonNull Blockstore blockstore) {
+    public static Interface New(@NonNull BitSwapNetwork bitSwapNetwork, @NonNull BlockStore blockstore) {
 
         BitSwap bitSwap = new BitSwap(blockstore, bitSwapNetwork);
         bitSwapNetwork.SetDelegate(bitSwap);
@@ -40,11 +39,11 @@ public class BitSwap implements Interface, Receiver {
     @Nullable
     @Override
     public Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
-        return peerManager.GetBlock(closeable, cid);
+        return contentManager.GetBlock(closeable, cid);
     }
 
     public void reset() {
-        peerManager.reset();
+        contentManager.reset();
     }
 
     @Override
@@ -84,12 +83,12 @@ public class BitSwap implements Interface, Receiver {
         }
 
         // TODO check if necessary (what it is doing)
-        engine.ReceiveFrom(closeable, from, wanted, haves);
+        //engine.ReceiveFrom(closeable, from, wanted, haves);
 
-        peerManager.HaveResponseReceived(from, haves);
+        contentManager.HaveResponseReceived(from, haves);
 
         for (Block block : wanted) {
-            peerManager.BlockReceived(from, block);
+            contentManager.BlockReceived(from, block);
         }
     }
 

@@ -8,12 +8,12 @@ import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Fetcher;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.Block;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 
 public interface BlockService extends BlockGetter {
 
 
-    static BlockService New(@NonNull final Blockstore bs, @NonNull final Interface rem) {
+    static BlockService New(@NonNull final BlockStore bs, @NonNull final Interface rem) {
         return new BlockService() {
 
             @Override
@@ -27,9 +27,10 @@ public interface BlockService extends BlockGetter {
                 bs.Put(block);
             }
 
+
             @Nullable
             private Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid,
-                                   @NonNull Blockstore bs, @NonNull Fetcher fetcher) {
+                                   @NonNull BlockStore bs, @NonNull Fetcher fetcher) {
                 Block block = bs.Get(cid);
                 if (block != null) {
                     return block;

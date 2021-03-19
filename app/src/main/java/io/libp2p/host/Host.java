@@ -13,6 +13,12 @@ import lite.Stream;
 public interface Host extends ConnManager {
     boolean Connect(@NonNull Closeable ctx, @NonNull ID peer, boolean protect) throws ClosedException;
 
+    long WriteMessage(@NonNull Closeable closeable,
+                      @NonNull ID peer,
+                      @NonNull List<io.libp2p.protocol.ID> protocols,
+                      @NonNull byte[] bytes) throws ClosedException;
+
+
     Stream NewStream(@NonNull Closeable closeable, @NonNull ID peer,
                      @NonNull List<io.libp2p.protocol.ID> protocols) throws ClosedException;
 

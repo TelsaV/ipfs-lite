@@ -12,4 +12,5 @@ public interface BlockGetter {
     Block GetBlock(@NonNull Closeable closeable, @NonNull Cid cid);
 
     void AddBlock(@NonNull Block block);
+
 }

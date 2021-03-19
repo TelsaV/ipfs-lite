@@ -854,9 +854,8 @@ public class DOCS {
                 responseHeaders.put("Content-Length", "" + size);
             }
             responseHeaders.put("Content-Type", mimeType);
-
             return new WebResourceResponse(mimeType, Content.UTF8, 200,
-                    "OK", responseHeaders, new BufferedInputStream(in));
+                    "OK", responseHeaders, new BufferedInputStream(in, Settings.CHUNK_SIZE));
         } catch (Throwable throwable) {
             if (closeable.isClosed()) {
                 throw new ClosedException();

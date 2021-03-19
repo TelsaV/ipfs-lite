@@ -6,12 +6,12 @@ import io.Closeable;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.Block;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 
 public class Exchange implements Interface {
-    private final Blockstore blockstore;
+    private final BlockStore blockstore;
 
-    public Exchange(@NonNull Blockstore blockstore) {
+    public Exchange(@NonNull BlockStore blockstore) {
         this.blockstore = blockstore;
     }
 
@@ -19,6 +19,7 @@ public class Exchange implements Interface {
     public Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
         return blockstore.Get(cid);
     }
+
 
     @Override
     public void reset() {

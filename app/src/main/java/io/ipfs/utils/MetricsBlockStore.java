@@ -6,17 +6,22 @@ import java.util.List;
 
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 import io.ipfs.format.Metrics;
 
-public class MetricsBlockstore implements Blockstore {
+public class MetricsBlockStore implements BlockStore {
 
-    private final Blockstore blockstore;
+    private final BlockStore blockstore;
     private final Metrics metrics;
 
-    public MetricsBlockstore(@NonNull Blockstore blockstore, @NonNull Metrics metrics) {
+    public MetricsBlockStore(@NonNull BlockStore blockstore, @NonNull Metrics metrics) {
         this.blockstore = blockstore;
         this.metrics = metrics;
+    }
+
+    @Override
+    public boolean Has(@NonNull Cid cid) {
+        return blockstore.Has(cid);
     }
 
     @Override

@@ -14,7 +14,7 @@ import io.ipfs.Storage;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 import io.ipfs.format.Link;
 import io.ipfs.format.Node;
 import io.ipfs.format.NodeGetter;
@@ -26,7 +26,7 @@ public class Resolver {
 
     public static Node resolveNode(@NonNull Closeable closeable, @NonNull Storage storage,
                                   @NonNull Interface exchange, @NonNull String path) {
-        Blockstore bs = Blockstore.NewBlockstore(storage);
+        BlockStore bs = BlockStore.NewBlockstore(storage);
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dags = new DagService(blockservice);
         return Resolver.ResolveNode(closeable, dags, Path.New(path));

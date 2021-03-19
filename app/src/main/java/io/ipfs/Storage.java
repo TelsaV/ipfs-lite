@@ -14,4 +14,6 @@ public interface Storage {
     void deleteBlock(@NonNull String id);
 
     int sizeBlock(@NonNull String id);
+
+    boolean hasBlock(@NonNull String id);
 }

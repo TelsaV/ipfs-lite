@@ -12,7 +12,7 @@ import io.ipfs.blockservice.BlockService;
 import io.ipfs.cid.Cid;
 import io.ipfs.cid.Prefix;
 import io.ipfs.exchange.Interface;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 import io.ipfs.format.Link;
 import io.ipfs.format.Node;
 import io.ipfs.format.ProtoNode;
@@ -28,7 +28,7 @@ public class Stream {
     public static Adder getFileAdder(@NonNull Storage storage) {
 
 
-        Blockstore bs = Blockstore.NewBlockstore(storage);
+        BlockStore bs = BlockStore.NewBlockstore(storage);
         Interface exchange = new Exchange(bs);
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dagService = new DagService(blockservice);
@@ -49,7 +49,7 @@ public class Stream {
 
     public static void Rm(@NonNull Closeable closeable, @NonNull Storage storage, @NonNull String cid, boolean recursively) {
 
-        Blockstore bs = Blockstore.NewBlockstore(storage);
+        BlockStore bs = BlockStore.NewBlockstore(storage);
         Interface exchange = new Exchange(bs);
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dags = new DagService(blockservice);
@@ -69,7 +69,7 @@ public class Stream {
     }
 
     public static boolean IsDir(@NonNull Closeable closeable,
-                                @NonNull Blockstore blockstore,
+                                @NonNull BlockStore blockstore,
                                 @NonNull Interface exchange,
                                 @NonNull String path) {
 
@@ -97,7 +97,7 @@ public class Stream {
 
         Adder fileAdder = getFileAdder(storage);
 
-        Blockstore bs = Blockstore.NewBlockstore(storage);
+        BlockStore bs = BlockStore.NewBlockstore(storage);
         Interface exchange = new Exchange(bs);
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dagService = new DagService(blockservice);
@@ -116,7 +116,7 @@ public class Stream {
 
         Adder fileAdder = getFileAdder(storage);
 
-        Blockstore bs = Blockstore.NewBlockstore(storage);
+        BlockStore bs = BlockStore.NewBlockstore(storage);
         Interface exchange = new Exchange(bs);
         BlockService blockservice = BlockService.New(bs, exchange);
         DagService dagService = new DagService(blockservice);
@@ -128,7 +128,7 @@ public class Stream {
 
     }
 
-    public static void Ls(@NonNull LinkCloseable closeable, @NonNull Blockstore blockstore,
+    public static void Ls(@NonNull LinkCloseable closeable, @NonNull BlockStore blockstore,
                           @NonNull Interface exchange,
                           @NonNull String path, boolean resolveChildren) {
 

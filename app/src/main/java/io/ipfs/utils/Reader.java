@@ -8,7 +8,7 @@ import java.util.Objects;
 import io.Closeable;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.exchange.Interface;
-import io.ipfs.format.Blockstore;
+import io.ipfs.format.BlockStore;
 import io.ipfs.merkledag.DagService;
 
 public class Reader {
@@ -22,7 +22,7 @@ public class Reader {
         this.dagReader = dagReader;
     }
 
-    public static Reader getReader(@NonNull Closeable closeable, @NonNull Blockstore blockstore,
+    public static Reader getReader(@NonNull Closeable closeable, @NonNull BlockStore blockstore,
                                    @NonNull Interface exchange, @NonNull String cid) {
         BlockService blockservice = BlockService.New(blockstore, exchange);
         DagService dags = new DagService(blockservice);

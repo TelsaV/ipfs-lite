@@ -48,8 +48,7 @@ public class NavigableIPLDNode implements NavigableNode {
     }
 
     @Override
-    public NavigableNode FetchChild(Closeable ctx, int childIndex) {
-
+    public NavigableNode FetchChild(@NonNull Closeable ctx, int childIndex) {
         Node child = getPromiseValue(ctx, childIndex);
         Objects.requireNonNull(child);
         return NewNavigableIPLDNode(child, nodeGetter);
