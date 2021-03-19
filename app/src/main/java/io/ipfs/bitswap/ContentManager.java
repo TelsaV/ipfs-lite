@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
@@ -24,7 +25,7 @@ public class ContentManager {
     private static final ExecutorService WANTS = Executors.newFixedThreadPool(8);
     private final ConcurrentLinkedQueue<Cid> searches = new ConcurrentLinkedQueue<>();
     private final CopyOnWriteArraySet<PeerID> faulty = new CopyOnWriteArraySet<>();
-    private final CopyOnWriteArraySet<PeerID> priority = new CopyOnWriteArraySet<>();
+    private final ConcurrentLinkedDeque<PeerID> priority = new ConcurrentLinkedDeque<>();
     private final BitSwapNetwork network;
     private final Pubsub notify = new Pubsub();
 
@@ -37,7 +38,8 @@ public class ContentManager {
             if (searches.contains(cid)) {
                 LogUtils.error(TAG, "HaveResponseReceived " + cid.String());
                 faulty.remove(peer);
-                priority.add(peer);
+                priority.remove(peer);
+                priority.push(peer); // top
             }
         }
     }
@@ -121,6 +123,8 @@ public class ContentManager {
                         priority.remove(peer);
                         faulty.add(peer);
                     }
+                    // check priority after each run
+                    break;
                 }
             }
 
@@ -192,6 +196,7 @@ public class ContentManager {
 
             notify.Publish(block);
             faulty.remove(peer);
+            priority.remove(peer);
             priority.add(peer);
 
         }

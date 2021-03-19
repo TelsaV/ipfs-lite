@@ -122,6 +122,7 @@ public class DOCS {
                     }
                 });
 
+            } catch (ClosedException ignore) {
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
             } finally {
@@ -187,6 +188,7 @@ public class DOCS {
                 }
 
                 LogUtils.error(TAG, "Connect " + pid + " " + connected);
+            } catch (ClosedException ignore) {
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
             } finally {
