@@ -1297,7 +1297,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
         READER.execute(() -> {
             try {
-                handler.handle(() -> false, new io.libp2p.network.Stream() {
+                handler.handle(new io.libp2p.network.Stream() {
                     @NonNull
                     @Override
                     public ID RemotePeer() {
@@ -1325,7 +1325,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public void bitSwapError(String pid, String error) {
         LogUtils.error(TAG, "Receive error from " + pid + " error " + error);
         Objects.requireNonNull(handler);
-        handler.handle(() -> false, new io.libp2p.network.Stream() {
+        handler.handle(new io.libp2p.network.Stream() {
             @NonNull
             @Override
             public ID RemotePeer() {

@@ -47,18 +47,17 @@ public class BitSwap implements Interface, Receiver {
     }
 
     @Override
-    public void ReceiveMessage(@NonNull Closeable closeable,
-                               @NonNull ID peer, @NonNull BitSwapMessage incoming) {
+    public void ReceiveMessage(@NonNull ID peer, @NonNull BitSwapMessage incoming) {
 
 
-        engine.MessageReceived(closeable, peer, incoming);
+        engine.MessageReceived(peer, incoming);
 
         List<Block> blocks = incoming.Blocks();
         List<Cid> haves = incoming.Haves();
         if (blocks.size() > 0 || haves.size() > 0) {
             // Process blocks
             try {
-                receiveBlocksFrom(closeable, peer, blocks, haves);
+                receiveBlocksFrom(peer, blocks, haves);
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
             }
@@ -66,14 +65,10 @@ public class BitSwap implements Interface, Receiver {
     }
 
 
-    private void receiveBlocksFrom(@NonNull Closeable closeable,
-                                   @NonNull ID from,
+    private void receiveBlocksFrom( @NonNull ID from,
                                    @NonNull List<Block> wanted,
                                    @NonNull List<Cid> haves) {
 
-        if (closeable.isClosed()) {
-            return;
-        }
 
         // Put wanted blocks into block store
         if (wanted.size() > 0) {

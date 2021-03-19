@@ -42,7 +42,7 @@ public class Engine {
     @NonNull
     private final BitSwapNetwork network;
 
-    private Engine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network, int bstoreWorkerCount,
+    private Engine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network,
                    @NonNull ID self, int maxReplaceSize) {
         this.blockstore = bs;
         this.network = network;
@@ -122,7 +122,7 @@ public class Engine {
     public static Engine NewEngine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network,
 
                                    int bstoreWorkerCount, @NonNull ID self) {
-        return new Engine(bs, network, bstoreWorkerCount, self, MaxBlockSizeReplaceHasWithBlock);
+        return new Engine(bs, network, self, MaxBlockSizeReplaceHasWithBlock);
         // TODO
         //return newEngine(bs, bstoreWorkerCount, peerTagger, self, maxBlockSizeReplaceHasWithBlock, scoreLedger)
     }
@@ -218,7 +218,7 @@ public class Engine {
         sendDontHaves = send;
     }
 
-    public void MessageReceived(@NonNull Closeable ctx, @NonNull ID peer, @NonNull BitSwapMessage m) {
+    public void MessageReceived(@NonNull ID peer, @NonNull BitSwapMessage m) {
 
         List<BitSwapMessage.Entry> entries = m.Wantlist();
 
@@ -265,7 +265,7 @@ public class Engine {
         }
 
 
-        HashMap<Cid, Integer> blockSizes = getBlockSizes(ctx, wantKs);
+        HashMap<Cid, Integer> blockSizes = getBlockSizes(wantKs);
 
 
         /* TODO
@@ -355,7 +355,9 @@ public class Engine {
             // TODO pendingBytes (replace with org code)
             BitSwapMessage msg = createMessage(activeEntries, 0);
             if (!msg.Empty()) {
-                network.SendMessage(ctx, peer, msg);
+                // TODO closable
+                Closeable closeable = ()-> false;
+                network.SendMessage(closeable, peer, msg);
             }
 
             // TODO peerRequestQueue.PushTasks(peer, activeEntries);
@@ -463,7 +465,7 @@ public class Engine {
         return blks;
     }
 
-    public HashMap<Cid, Integer> getBlockSizes(@NonNull Closeable ctx, @NonNull Set<Cid> wantKs) {
+    public HashMap<Cid, Integer> getBlockSizes(@NonNull Set<Cid> wantKs) {
 
         HashMap<Cid, Integer> blocksizes = new HashMap<>();
         for (Cid cid : wantKs) {

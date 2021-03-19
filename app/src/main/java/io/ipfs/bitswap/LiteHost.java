@@ -90,7 +90,7 @@ public class LiteHost implements BitSwapNetwork {
         return host.Self();
     }
 
-    private void handleNewStream(@NonNull Closeable closeable, @NonNull Stream stream) {
+    private void handleNewStream(@NonNull Stream stream) {
 
         try {
             if (receiver == null) {
@@ -103,7 +103,7 @@ public class LiteHost implements BitSwapNetwork {
                 BitSwapMessage received = BitSwapMessage.fromData(data);
 
                 if (connector.ShouldConnect(peer.String())) {
-                    receiver.ReceiveMessage(closeable, peer, received);
+                    receiver.ReceiveMessage(peer, received);
                 }
             } else {
                 String error = stream.GetError();
