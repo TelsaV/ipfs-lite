@@ -6,16 +6,16 @@ import java.util.Objects;
 
 import io.LogUtils;
 
-public class ID {
-    public static final String TAG = ID.class.getSimpleName();
-    public static final io.libp2p.protocol.ID ProtocolBitswapNoVers = new io.libp2p.protocol.ID("/ipfs/bitswap", false);
-    public static final io.libp2p.protocol.ID ProtocolBitswapOneZero = new io.libp2p.protocol.ID("/ipfs/bitswap/1.0.0", false);
-    public static final io.libp2p.protocol.ID ProtocolLite = new io.libp2p.protocol.ID("/ipfs/lite/1.0.0", true);
-    public static final io.libp2p.protocol.ID ProtocolBitswap = new io.libp2p.protocol.ID("/ipfs/bitswap/1.2.0", true);
-    public static final io.libp2p.protocol.ID ProtocolBitswapOneOne = new io.libp2p.protocol.ID("/ipfs/bitswap/1.1.0", false);
+public class Protocol {
+    public static final String TAG = Protocol.class.getSimpleName();
+    public static final Protocol ProtocolBitswapNoVers = new Protocol("/ipfs/bitswap", false);
+    public static final Protocol ProtocolBitswapOneZero = new Protocol("/ipfs/bitswap/1.0.0", false);
+    public static final Protocol ProtocolLite = new Protocol("/ipfs/lite/1.0.0", true);
+    public static final Protocol ProtocolBitswap = new Protocol("/ipfs/bitswap/1.2.0", true);
+    public static final Protocol ProtocolBitswapOneOne = new Protocol("/ipfs/bitswap/1.1.0", false);
     private final String id;
 
-    public static ID Evaluate(@NonNull String protocol) {
+    public static Protocol create(@NonNull String protocol) {
 
         if(Objects.equals(protocol, ProtocolLite.id)){
             return ProtocolLite;
@@ -43,7 +43,7 @@ public class ID {
 
     private final boolean supportHas;
 
-    public ID(@NonNull String id, boolean supportHas) {
+    public Protocol(@NonNull String id, boolean supportHas) {
         this.id = id;
         this.supportHas = supportHas;
     }

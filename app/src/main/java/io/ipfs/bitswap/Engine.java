@@ -22,7 +22,7 @@ import io.ipfs.bitswap.peertask.TaskMerger;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;
 import io.ipfs.format.BlockStore;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
 import io.protos.bitswap.BitswapProtos;
 
 public class Engine {
@@ -30,7 +30,7 @@ public class Engine {
     private static final String TAG = Engine.class.getSimpleName();
     private final BlockStore blockstore;
     private final PeerTaskQueue peerRequestQueue;
-    private final ID self;
+    private final PeerID self;
 
 
     // maxBlockSizeReplaceHasWithBlock is the maximum size of the block in
@@ -43,7 +43,7 @@ public class Engine {
     private final BitSwapNetwork network;
 
     private Engine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network,
-                   @NonNull ID self, int maxReplaceSize) {
+                   @NonNull PeerID self, int maxReplaceSize) {
         this.blockstore = bs;
         this.network = network;
 
@@ -121,7 +121,7 @@ public class Engine {
     // NewEngine creates a new block sending engine for the given block store
     public static Engine NewEngine(@NonNull BlockStore bs, @NonNull BitSwapNetwork network,
 
-                                   int bstoreWorkerCount, @NonNull ID self) {
+                                   int bstoreWorkerCount, @NonNull PeerID self) {
         return new Engine(bs, network, self, MaxBlockSizeReplaceHasWithBlock);
         // TODO
         //return newEngine(bs, bstoreWorkerCount, peerTagger, self, maxBlockSizeReplaceHasWithBlock, scoreLedger)
@@ -185,11 +185,11 @@ public class Engine {
 
     }
 
-    public void onPeerRemoved(@NonNull ID p) {
+    public void onPeerRemoved(@NonNull PeerID p) {
 
     }
 
-    public void onPeerAdded(@NonNull ID p) {
+    public void onPeerAdded(@NonNull PeerID p) {
 
     }
 
@@ -218,7 +218,7 @@ public class Engine {
         sendDontHaves = send;
     }
 
-    public void MessageReceived(@NonNull ID peer, @NonNull BitSwapMessage m) {
+    public void MessageReceived(@NonNull PeerID peer, @NonNull BitSwapMessage m) {
 
         List<BitSwapMessage.Entry> entries = m.Wantlist();
 
@@ -375,7 +375,7 @@ public class Engine {
 // the blocks to them.
 //
 // This function also updates the receive side of the ledger.
-    public void ReceiveFrom(@NonNull Closeable ctx, @Nullable ID from, @NonNull List<Block> blks, @NonNull List<Cid> haves) {
+    public void ReceiveFrom(@NonNull Closeable ctx, @Nullable PeerID from, @NonNull List<Block> blks, @NonNull List<Cid> haves) {
 
 
         if (blks.size() == 0) {

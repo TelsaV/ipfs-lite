@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +52,8 @@ import io.ipfs.utils.Resolver;
 import io.ipfs.utils.Stream;
 import io.libp2p.host.Host;
 import io.libp2p.network.StreamHandler;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
+import io.libp2p.protocol.Protocol;
 import io.libp2p.routing.ContentRouting;
 import io.protos.ipns.IpnsProtos;
 import lite.Listener;
@@ -403,7 +403,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         return swarm.contains(pid);
     }
 
-    final ExecutorService READER = Executors.newFixedThreadPool(4);
+    final ExecutorService READER = Executors.newFixedThreadPool(8);
 
     private void setStreamHandler(@NonNull StreamHandler streamHandler) {
         this.handler = streamHandler;
@@ -1169,32 +1169,32 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
 
                     if (node.getRunning()) {
-                        List< io.libp2p.protocol.ID> protocols = new ArrayList<>();
+                        List<Protocol> protocols = new ArrayList<>();
 
                         ContentRouting contentRouting = this;
                         if (privateSharing) {
-                            protocols.add(io.libp2p.protocol.ID.ProtocolLite);
+                            protocols.add(Protocol.ProtocolLite);
                             contentRouting = null;
                         } else {
-                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswapNoVers);
-                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswapOneZero);
-                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswapOneOne);
-                            protocols.add(io.libp2p.protocol.ID.ProtocolBitswap);
+                            protocols.add(Protocol.ProtocolBitswapNoVers);
+                            protocols.add(Protocol.ProtocolBitswapOneZero);
+                            protocols.add(Protocol.ProtocolBitswapOneOne);
+                            protocols.add(Protocol.ProtocolBitswap);
                         }
 
                         BitSwapNetwork bsm = LiteHost.NewLiteHost(new Host() {
                             @Override
-                            public List<ID> getPeers() {
-                                List<ID> peers = new ArrayList<>();
+                            public List<PeerID> getPeers() {
+                                List<PeerID> peers = new ArrayList<>();
                                 for (String p : swarm_peers()) {
-                                    peers.add(new ID(p));
+                                    peers.add(new PeerID(p));
                                 }
                                 return peers;
                             }
 
                             @Override
                             public boolean Connect(@NonNull Closeable closeable,
-                                                   @NonNull ID peer, boolean protect) throws ClosedException {
+                                                   @NonNull PeerID peer, boolean protect) throws ClosedException {
                                 try {
                                     return node.swarmConnect(Content.P2P_PATH + peer.String(),
                                             protect, closeable::isClosed);
@@ -1208,8 +1208,8 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
                             @Override
                             public long WriteMessage(@NonNull Closeable closeable,
-                                                     @NonNull ID peer,
-                                                     @NonNull List<io.libp2p.protocol.ID> protocols,
+                                                     @NonNull PeerID peer,
+                                                     @NonNull List<Protocol> protocols,
                                                      @NonNull byte[] bytes) throws ClosedException {
 
                                 try {
@@ -1233,8 +1233,8 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
                             @Override
                             public lite.Stream NewStream(@NonNull Closeable closeable,
-                                                         @NonNull ID peer,
-                                                         @NonNull List<io.libp2p.protocol.ID> protocols) throws ClosedException {
+                                                         @NonNull PeerID peer,
+                                                         @NonNull List<Protocol> protocols) throws ClosedException {
 
                                 try {
 
@@ -1257,7 +1257,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
 
                             @Override
-                            public void SetStreamHandler(@NonNull io.libp2p.protocol.ID proto,
+                            public void SetStreamHandler(@NonNull Protocol proto,
                                                          @NonNull StreamHandler handler) {
                                 setStreamHandler(handler);
                                 node.setStreamHandler(proto.String());
@@ -1265,8 +1265,8 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             }
 
                             @Override
-                            public ID Self() {
-                                return new ID(getPeerID());
+                            public PeerID Self() {
+                                return new PeerID(getPeerID());
                             }
                         }, contentRouting, pid -> {
                             if (privateSharing) {
@@ -1289,24 +1289,28 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     }
 
     @Override
-    public void bitSwapData(String pid, byte[] bytes) {
-        LogUtils.verbose(TAG, "Receive message from " + pid + " data " + bytes.length);
+    public void bitSwapData(String pid, String proto, byte[] bytes) {
+        LogUtils.verbose(TAG, "Receive message from " + pid + " proto " + proto + " data " + bytes.length);
         Objects.requireNonNull(handler);
 
-        final byte[] data = Arrays.copyOf(bytes, bytes.length);
 
         READER.execute(() -> {
             try {
                 handler.handle(new io.libp2p.network.Stream() {
+                    @Override
+                    public Protocol Protocol() {
+                        return Protocol.create(proto);
+                    }
+
                     @NonNull
                     @Override
-                    public ID RemotePeer() {
-                        return new ID(pid);
+                    public PeerID RemotePeer() {
+                        return new PeerID(pid);
                     }
 
                     @Override
                     public byte[] GetData() {
-                        return data;
+                        return bytes;
                     }
 
                     @Nullable
@@ -1322,14 +1326,19 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     }
 
     @Override
-    public void bitSwapError(String pid, String error) {
-        LogUtils.error(TAG, "Receive error from " + pid + " error " + error);
+    public void bitSwapError(String pid, String proto, String error) {
+        LogUtils.error(TAG, "Receive error from " + pid + " proto " + proto + " error " + error);
         Objects.requireNonNull(handler);
         handler.handle(new io.libp2p.network.Stream() {
+            @Override
+            public Protocol Protocol() {
+                return Protocol.create(proto);
+            }
+
             @NonNull
             @Override
-            public ID RemotePeer() {
-                return new ID(pid);
+            public PeerID RemotePeer() {
+                return new PeerID(pid);
             }
 
             @Override

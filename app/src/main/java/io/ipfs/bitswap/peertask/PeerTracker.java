@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.PriorityQueue;
 
 import io.ipfs.cid.Cid;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
 
 public class PeerTracker {
-    private final ID target;
+    private final PeerID target;
     private final TaskMerger taskMerger;
     private final PriorityQueue<QueueTask> taskQueue;
     public Map<Cid, QueueTask> pendingTasks = new HashMap<>();
@@ -21,7 +21,7 @@ public class PeerTracker {
     public int freezeVal;
 
 
-    public PeerTracker(@NonNull ID peer, @NonNull TaskMerger taskMerger) {
+    public PeerTracker(@NonNull PeerID peer, @NonNull TaskMerger taskMerger) {
         this.target = peer;
         this.taskMerger = taskMerger;
         this.taskQueue = new PriorityQueue<>((o1, o2) -> {

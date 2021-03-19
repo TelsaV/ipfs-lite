@@ -7,7 +7,7 @@ import java.util.List;
 import io.Closeable;
 import io.ipfs.ClosedException;
 import io.ipfs.cid.Cid;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
 import io.protos.bitswap.BitswapProtos;
 import lite.Stream;
 
@@ -18,7 +18,7 @@ public class MessageWriter {
 
     public static void sendHaveMessage(@NonNull Closeable closeable,
                                        @NonNull BitSwapNetwork network,
-                                       @NonNull ID peer,
+                                       @NonNull PeerID peer,
                                        @NonNull List<Cid> wantHaves) throws ClosedException {
         if (wantHaves.size() == 0) {
             return;
@@ -57,7 +57,7 @@ public class MessageWriter {
 
     public static void sendWantsMessage(@NonNull Closeable closeable,
                                         @NonNull BitSwapNetwork network,
-                                        @NonNull ID peer,
+                                        @NonNull PeerID peer,
                                         @NonNull List<Cid> wantBlocks) throws ClosedException {
 
         if (wantBlocks.size() == 0) {

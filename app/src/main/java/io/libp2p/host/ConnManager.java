@@ -2,8 +2,8 @@ package io.libp2p.host;
 
 import java.util.List;
 
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
 
 public interface ConnManager {
-    List<ID> getPeers();
+    List<PeerID> getPeers();
 }

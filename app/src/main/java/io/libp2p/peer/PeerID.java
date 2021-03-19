@@ -4,10 +4,10 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-public class ID {
+public class PeerID {
     private final String id;
 
-    public ID(@NonNull String id) {
+    public PeerID(@NonNull String id) {
         this.id = id;
     }
 
@@ -19,7 +19,7 @@ public class ID {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ID id1 = (ID) o;
+        PeerID id1 = (PeerID) o;
         return Objects.equals(id, id1.id);
     }
 

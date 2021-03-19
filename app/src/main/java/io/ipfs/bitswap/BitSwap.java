@@ -12,7 +12,7 @@ import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.Block;
 import io.ipfs.format.BlockStore;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
 
 public class BitSwap implements Interface, Receiver {
 
@@ -47,7 +47,8 @@ public class BitSwap implements Interface, Receiver {
     }
 
     @Override
-    public void ReceiveMessage(@NonNull ID peer, @NonNull BitSwapMessage incoming) {
+    public void ReceiveMessage(@NonNull PeerID peer, @NonNull BitSwapMessage incoming) {
+
 
 
         engine.MessageReceived(peer, incoming);
@@ -65,11 +66,12 @@ public class BitSwap implements Interface, Receiver {
     }
 
 
-    private void receiveBlocksFrom( @NonNull ID from,
+    private void receiveBlocksFrom(@NonNull PeerID peer,
                                    @NonNull List<Block> wanted,
                                    @NonNull List<Cid> haves) {
 
 
+        LogUtils.error(TAG,  "ReceiveBlocks " + peer.String());
         // Put wanted blocks into block store
         if (wanted.size() > 0) {
             for (Block block : wanted) {
@@ -80,18 +82,18 @@ public class BitSwap implements Interface, Receiver {
         // TODO check if necessary (what it is doing)
         //engine.ReceiveFrom(closeable, from, wanted, haves);
 
-        contentManager.HaveResponseReceived(from, haves);
+        contentManager.HaveResponseReceived(peer, haves);
 
         for (Block block : wanted) {
-            contentManager.BlockReceived(from, block);
+            contentManager.BlockReceived(peer, block);
         }
     }
 
     @Override
-    public void ReceiveError(@NonNull ID peer, @NonNull String error) {
+    public void ReceiveError(@NonNull PeerID peer, @NonNull String error) {
 
         // TODO handle error
-        LogUtils.error(TAG, peer.String() + " " + error);
+        LogUtils.error(TAG,  "ReceiveError " + peer.String() + " " + error);
     }
 
 

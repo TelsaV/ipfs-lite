@@ -16,7 +16,8 @@ import io.ipfs.utils.Connector;
 import io.libp2p.host.ConnManager;
 import io.libp2p.host.Host;
 import io.libp2p.network.Stream;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
+import io.libp2p.protocol.Protocol;
 import io.libp2p.routing.ContentRouting;
 import io.libp2p.routing.Providers;
 
@@ -30,12 +31,12 @@ public class LiteHost implements BitSwapNetwork {
     private final Connector connector;
     @Nullable
     private final ContentRouting contentRouting;
-    private final List<io.libp2p.protocol.ID> protocols = new ArrayList<>();
+    private final List<Protocol> protocols = new ArrayList<>();
 
     private LiteHost(@NonNull Host host,
                      @Nullable ContentRouting contentRouting,
                      @NonNull Connector connector,
-                     @NonNull List<io.libp2p.protocol.ID> protos) {
+                     @NonNull List<Protocol> protos) {
         this.host = host;
         this.contentRouting = contentRouting;
         this.connector = connector;
@@ -45,26 +46,26 @@ public class LiteHost implements BitSwapNetwork {
     public static BitSwapNetwork NewLiteHost(@NonNull Host host,
                                              @Nullable ContentRouting contentRouting,
                                              @NonNull Connector connector,
-                                             @NonNull List<io.libp2p.protocol.ID> protocols) {
+                                             @NonNull List<Protocol> protocols) {
         return new LiteHost(host, contentRouting, connector, protocols);
     }
 
     @Override
-    public boolean ConnectTo(@NonNull Closeable closeable, @NonNull ID peer, boolean protect) throws ClosedException {
+    public boolean ConnectTo(@NonNull Closeable closeable, @NonNull PeerID peer, boolean protect) throws ClosedException {
         if (connector.ShouldConnect(peer.String())) {
             return host.Connect(closeable, peer, protect);
         }
         return false;
     }
 
-    public lite.Stream NewStream(@NonNull Closeable closeable, @NonNull ID peer) throws ClosedException {
+    public lite.Stream NewStream(@NonNull Closeable closeable, @NonNull PeerID peer) throws ClosedException {
         return host.NewStream(closeable, peer, protocols);
     }
 
 
     @Override
     public boolean SupportsHave(@NonNull lite.Stream stream) {
-        io.libp2p.protocol.ID protocol = io.libp2p.protocol.ID.Evaluate(stream.protocol());
+        Protocol protocol = Protocol.create(stream.protocol());
         return protocol.isSupportHas();
     }
 
@@ -73,7 +74,7 @@ public class LiteHost implements BitSwapNetwork {
     public void SetDelegate(@NonNull Receiver receiver) {
         this.receiver = receiver;
 
-        for (io.libp2p.protocol.ID protocol : protocols) {
+        for (Protocol protocol : protocols) {
             host.SetStreamHandler(protocol, this::handleNewStream);
         }
 
@@ -86,7 +87,7 @@ public class LiteHost implements BitSwapNetwork {
     }
 
     @Override
-    public ID Self() {
+    public PeerID Self() {
         return host.Self();
     }
 
@@ -97,7 +98,7 @@ public class LiteHost implements BitSwapNetwork {
                 return;
             }
 
-            ID peer = stream.RemotePeer();
+            PeerID peer = stream.RemotePeer();
             if (stream.GetError() == null) {
                 byte[] data = stream.GetData();
                 BitSwapMessage received = BitSwapMessage.fromData(data);
@@ -124,10 +125,10 @@ public class LiteHost implements BitSwapNetwork {
         try {
             try {
                 byte[] data;
-                io.libp2p.protocol.ID evaluate = io.libp2p.protocol.ID.Evaluate(stream.protocol());
-                if (io.libp2p.protocol.ID.ProtocolBitswap.equals(evaluate) ||
-                        io.libp2p.protocol.ID.ProtocolBitswapOneOne.equals(evaluate) ||
-                        io.libp2p.protocol.ID.ProtocolLite.equals(evaluate)) {
+                Protocol evaluate = Protocol.create(stream.protocol());
+                if (Protocol.ProtocolBitswap.equals(evaluate) ||
+                        Protocol.ProtocolBitswapOneOne.equals(evaluate) ||
+                        Protocol.ProtocolLite.equals(evaluate)) {
                     data = message.ToNetV1();
                 } else {
                     LogUtils.error(TAG, "ToNetV0");
@@ -150,7 +151,7 @@ public class LiteHost implements BitSwapNetwork {
     }
 
     @Override
-    public void SendMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull BitSwapMessage message) {
+    public void SendMessage(@NonNull Closeable closeable, @NonNull PeerID peer, @NonNull BitSwapMessage message) {
 
         if (!connector.ShouldConnect(peer.String())) {
             throw new RuntimeException("Connection not allowed");
@@ -165,7 +166,7 @@ public class LiteHost implements BitSwapNetwork {
     }
 
     @Override
-    public void WriteMessage(@NonNull Closeable closeable, @NonNull ID peer, @NonNull BitSwapMessage message) throws ClosedException {
+    public void WriteMessage(@NonNull Closeable closeable, @NonNull PeerID peer, @NonNull BitSwapMessage message) throws ClosedException {
 
         if (!connector.ShouldConnect(peer.String())) {
             throw new RuntimeException("Connection not allowed");

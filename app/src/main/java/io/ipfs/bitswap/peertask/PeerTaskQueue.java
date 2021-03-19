@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.PriorityQueue;
 
 import io.ipfs.cid.Cid;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
 
 public class PeerTaskQueue {
     public final Hook peerAdded;
     public final Hook peerRemoved;
-    private final Map<ID, PeerTracker> peerTrackers = new HashMap<>();
+    private final Map<PeerID, PeerTracker> peerTrackers = new HashMap<>();
     private final PriorityQueue<PeerTracker> pQueue;
     private TaskMerger taskMerger;
     private boolean ignoreFreezing;
@@ -65,7 +65,7 @@ public class PeerTaskQueue {
     }
 
     // todo better optimization for synchronized
-    public synchronized void PushTasks(@NonNull ID to, @NonNull List<Task> tasks) {
+    public synchronized void PushTasks(@NonNull PeerID to, @NonNull List<Task> tasks) {
 
         PeerTracker peerTracker = peerTrackers.get(to);
         if (peerTracker == null) {
@@ -88,7 +88,7 @@ public class PeerTaskQueue {
         ignoreFreezing = value;
     }
 
-    public synchronized void Remove(@NonNull Cid cid, @NonNull ID peer) {
+    public synchronized void Remove(@NonNull Cid cid, @NonNull PeerID peer) {
         PeerTracker peerTracker = peerTrackers.get(peer);
         if (peerTracker != null) {
             if (peerTracker.Remove(cid)) {
@@ -112,6 +112,6 @@ public class PeerTaskQueue {
 
 
     public interface Hook {
-        void hook(@NonNull ID peer);
+        void hook(@NonNull PeerID peer);
     }
 }

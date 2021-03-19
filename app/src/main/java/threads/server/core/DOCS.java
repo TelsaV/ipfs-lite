@@ -34,7 +34,6 @@ import io.LogUtils;
 import io.ipfs.ClosedException;
 import io.ipfs.DnsAddrResolver;
 import io.ipfs.IPFS;
-import io.ipfs.format.Node;
 import io.ipfs.utils.Link;
 import io.libp2p.routing.Providers;
 import lite.Peer;
@@ -811,17 +810,15 @@ public class DOCS {
                         new ByteArrayInputStream(answer.getBytes()));
             } else {
                 String mimeType = getContentMimeType(context, root, closeable);
-                long size = ipfs.getSize(root, closeable);
-                return getContentResponse(root, mimeType, size, closeable);
+                return getContentResponse(root, mimeType, closeable);
             }
 
 
         } else {
-            Node node = ipfs.resolveNode(root, paths, closeable);
-            if (node == null) {
+            String cid = ipfs.resolve(root, paths, closeable);
+            if (cid == null) {
                 throw new ContentException(uri.toString());
             }
-            String cid = node.Cid().String();
             if (ipfs.isDir(cid, closeable)) {
                 List<Link> links = ipfs.links(cid, closeable);
                 String answer = generateDirectoryHtml(uri, root, paths, links);
@@ -830,17 +827,14 @@ public class DOCS {
 
             } else {
                 String mimeType = getMimeType(context, uri, cid, closeable);
-                long size = node.Size();
-                return getContentResponse(cid, mimeType, size, closeable);
+                return getContentResponse(cid, mimeType, closeable);
             }
-
-
         }
     }
 
     @NonNull
     private WebResourceResponse getContentResponse(@NonNull String content,
-                                                   @NonNull String mimeType, long size,
+                                                   @NonNull String mimeType,
                                                    @NonNull Closeable closeable) throws ClosedException {
 
         try(InputStream in = ipfs.getLoaderStream(content, closeable)) {
@@ -850,10 +844,6 @@ public class DOCS {
             }
 
             Map<String, String> responseHeaders = new HashMap<>();
-            if (size > 0) {
-                responseHeaders.put("Content-Length", "" + size);
-            }
-            responseHeaders.put("Content-Type", mimeType);
             return new WebResourceResponse(mimeType, Content.UTF8, 200,
                     "OK", responseHeaders, new BufferedInputStream(in, Settings.CHUNK_SIZE));
         } catch (Throwable throwable) {

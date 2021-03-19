@@ -7,26 +7,27 @@ import java.util.List;
 import io.Closeable;
 import io.ipfs.ClosedException;
 import io.libp2p.network.StreamHandler;
-import io.libp2p.peer.ID;
+import io.libp2p.peer.PeerID;
+import io.libp2p.protocol.Protocol;
 import lite.Stream;
 
 public interface Host extends ConnManager {
-    boolean Connect(@NonNull Closeable ctx, @NonNull ID peer, boolean protect) throws ClosedException;
+    boolean Connect(@NonNull Closeable ctx, @NonNull PeerID peer, boolean protect) throws ClosedException;
 
     long WriteMessage(@NonNull Closeable closeable,
-                      @NonNull ID peer,
-                      @NonNull List<io.libp2p.protocol.ID> protocols,
+                      @NonNull PeerID peer,
+                      @NonNull List<Protocol> protocols,
                       @NonNull byte[] bytes) throws ClosedException;
 
 
-    Stream NewStream(@NonNull Closeable closeable, @NonNull ID peer,
-                     @NonNull List<io.libp2p.protocol.ID> protocols) throws ClosedException;
+    Stream NewStream(@NonNull Closeable closeable, @NonNull PeerID peer,
+                     @NonNull List<Protocol> protocols) throws ClosedException;
 
     // SetStreamHandler sets the protocol handler on the Host's Mux.
     // This is equivalent to:
     //   host.Mux().SetHandler(proto, handler)
     // (Threadsafe)
-    void SetStreamHandler(@NonNull io.libp2p.protocol.ID proto, @NonNull StreamHandler handler);
+    void SetStreamHandler(@NonNull Protocol proto, @NonNull StreamHandler handler);
 
-    ID Self();
+    PeerID Self();
 }
