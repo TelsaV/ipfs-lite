@@ -81,10 +81,20 @@ public class BitSwap implements Interface, Receiver {
     }
 
     @Override
+    public void loadBlocks(@NonNull Closeable closeable, @NonNull List<Cid> cids) {
+        contentManager.LoadBlocks(closeable, cids);
+    }
+
+    @Override
     public void ReceiveError(@NonNull PeerID peer, @NonNull Protocol protocol, @NonNull String error) {
 
         // TODO handle error
         LogUtils.error(TAG, "ReceiveError " + peer.String() + " " + protocol.String() + " " + error);
+    }
+
+    @Override
+    public boolean GatePeer(@NonNull PeerID peerID) {
+        return contentManager.GatePeer(peerID);
     }
 
 

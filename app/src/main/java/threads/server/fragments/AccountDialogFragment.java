@@ -24,12 +24,12 @@ import com.bumptech.glide.Glide;
 import java.util.Objects;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
-import io.ipfs.IPFS;
 import threads.server.utils.MimeType;
 
 public class AccountDialogFragment extends DialogFragment {

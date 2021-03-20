@@ -33,6 +33,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.LogUtils;
+import io.ipfs.ClosedException;
+import io.ipfs.IPFS;
+import io.ipfs.utils.Link;
+import io.ipfs.utils.Progress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -41,10 +45,6 @@ import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import io.ipfs.ClosedException;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Link;
-import io.ipfs.utils.Progress;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
 import threads.server.provider.FileDocumentsProvider;
@@ -413,7 +413,7 @@ public class UploadContentWorker extends Worker {
                     docs.finishDocument(threadIdx);
 
                     checkParentSeeding(parent);
-                } catch (Throwable throwable){
+                } catch (Throwable throwable) {
                     finished.set(false);
                     threads.resetThreadLeaching(threadIdx);
                 }

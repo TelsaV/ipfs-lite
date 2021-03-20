@@ -28,12 +28,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
+import io.ipfs.utils.ReaderProgress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.Content;
-import io.ipfs.IPFS;
-import io.ipfs.utils.ReaderProgress;
 
 
 public class DownloadFileWorker extends Worker {

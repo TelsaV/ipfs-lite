@@ -30,12 +30,12 @@ import java.io.InputStream;
 import java.util.Objects;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.events.EventViewModel;
-import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.DaemonService;
 import threads.server.services.LiteService;

@@ -55,8 +55,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.ipfs.IPFS;
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.MainActivity;
 import threads.server.PlayerActivity;
 import threads.server.R;
@@ -811,7 +811,7 @@ public class ThreadsFragment extends Fragment implements
                 // special case
                 if (Objects.equals(mimeType, MimeType.URL_MIME_TYPE)) {
 
-                    Uri uri = Uri.parse(IPFS.getInstance(mContext).getText(cid, ()-> false));
+                    Uri uri = Uri.parse(IPFS.getInstance(mContext).getText(cid, () -> false));
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 
 
@@ -866,7 +866,7 @@ public class ThreadsFragment extends Fragment implements
                 if (Objects.equals(mimeType, MimeType.URL_MIME_TYPE)) {
 
                     IPFS ipfs = IPFS.getInstance(mContext);
-                    Uri uri = Uri.parse(ipfs.getText(cid, ()-> false));
+                    Uri uri = Uri.parse(ipfs.getText(cid, () -> false));
                     Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                     startActivity(intent);
 

@@ -22,6 +22,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
+import io.ipfs.utils.Progress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -30,8 +32,6 @@ import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Progress;
 
 public class UploadFileWorker extends Worker {
 

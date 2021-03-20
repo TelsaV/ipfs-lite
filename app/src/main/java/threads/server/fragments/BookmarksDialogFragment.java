@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import io.LogUtils;
-import io.ipfs.IPFS;
 import threads.server.R;
 import threads.server.core.books.Bookmark;
 import threads.server.core.books.BookmarkViewModel;

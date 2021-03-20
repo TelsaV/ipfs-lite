@@ -72,6 +72,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;
@@ -94,7 +95,6 @@ import threads.server.fragments.SettingsFragment;
 import threads.server.fragments.SwarmFragment;
 import threads.server.fragments.TextDialogFragment;
 import threads.server.fragments.ThreadsFragment;
-import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.services.DiscoveryService;
@@ -265,15 +265,6 @@ public class MainActivity extends AppCompatActivity implements
                         }
                     });
     private final AtomicBoolean downloadActive = new AtomicBoolean(false);
-    private final ActivityResultLauncher<String> requestPermissionLauncher =
-            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-                if (isGranted) {
-                    invokeScan();
-                } else {
-                    EVENTS.getInstance(getApplicationContext()).permission(
-                            getString(R.string.permission_camera_denied));
-                }
-            });
     ConnectivityManager.NetworkCallback networkCallback;
     private long mLastClickTime = 0;
     private CoordinatorLayout mDrawerLayout;
@@ -318,6 +309,15 @@ public class MainActivity extends AppCompatActivity implements
                     LogUtils.error(TAG, throwable);
                 }
 
+            });
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    invokeScan();
+                } else {
+                    EVENTS.getInstance(getApplicationContext()).permission(
+                            getString(R.string.permission_camera_denied));
+                }
             });
     private TextView mBrowserText;
     private ActionMode mActionMode;

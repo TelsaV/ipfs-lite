@@ -100,6 +100,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public static final String LIB2P_DNS = "_dnsaddr.bootstrap.libp2p.io";
     public static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
     public static final String DNS_LINK = "dnslink=";
+    public static final int PRELOAD = 20;
     // rough estimates on expected sizes
     private static final int roughLinkBlockSize = 1 << 13; // 8KB
     private static final int roughLinkSize = 34 + 8 + 5;// sha256 multihash + size + no name + protobuf framing
@@ -1303,6 +1304,14 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         return true;
     }
 
+
+    @Override
+    public boolean bitSwapGate(String pid) {
+        LogUtils.error(TAG, "BitSwapGate " + pid);
+        Objects.requireNonNull(handler);
+        return handler.gate(new PeerID(pid));
+    }
+
     @Override
     public void bitSwapData(String pid, String proto, byte[] bytes) {
         LogUtils.verbose(TAG, "Receive message from " + pid + " proto " + proto + " data " + bytes.length);
@@ -1311,7 +1320,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
         READER.execute(() -> {
             try {
-                handler.handle(new io.libp2p.network.Stream() {
+                handler.message(new io.libp2p.network.Stream() {
                     @NonNull
                     @Override
                     public Protocol Protocol() {
@@ -1345,7 +1354,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public void bitSwapError(String pid, String proto, String error) {
         LogUtils.error(TAG, "Receive error from " + pid + " proto " + proto + " error " + error);
         Objects.requireNonNull(handler);
-        handler.handle(new io.libp2p.network.Stream() {
+        handler.error(new io.libp2p.network.Stream() {
             @NonNull
             @Override
             public Protocol Protocol() {

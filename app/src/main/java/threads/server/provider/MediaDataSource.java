@@ -11,16 +11,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.LogUtils;
 import io.ipfs.Storage;
-import io.ipfs.format.BlockStore;
 import io.ipfs.exchange.Interface;
+import io.ipfs.format.BlockStore;
 import io.ipfs.offline.Exchange;
 import io.ipfs.utils.Reader;
 import threads.server.core.blocks.BLOCKS;
 
 public class MediaDataSource extends android.media.MediaDataSource {
     private static final String TAG = MediaDataSource.class.getSimpleName();
-    private Reader fileReader;
     private final AtomicBoolean release = new AtomicBoolean(false);
+    private Reader fileReader;
 
     public MediaDataSource(@NonNull Storage storage, @NonNull String cid) {
         BlockStore blockstore = BlockStore.NewBlockstore(storage);

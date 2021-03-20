@@ -20,11 +20,11 @@ import java.util.List;
 import java.util.Objects;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import lite.Peer;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.events.EVENTS;
-import io.ipfs.IPFS;
 import threads.server.services.QRCodeService;
 import threads.server.utils.PeersViewAdapter;
 

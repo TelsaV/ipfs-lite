@@ -17,10 +17,10 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
-import io.ipfs.IPFS;
 import threads.server.work.SwarmConnectWorker;
 
 public class DaemonService extends Service {

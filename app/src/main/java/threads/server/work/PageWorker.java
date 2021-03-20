@@ -146,16 +146,16 @@ public class PageWorker extends Worker {
                 Executors.newSingleThreadExecutor().execute(() -> publishContent(content));
             }
 
-                LogUtils.error(TAG, "Start publish name " + content);
+            LogUtils.error(TAG, "Start publish name " + content);
 
-                int seq = Settings.getSequence(getApplicationContext());
-                seq++;
-                Settings.setSequence(getApplicationContext(), seq);
+            int seq = Settings.getSequence(getApplicationContext());
+            seq++;
+            Settings.setSequence(getApplicationContext(), seq);
 
-                publishSequence(content, seq);
+            publishSequence(content, seq);
 
-                ipfs.publishName(content, this::isStopped, seq);
-            }
+            ipfs.publishName(content, this::isStopped, seq);
+        }
 
     }
 

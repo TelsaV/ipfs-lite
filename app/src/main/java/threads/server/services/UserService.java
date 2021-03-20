@@ -10,10 +10,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.core.DeleteOperation;
 import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
-import io.ipfs.IPFS;
 
 public class UserService {
 

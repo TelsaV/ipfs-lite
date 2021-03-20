@@ -63,7 +63,7 @@ public class IpfsFindPeer {
         String pc = "QmRxoQNy1gNGMM1746Tw8UBNBF8axuyGkzcqb2LYFzwuXd";
 
         // TIMEOUT not working
-        boolean result = ipfs.swarmConnect(Content.P2P_PATH + pc, null, 6);
+        boolean result = ipfs.swarmConnect(IPFS.P2P_PATH + pc, null, 6);
         assertFalse(result);
 
     }
@@ -78,7 +78,7 @@ public class IpfsFindPeer {
         PeerInfo peerInfo = ipfs.pidInfo(local);
         assertNotNull(peerInfo);
 
-        boolean result = ipfs.swarmConnect(Content.P2P_PATH + local, null, 60);
+        boolean result = ipfs.swarmConnect(IPFS.P2P_PATH + local, null, 60);
 
         assertTrue(result);
 
@@ -99,17 +99,17 @@ public class IpfsFindPeer {
         assertFalse(connected);
 
 
-        boolean result = ipfs.swarmConnect(Content.P2P_PATH + relay, null, 1);
+        boolean result = ipfs.swarmConnect(IPFS.P2P_PATH + relay, null, 1);
         assertFalse(result);
 
 
         relay = "QmchgNzyUFyf2wpfDMmpGxMKHA3PkC1f3H2wUgbs21vXoz";
-        result = ipfs.swarmConnect(Content.P2P_PATH + relay, null, 10);
+        result = ipfs.swarmConnect(IPFS.P2P_PATH + relay, null, 10);
         assertFalse(result);
 
 
         relay = DUMMY_PID;
-        result = ipfs.swarmConnect(Content.P2P_PATH + relay, null, 10);
+        result = ipfs.swarmConnect(IPFS.P2P_PATH + relay, null, 10);
         assertFalse(result);
 
     }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import io.Closeable;
+import io.ipfs.IPFS;
 import io.ipfs.cid.Cid;
 
 public class NavigableIPLDNode implements NavigableNode {
@@ -15,7 +16,7 @@ public class NavigableIPLDNode implements NavigableNode {
     private final Node node;
     private final NodeGetter nodeGetter;
     private final List<Cid> cids = new ArrayList<>();
-
+    private int preLoader = -1;
     private NavigableIPLDNode(@NonNull Node node, @NonNull NodeGetter nodeGetter) {
         this.node = node;
         this.nodeGetter = nodeGetter;
@@ -51,6 +52,19 @@ public class NavigableIPLDNode implements NavigableNode {
     public NavigableNode FetchChild(@NonNull Closeable ctx, int childIndex) {
         Node child = getPromiseValue(ctx, childIndex);
         Objects.requireNonNull(child);
+
+        int value = Math.floorMod(childIndex, IPFS.PRELOAD);
+        if (value > preLoader) {
+            preLoader = value;
+            int min = Math.min((value * IPFS.PRELOAD) + 1, cids.size());
+            int max = Math.min((value * IPFS.PRELOAD) + IPFS.PRELOAD +1, cids.size());
+            int dist = max - min;
+            if (dist > 2 && min < cids.size()) {
+                List<Cid> preload = (cids.subList(min, max));
+                nodeGetter.Load(ctx, preload);
+            }
+        }
+
         return NewNavigableIPLDNode(child, nodeGetter);
 
     }

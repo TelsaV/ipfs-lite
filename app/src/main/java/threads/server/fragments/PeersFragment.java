@@ -35,6 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import lite.Peer;
 import threads.server.MainActivity;
 import threads.server.R;
@@ -43,7 +44,6 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.peers.UsersViewModel;
-import io.ipfs.IPFS;
 import threads.server.services.QRCodeService;
 import threads.server.services.UserService;
 import threads.server.utils.MimeType;

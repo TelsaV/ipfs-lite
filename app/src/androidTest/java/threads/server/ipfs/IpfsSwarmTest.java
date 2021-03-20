@@ -63,7 +63,7 @@ public class IpfsSwarmTest {
                 }
 
 
-                LogUtils.error(TAG, "Connect to peer : " + ipfs.swarmConnect(Content.P2P_PATH + peer, null, 2));
+                LogUtils.error(TAG, "Connect to peer : " + ipfs.swarmConnect(IPFS.P2P_PATH + peer, null, 2));
 
 
             }

@@ -14,12 +14,12 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import lite.PeerInfo;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
-import io.ipfs.IPFS;
 
 public class LocalConnectWorker extends Worker {
 

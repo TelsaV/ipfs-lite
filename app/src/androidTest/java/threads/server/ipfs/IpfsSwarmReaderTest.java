@@ -46,7 +46,7 @@ public class IpfsSwarmReaderTest {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         LogUtils.error(TAG, "Connecting to RELAY ...");
-        boolean success = ipfs.swarmConnect(Content.P2P_PATH + RELAY_PID, null, 10);
+        boolean success = ipfs.swarmConnect(IPFS.P2P_PATH + RELAY_PID, null, 10);
 
         LogUtils.error(TAG, "Connecting to RELAY done " + success);
 

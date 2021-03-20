@@ -3,6 +3,8 @@ package io.ipfs.merkledag;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.List;
+
 import io.Closeable;
 import io.ipfs.blockservice.BlockService;
 import io.ipfs.cid.Cid;
@@ -30,6 +32,11 @@ public class DagService implements NodeGetter, NodeAdder {
         return Decoder.Decode(b);
     }
 
+
+    @Override
+    public void Load(@NonNull Closeable closeable, @NonNull List<Cid> cids) {
+        blockservice.LoadBlocks(closeable, cids);
+    }
 
     public void Add(@NonNull Node nd) {
         blockservice.AddBlock(nd);

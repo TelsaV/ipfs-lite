@@ -223,4 +223,25 @@ public class ContentManager {
         }
     }
 
+    public void LoadBlocks(@NonNull Closeable closeable, @NonNull List<Cid> cids) {
+
+        LogUtils.error(TAG, "LoadBlocks " + cids.size());
+
+        for (PeerID peer : priority) {
+            LogUtils.error(TAG, "LoadBlock " + peer.String());
+            long start = System.currentTimeMillis();
+            try {
+                MessageWriter.sendWantsMessage(closeable, network, peer, cids);
+            } catch (Throwable throwable) {
+                LogUtils.error(TAG, "LoadBlock Error " + throwable.getLocalizedMessage());
+            } finally {
+                LogUtils.error(TAG, "Load Peer " +
+                        peer.String() + " took " + (System.currentTimeMillis() - start));
+            }
+        }
+    }
+
+    public boolean GatePeer(@NonNull PeerID peerID) {
+        return faulty.contains(peerID);
+    }
 }

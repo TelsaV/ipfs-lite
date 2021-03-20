@@ -35,8 +35,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.Closeable;
-import io.ipfs.IPFS;
 import io.LogUtils;
+import io.ipfs.IPFS;
 import io.ipfs.utils.Reader;
 import threads.server.BuildConfig;
 import threads.server.InitApplication;
@@ -68,6 +68,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
     private THREADS threads;
     private IPFS ipfs;
     private DOCS docs;
+    private StorageManager mStorageManager;
 
     public static boolean isLocalUri(@NonNull Uri uri) {
         try {
@@ -145,7 +146,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         return projection != null ? projection : DEFAULT_DOCUMENT_PROJECTION;
     }
 
-
     @SuppressWarnings("SameReturnValue")
     @NonNull
     private static String getRoot() {
@@ -165,7 +165,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         return perm != PackageManager.PERMISSION_DENIED;
     }
-
 
     @NonNull
     public static String getFileName(@NonNull Context context, @NonNull Uri uri) {
@@ -269,7 +268,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
     public static Uri getUriForThread(Thread thread) {
         return getUriForThread(thread.getIdx());
     }
-
 
     public String renameDocument(String documentId, String displayName)
             throws FileNotFoundException {
@@ -388,7 +386,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         }
     }
 
-
     public void removeDocument(String documentId, String parentDocumentId) throws FileNotFoundException {
         LogUtils.info(TAG, "removeDocument : " + documentId);
         try {
@@ -495,7 +492,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         }
         return result;
     }
-
 
     @Override
     public Cursor queryDocument(String docId, String[] projection) throws FileNotFoundException {
@@ -625,7 +621,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         }
     }
 
-
     @Override
     public String createDocument(String parentDocumentId, String type, String displayName)
             throws FileNotFoundException {
@@ -649,8 +644,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
             throw new FileNotFoundException("" + throwable.getLocalizedMessage());
         }
     }
-
-    private StorageManager mStorageManager;
 
     @Override
     public ParcelFileDescriptor openDocument(String documentId, String mode,
@@ -688,7 +681,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
 
                 String cid = file.getContent();
                 Objects.requireNonNull(cid);
-
 
 
                 final AtomicBoolean release = new AtomicBoolean(false);

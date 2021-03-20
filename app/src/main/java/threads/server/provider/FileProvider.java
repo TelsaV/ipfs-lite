@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.LogUtils;
-import threads.server.BuildConfig;
 import io.ipfs.IPFS;
+import threads.server.BuildConfig;
 
 public class FileProvider {
     private static final String TAG = FileProvider.class.getSimpleName();
@@ -56,7 +56,7 @@ public class FileProvider {
             if (!file.exists()) {
                 file = fileProvider.createDataFile(idx);
                 try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                    try (InputStream inputStream = ipfs.getInputStream(cid, ()-> false)) {
+                    try (InputStream inputStream = ipfs.getInputStream(cid, () -> false)) {
                         long copied = IPFS.copy(inputStream, outputStream);
                         LogUtils.error(TAG, "Copied : " + copied);
                     }
