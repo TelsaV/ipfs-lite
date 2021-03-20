@@ -846,6 +846,7 @@ public class BrowserFragment extends Fragment {
             }
 
             docs.releaseThreads();
+            docs.releaseContent();
 
             mWebView.stopLoading();
 

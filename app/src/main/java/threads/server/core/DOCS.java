@@ -233,6 +233,11 @@ public class DOCS {
         }
     }
 
+
+    public void releaseContent(){
+        ipfs.reset();
+    }
+
     public void releaseThreads() {
         synchronized (TAG.intern()) {
             runs.clear();
@@ -667,7 +672,7 @@ public class DOCS {
     }
 
 
-    public String generateDirectoryHtml(@NonNull Uri uri, @NonNull String root, List<String> paths, @Nullable List<Link> links) {
+    public String generateDirectoryHtml(@NonNull Uri uri, @NonNull String root, @NonNull List<String> paths, @Nullable List<Link> links) {
         String title = root;
 
         if (!paths.isEmpty()) {
@@ -689,17 +694,17 @@ public class DOCS {
         if (links != null) {
             if (!links.isEmpty()) {
                 answer.append("<form><table  width=\"100%\" style=\"border-spacing: 4px;\">");
-                for (Link linkInfo : links) {
+                for (Link link : links) {
 
 
-                    String linkUri = uri + "/" + linkInfo.getName();
+                    String linkUri = uri + "/" + link.getName();
 
                     answer.append("<tr>");
 
                     answer.append("<td>");
 
-                    if (!linkInfo.isDirectory()) {
-                        answer.append(MimeTypeService.getSvgResource(linkInfo.getName()));
+                    if (!link.isDirectory()) {
+                        answer.append(MimeTypeService.getSvgResource(link.getName()));
                     } else {
                         answer.append(MimeTypeService.SVG_FOLDER);
                     }
@@ -710,12 +715,12 @@ public class DOCS {
                     answer.append("<a href=\"");
                     answer.append(linkUri);
                     answer.append("\">");
-                    answer.append(linkInfo.getName());
+                    answer.append(link.getName());
                     answer.append("</a>");
                     answer.append("</td>");
 
                     answer.append("<td>");
-                    answer.append(getFileSize(linkInfo.getSize()));
+                    answer.append(getFileSize(link.getSize()));
                     answer.append("</td>");
 
                     answer.append("<td align=\"center\">");

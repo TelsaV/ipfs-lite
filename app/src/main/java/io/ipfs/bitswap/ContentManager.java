@@ -53,9 +53,13 @@ public class ContentManager {
     }
 
     public void reset() {
-        searches.clear();
-        priority.clear();
-        notify.clear();
+        try {
+            searches.clear();
+            priority.clear();
+            notify.clear();
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
+        }
     }
 
     public void runWantHaves(@NonNull Closeable closeable, @NonNull Cid cid) throws ClosedException {
