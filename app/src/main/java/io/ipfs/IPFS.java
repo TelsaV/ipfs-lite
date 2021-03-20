@@ -118,6 +118,20 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 //                            = (approximately) 174
     public static final int LINKS_PER_BLOCK = roughLinkBlockSize / roughLinkSize;
 
+    private static final String CONCURRENCY_KEY = "concurrencyKey";
+    public static int getConcurrencyValue(@NonNull Context context) {
+        Objects.requireNonNull(context);
+        SharedPreferences sharedPref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
+        return sharedPref.getInt(CONCURRENCY_KEY, 15);
+    }
+
+    public static void setConcurrencyValue(@NonNull Context context, int timeout) {
+        Objects.requireNonNull(context);
+        SharedPreferences sharedPref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(CONCURRENCY_KEY, timeout);
+        editor.apply();
+    }
 
     private static final String PREF_KEY = "prefKey";
     private static final String PID_KEY = "pidKey";
@@ -177,7 +191,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         node.setPushing(false);
         node.setPort(IPFS.getSwarmPort(context));
 
-        node.setConcurrency(15);
+        node.setConcurrency(getConcurrencyValue(context));
         node.setGracePeriod(GRACE_PERIOD);
         node.setHighWater(HIGH_WATER);
         node.setLowWater(LOW_WATER);
