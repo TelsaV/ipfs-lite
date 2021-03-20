@@ -129,20 +129,19 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     private static final String PRIVATE_KEY = "privateKey";
     private static final String TAG = IPFS.class.getSimpleName();
     private static IPFS INSTANCE = null;
+    final ExecutorService READER = Executors.newFixedThreadPool(4);
     private final EVENTS events;
     private final Node node;
     private final Object locker = new Object();
     private final HashSet<String> swarm = new HashSet<>();
     private final BLOCKS blocks;
-
     private long seeding = 0L;
     private long leeching = 0L;
     private Pusher pusher;
     private Interface exchange;
-
-
     @NonNull
     private Reachable reachable = Reachable.UNKNOWN;
+    private StreamHandler handler;
 
     private IPFS(@NonNull Context context) throws Exception {
 
@@ -224,7 +223,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
             }
         }
     }
-
 
     private static void setPublicKey(@NonNull Context context, @NonNull String key) {
         SharedPreferences sharedPref = context.getSharedPreferences(
@@ -357,12 +355,10 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         }
     }
 
-
     public void setPusher(@Nullable Pusher pusher) {
         node.setPushing(pusher != null);
         this.pusher = pusher;
     }
-
 
     public boolean notify(@NonNull String pid, @NonNull String cid) {
         if (!isDaemonRunning()) {
@@ -378,7 +374,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         return false;
     }
 
-
     @NonNull
     public String decodeName(@NonNull String name) {
         try {
@@ -388,7 +383,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         }
         return "";
     }
-
 
     @Override
     public void push(String cid, String pid) {
@@ -406,12 +400,9 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     }
 
-
     public void swarmReduce(@NonNull String pid) {
         swarm.remove(pid);
     }
-    private StreamHandler handler;
-
 
     public void swarmEnhance(@NonNull String pid) {
         swarm.add(pid);
@@ -447,8 +438,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public boolean shouldConnect(@NonNull String pid) {
         return swarm.contains(pid);
     }
-
-    final ExecutorService READER = Executors.newFixedThreadPool(4);
 
     private void setStreamHandler(@NonNull StreamHandler streamHandler) {
         this.handler = streamHandler;
@@ -1457,7 +1446,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     }
 
 
-
     @Override
     public void FindProvidersAsync(@NonNull io.libp2p.routing.Providers providers, @NonNull Cid cid, int number) throws ClosedException {
 
@@ -1477,7 +1465,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     public void reset() {
         try {
-            if(exchange != null) {
+            if (exchange != null) {
                 exchange.reset();
             }
         } catch (Throwable throwable) {
