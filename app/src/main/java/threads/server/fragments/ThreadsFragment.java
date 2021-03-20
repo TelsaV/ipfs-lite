@@ -1019,10 +1019,11 @@ public class ThreadsFragment extends Fragment implements
         mSwipeRefreshLayout.setRefreshing(true);
 
         try {
-            EVENTS.getInstance(mContext).warning(getString(R.string.publish_files));
+            if (Settings.isPublisherEnabled(mContext)) {
+                EVENTS.getInstance(mContext).warning(getString(R.string.publish_files));
 
-            PageWorker.publish(mContext);
-
+                PageWorker.publish(mContext);
+            }
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
         } finally {
