@@ -182,6 +182,9 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         node.setHighWater(HIGH_WATER);
         node.setLowWater(LOW_WATER);
         node.setResponsive(200);
+        node.setEnablePushService(true);
+        node.setEnableReachService(true);
+        node.setEnableConnService(false);
 
     }
 
@@ -1352,6 +1355,11 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                 return error;
             }
         });
+    }
+
+    @Override
+    public void connected(String pretty) {
+        LogUtils.error(TAG, pretty);
     }
 
     @Override
