@@ -28,7 +28,7 @@ public class ContentManager {
     private static final ExecutorService WANTS = Executors.newFixedThreadPool(4);
     private static final ExecutorService HAVES = Executors.newFixedThreadPool(4);
     private final ConcurrentSkipListSet<Cid> searches = new ConcurrentSkipListSet<>();
-    private final ConcurrentSkipListSet<Cid> all = new ConcurrentSkipListSet<>();
+    private final ConcurrentSkipListSet<Cid> valids = new ConcurrentSkipListSet<>();
     private final ConcurrentSkipListSet<PeerID> faulty = new ConcurrentSkipListSet<>();
     private final ConcurrentLinkedDeque<PeerID> priority = new ConcurrentLinkedDeque<>();
     private final BitSwapNetwork network;
@@ -44,7 +44,7 @@ public class ContentManager {
     public void HaveReceived(@NonNull PeerID peer, @NonNull List<Cid> cids) {
         for (Cid cid : cids) {
             if (searches.contains(cid)) {
-                LogUtils.error(TAG, "HaveResponseReceived " + cid.String());
+                LogUtils.info(TAG, "HaveReceived " + cid.String());
                 faulty.remove(peer);
                 priority.remove(peer);
                 priority.push(peer); // top
@@ -74,13 +74,10 @@ public class ContentManager {
                         if (!wants.contains(peer)) {
                             wants.add(peer);
                             WANTS.execute(() -> {
-                                LogUtils.error(TAG, "Found New Provider " + pid);
 
                                 try {
                                     if (network.ConnectTo(closeable, peer, true)) {
-
-                                        LogUtils.error(TAG, "Success Provider Connection " + pid);
-
+                                        LogUtils.verbose(TAG, "Found New Provider " + pid);
                                         MessageWriter.sendWantsMessage(closeable, network, peer,
                                                 Collections.singletonList(cid));
                                     }
@@ -89,7 +86,7 @@ public class ContentManager {
                                 } catch (Throwable throwable) {
                                     priority.remove(peer);
                                     faulty.add(peer);
-                                    LogUtils.error(TAG, throwable);
+                                    //LogUtils.error(TAG, throwable);
                                 }
 
                             });
@@ -130,7 +127,7 @@ public class ContentManager {
                     } catch (ClosedException closedException) {
                         throw closedException;
                     } catch (Throwable throwable) {
-                        LogUtils.error(TAG, throwable);
+                        //LogUtils.error(TAG, throwable);
                         priority.remove(peer);
                         faulty.add(peer);
                     }
@@ -161,7 +158,7 @@ public class ContentManager {
                             } catch (ClosedException closedException) {
                                 // ignore
                             } catch (Throwable throwable) {
-                                // LogUtils.error(TAG, throwable);
+                                //LogUtils.error(TAG, throwable);
                                 faulty.add(peer);
                             }
                         });
@@ -179,10 +176,10 @@ public class ContentManager {
     public Block GetBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
 
         try {
-            LogUtils.error(TAG, "GetBlock Start " + cid.String());
+            LogUtils.info(TAG, "GetBlock Start " + cid.String());
             if (!searches.contains(cid)) {
                 searches.add(cid);
-                all.add(cid);
+                valids.add(cid);
                 Executors.newSingleThreadExecutor().execute(() -> {
                     try {
                         runWantHaves(closeable, cid);
@@ -193,7 +190,7 @@ public class ContentManager {
             }
             return notify.Subscribe(cid);
         } finally {
-            LogUtils.error(TAG, "GetBlock Release " + cid.String());
+            LogUtils.info(TAG, "GetBlock Release " + cid.String());
             searches.remove(cid);
         }
 
@@ -203,11 +200,13 @@ public class ContentManager {
 
         Cid cid = block.Cid();
 
+
         try {
-            if (all.contains(cid)) {
+            // TODO maybe the spam filter is not really necessary
+            if (valids.contains(cid)) {
                 blockStore.Put(block);
             } else {
-                LogUtils.error(TAG, "BlockReceived not asked block !!!");
+                LogUtils.error(TAG, "!!! BlockReceived for not asked block (SPAM) !!!");
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -215,7 +214,7 @@ public class ContentManager {
 
         if (searches.contains(cid)) {
 
-            LogUtils.error(TAG, "BlockReceived " + cid.String());
+            LogUtils.info(TAG, "BlockReceived " + cid.String());
 
             notify.Publish(block);
             faulty.remove(peer);
