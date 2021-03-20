@@ -200,7 +200,6 @@ public class ContentManager {
 
         Cid cid = block.Cid();
 
-
         try {
             // TODO maybe the spam filter is not really necessary
             if (valids.contains(cid)) {
