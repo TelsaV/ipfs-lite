@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
-public class PeerID {
+public class PeerID implements Comparable<PeerID> {
     private final String id;
 
     public PeerID(@NonNull String id) {
@@ -26,5 +26,10 @@ public class PeerID {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public int compareTo(PeerID o) {
+        return id.compareTo(o.id);
     }
 }

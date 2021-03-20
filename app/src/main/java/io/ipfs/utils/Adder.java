@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import java.util.Arrays;
 import java.util.Objects;
 
+import io.ipfs.IPFS;
 import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
 import io.ipfs.format.Reader;
@@ -13,7 +14,6 @@ import io.ipfs.merkledag.DagBuilderHelper;
 import io.ipfs.merkledag.DagService;
 import io.ipfs.unixfs.Directory;
 import io.ipfs.unixfs.Trickle;
-import threads.server.Settings;
 
 public class Adder {
     @NonNull
@@ -71,7 +71,7 @@ public class Adder {
             @Override
             public byte[] NextBytes() {
 
-                int size = Settings.CHUNK_SIZE;
+                int size = IPFS.CHUNK_SIZE;
                 byte[] buf = new byte[size];
                 int read = reader.Read(buf);
                 if (read < 0) {

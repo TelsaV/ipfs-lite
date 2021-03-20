@@ -32,7 +32,5 @@ public class Content extends Hashtable<String, String> {
     public static final String TYPE = "type";
     public static final String FILE = "file";
     public static final String ABOUT = "about";
-    public static final String IPFS_PATH = "/ipfs/";
-    public static final String IPNS_PATH = "/ipns/";
-    public static final String P2P_PATH = "/p2p/";
+
 }

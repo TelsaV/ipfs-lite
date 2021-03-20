@@ -13,13 +13,13 @@ import androidx.work.WorkerParameters;
 import java.util.Objects;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import lite.Peer;
 import lite.PeerInfo;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
-import io.ipfs.IPFS;
 
 public class UserConnectWorker extends Worker {
 
@@ -124,14 +124,14 @@ public class UserConnectWorker extends Worker {
                 Objects.requireNonNull(user);
                 String address = user.getAddress();
                 if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-                    if (ipfs.swarmConnect(Content.P2P_PATH + pid, null, timeout)) {
+                    if (ipfs.swarmConnect(IPFS.P2P_PATH + pid, null, timeout)) {
                         return;
                     }
                 }
             }
 
             if (!isStopped()) {
-                ipfs.swarmConnect(Content.P2P_PATH + pid, null, timeout);
+                ipfs.swarmConnect(IPFS.P2P_PATH + pid, null, timeout);
             }
         }
     }

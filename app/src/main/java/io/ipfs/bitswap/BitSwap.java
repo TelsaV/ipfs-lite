@@ -19,14 +19,12 @@ public class BitSwap implements Interface, Receiver {
     private static final String TAG = BitSwap.class.getSimpleName();
 
     private final BitSwapEngine engine;
-    private final BlockStore blockstore;
     private final ContentManager contentManager;
 
 
     public BitSwap(@NonNull BlockStore blockstore, @NonNull BitSwapNetwork network) {
-        this.blockstore = blockstore;
         engine = BitSwapEngine.NewEngine(blockstore, network, network.Self());
-        contentManager = new ContentManager(network);
+        contentManager = new ContentManager(blockstore, network);
     }
 
     public static Interface New(@NonNull BitSwapNetwork bitSwapNetwork, @NonNull BlockStore blockstore) {
@@ -72,18 +70,14 @@ public class BitSwap implements Interface, Receiver {
 
 
         LogUtils.error(TAG, "ReceiveBlocks " + peer.String());
-        // Put wanted blocks into block store
-        if (wanted.size() > 0) {
-            for (Block block : wanted) {
-                blockstore.Put(block);
-            }
-        }
-
-        contentManager.HaveResponseReceived(peer, haves);
 
         for (Block block : wanted) {
             contentManager.BlockReceived(peer, block);
         }
+
+        contentManager.HaveReceived(peer, haves);
+
+
     }
 
     @Override

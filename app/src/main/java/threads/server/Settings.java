@@ -9,10 +9,6 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import threads.server.core.threads.SortOrder;
 
 public class Settings {
@@ -20,54 +16,11 @@ public class Settings {
     public static final long REFRESH = 250;    //  250ms
     public static final boolean SUPPORT_VIDEO_UPDATE_THUMBNAIL = false;
     public static final String DOWNLOADS = "content://com.android.externalstorage.documents/document/primary:Download";
-    public static final String AGENT = "/go-ipfs/0.9.0-dev/lite";
-    public static final int TIMEOUT_BOOTSTRAP = 5;
-    public static final int LOW_WATER = 50;
-    public static final int HIGH_WATER = 150;
-    public static final String GRACE_PERIOD = "10s";
-    public static final int MIN_PEERS = 10;
-    public static final long RESOLVE_MAX_TIME = 20000; // 20 sec
-    public static final int RESOLVE_TIMEOUT = 3000; // 3 sec
+
     public static final int BITMAP_NAME_SIZE = 128;
-    public static final int CHUNK_SIZE = 262144;
+
     public static final String CHANNEL_ID = "CHANNEL_ID";
 
-    // BlockSizeLimit specifies the maximum size an imported block can have.
-    public static final int  BlockSizeLimit = 1048576; // 1 MB
-
-    // rough estimates on expected sizes
-    public static final int roughLinkBlockSize = 1 << 13; // 8KB
-    public static final int roughLinkSize = 34 + 8 + 5;// sha256 multihash + size + no name + protobuf framing
-
-    // DefaultLinksPerBlock governs how the importer decides how many links there
-// will be per block. This calculation is based on expected distributions of:
-//  * the expected distribution of block sizes
-//  * the expected distribution of link sizes
-//  * desired access speed
-// For now, we use:
-//
-//   var roughLinkBlockSize = 1 << 13 // 8KB
-//   var roughLinkSize = 34 + 8 + 5   // sha256 multihash + size + no name
-//                                    // + protobuf framing
-//   var DefaultLinksPerBlock = (roughLinkBlockSize / roughLinkSize)
-//                            = ( 8192 / 47 )
-//                            = (approximately) 174
-    public static final int DefaultLinksPerBlock = roughLinkBlockSize / roughLinkSize;
-
-    // IPFS BOOTSTRAP
-    @NonNull
-    public static final List<String> IPFS_BOOTSTRAP_NODES = new ArrayList<>(Arrays.asList(
-            "/ip4/147.75.80.110/tcp/4001/p2p/QmbFgm5zan8P6eWWmeyfncR5feYEMPbht5b1FW1C37aQ7y", // default relay  libp2p
-            "/ip4/147.75.195.153/tcp/4001/p2p/QmW9m57aiBDHAkKj9nmFSEn7ZqrcF1fZS4bipsTCHburei",// default relay  libp2p
-            "/ip4/147.75.70.221/tcp/4001/p2p/Qme8g49gm3q4Acp7xWBKg3nAa9fxZ1YmyDJdyGgoG6LsXh",// default relay  libp2p
-
-            "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ"// mars.i.ipfs.io
-
-    ));
-    // IPFS BOOTSTRAP DNS
-    public static final String LIB2P_DNS = "_dnsaddr.bootstrap.libp2p.io";
-    public static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
-    public static final String DNS_LINK = "dnslink=";
     public static final String BLOCKS = "/blocks";
     private static final String APP_KEY = "AppKey";
     private static final String PREF_KEY = "prefKey";

@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.BuildConfig;
 import threads.server.R;
 import threads.server.core.Content;
@@ -26,7 +27,6 @@ import threads.server.core.events.EVENTS;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 import threads.server.core.threads.THREADS;
-import io.ipfs.IPFS;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.work.UploadFileWorker;
@@ -103,7 +103,7 @@ public class LiteService {
                     IPFS ipfs = IPFS.getInstance(context);
 
                     if (!ipfs.isConnected(host)) {
-                        ipfs.swarmConnect(Content.P2P_PATH + host, null, 10);
+                        ipfs.swarmConnect(IPFS.P2P_PATH + host, null, 10);
                     }
                 }
             } catch (Throwable throwable) {

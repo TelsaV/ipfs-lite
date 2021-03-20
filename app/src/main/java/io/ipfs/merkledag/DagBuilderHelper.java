@@ -5,6 +5,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import io.ipfs.IPFS;
 import io.ipfs.cid.Builder;
 import io.ipfs.format.Node;
 import io.ipfs.format.ProtoNode;
@@ -12,7 +13,7 @@ import io.ipfs.format.RawNode;
 import io.ipfs.unixfs.FSNode;
 import io.ipfs.utils.Splitter;
 import io.protos.unixfs.UnixfsProtos;
-import threads.server.Settings;
+
 
 
 public class DagBuilderHelper {
@@ -54,7 +55,7 @@ public class DagBuilderHelper {
     private Node NewLeafNode(byte[] data, UnixfsProtos.Data.DataType fsNodeType) {
 
 
-        if (data.length > Settings.BlockSizeLimit) {
+        if (data.length > IPFS.BLOCK_SIZE_LIMIT) {
             throw new RuntimeException("ErrSizeLimitExceeded"); // TODO
         }
 
@@ -81,7 +82,7 @@ public class DagBuilderHelper {
 
     public void FillNodeLayer(@NonNull FSNodeOverDag node) {
 
-        while ((node.NumChildren() < Settings.DefaultLinksPerBlock) && !Done()) {
+        while ((node.NumChildren() < IPFS.LINKS_PER_BLOCK) && !Done()) {
             Pair<Node, Integer> result = NewLeafDataNode(UnixfsProtos.Data.DataType.Raw);
             if (result != null) {
                 node.AddChild(result.first, result.second, this);

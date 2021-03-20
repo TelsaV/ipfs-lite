@@ -14,11 +14,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import io.LogUtils;
+import io.ipfs.IPFS;
 import threads.server.Settings;
-import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
-import io.ipfs.IPFS;
 
 public class ConnectService {
     private static final String TAG = ConnectService.class.getSimpleName();
@@ -60,13 +59,13 @@ public class ConnectService {
         Objects.requireNonNull(user);
         String address = user.getAddress();
         if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-            if (ipfs.swarmConnect(Content.P2P_PATH + pid, null, 5)) {
+            if (ipfs.swarmConnect(IPFS.P2P_PATH + pid, null, 5)) {
                 return true;
             }
         }
         int timeout = Settings.getConnectionTimeout(context);
 
-        return ipfs.swarmConnect(Content.P2P_PATH + pid, null, timeout);
+        return ipfs.swarmConnect(IPFS.P2P_PATH + pid, null, timeout);
 
 
     }

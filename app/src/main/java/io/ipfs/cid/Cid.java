@@ -12,7 +12,7 @@ import java.util.Objects;
 import io.ipfs.multibase.Multibase;
 import io.ipfs.multihash.Multihash;
 
-public class Cid {
+public class Cid implements Comparable<Cid> {
     public static final String TAG = Cid.class.getSimpleName();
     public static final long IDENTITY = 0x00;
     public static final long Raw = 0x55;
@@ -190,5 +190,11 @@ public class Cid {
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
         }
+    }
+
+
+    @Override
+    public int compareTo(Cid o) {
+        return Integer.compare(this.hashCode(), o.hashCode());
     }
 }

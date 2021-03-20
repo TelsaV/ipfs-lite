@@ -102,7 +102,7 @@ public class DOCS {
                                 Executors.newSingleThreadExecutor().execute(() -> {
                                     try {
                                         boolean result = ipfs.swarmConnect(
-                                                Content.P2P_PATH + pid, pid, closeable);
+                                                IPFS.P2P_PATH + pid, pid, closeable);
                                         LogUtils.error(TAG, "Connect " + pid + " " + result);
                                     } catch (Throwable throwable) {
                                         LogUtils.error(TAG, throwable.getMessage());
@@ -143,12 +143,12 @@ public class DOCS {
                         String address = page.getAddress();
                         if (!address.isEmpty()) {
                             connected = ipfs.swarmConnect(
-                                    address.concat(Content.P2P_PATH).concat(page.getPid()),
+                                    address.concat(IPFS.P2P_PATH).concat(page.getPid()),
                                     page.getPid(), closeable);
                         }
                     }
                     if (!connected) {
-                        connected = ipfs.swarmConnect(Content.P2P_PATH + pid,
+                        connected = ipfs.swarmConnect(IPFS.P2P_PATH + pid,
                                 pid, closeable);
                     }
                 }
@@ -844,7 +844,7 @@ public class DOCS {
 
             Map<String, String> responseHeaders = new HashMap<>();
             return new WebResourceResponse(mimeType, Content.UTF8, 200,
-                    "OK", responseHeaders, new BufferedInputStream(in, Settings.CHUNK_SIZE));
+                    "OK", responseHeaders, new BufferedInputStream(in, IPFS.CHUNK_SIZE));
         } catch (Throwable throwable) {
             if (closeable.isClosed()) {
                 throw new ClosedException();
@@ -944,23 +944,23 @@ public class DOCS {
                 ipfs.bootstrap();
             }
 
-            if (ipfs.numSwarmPeers() < Settings.MIN_PEERS) {
+            if (ipfs.numSwarmPeers() < IPFS.MIN_PEERS) {
                 List<Page> bootstraps = pages.getBootstraps(5);
                 List<String> addresses = new ArrayList<>();
                 for (Page bootstrap : bootstraps) {
                     String address = bootstrap.getAddress();
                     if (!address.isEmpty()) {
-                        addresses.add(address.concat(Content.P2P_PATH).concat(bootstrap.getPid()));
+                        addresses.add(address.concat(IPFS.P2P_PATH).concat(bootstrap.getPid()));
                     }
                 }
                 if (!addresses.isEmpty()) {
                     List<Callable<Boolean>> tasks = new ArrayList<>();
                     ExecutorService executor = Executors.newFixedThreadPool(addresses.size());
                     for (String address : addresses) {
-                        tasks.add(() -> ipfs.swarmConnect(address, null, Settings.TIMEOUT_BOOTSTRAP));
+                        tasks.add(() -> ipfs.swarmConnect(address, null, IPFS.TIMEOUT_BOOTSTRAP));
                     }
                     List<Future<Boolean>> result = executor.invokeAll(tasks,
-                            Settings.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
+                            IPFS.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                     for (Future<Boolean> future : result) {
                         LogUtils.error(TAG, "Bootstrap done " + future.isDone());
                     }
@@ -1004,8 +1004,8 @@ public class DOCS {
                         throw new DOCS.InvalidNameException(uri.toString());
                     }
                 } else {
-                    if (link.startsWith(Content.IPFS_PATH)) {
-                        String cid = link.replaceFirst(Content.IPFS_PATH, "");
+                    if (link.startsWith(IPFS.IPFS_PATH)) {
+                        String cid = link.replaceFirst(IPFS.IPFS_PATH, "");
                         Uri.Builder builder = new Uri.Builder();
                         builder.scheme(Content.IPFS)
                                 .authority(cid);
@@ -1013,8 +1013,8 @@ public class DOCS {
                             builder.appendPath(path);
                         }
                         return builder.build();
-                    } else if (link.startsWith(Content.IPNS_PATH)) {
-                        String cid = link.replaceFirst(Content.IPNS_PATH, "");
+                    } else if (link.startsWith(IPFS.IPNS_PATH)) {
+                        String cid = link.replaceFirst(IPFS.IPNS_PATH, "");
                         if (!ipfs.decodeName(cid).isEmpty()) {
                             Uri.Builder builder = new Uri.Builder();
                             builder.scheme(Content.IPNS)
@@ -1174,8 +1174,8 @@ public class DOCS {
                         throw new DOCS.InvalidNameException(uri.toString());
                     }
                 } else {
-                    if (link.startsWith(Content.IPFS_PATH)) {
-                        String cid = link.replaceFirst(Content.IPFS_PATH, "");
+                    if (link.startsWith(IPFS.IPFS_PATH)) {
+                        String cid = link.replaceFirst(IPFS.IPFS_PATH, "");
                         Uri.Builder builder = new Uri.Builder();
                         builder.scheme(Content.IPFS)
                                 .authority(cid);
@@ -1183,8 +1183,8 @@ public class DOCS {
                             builder.appendPath(path);
                         }
                         return redirect(builder.build(), cid, paths, closeable);
-                    } else if (link.startsWith(Content.IPNS_PATH)) {
-                        String cid = link.replaceFirst(Content.IPNS_PATH, "");
+                    } else if (link.startsWith(IPFS.IPNS_PATH)) {
+                        String cid = link.replaceFirst(IPFS.IPNS_PATH, "");
                         if (!ipfs.decodeName(cid).isEmpty()) {
                             Uri.Builder builder = new Uri.Builder();
                             builder.scheme(Content.IPNS)

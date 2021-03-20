@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.LogUtils;
-import threads.server.Settings;
+
 
 public class DnsAddrResolver {
     private static final String IPv4 = "/ip4/";
@@ -31,7 +31,7 @@ public class DnsAddrResolver {
         Pair<List<String>, List<String>> result = DnsAddrResolver.getMultiAddresses();
 
         List<String> bootstrap = new ArrayList<>(result.first);
-        bootstrap.addAll(Settings.IPFS_BOOTSTRAP_NODES);
+        bootstrap.addAll(IPFS.IPFS_BOOTSTRAP_NODES);
         return Pair.create(bootstrap, result.second);
     }
 
@@ -41,8 +41,8 @@ public class DnsAddrResolver {
         List<String> txtRecords = getTxtRecords("_dnslink.".concat(host));
         for (String txtRecord : txtRecords) {
             try {
-                if (txtRecord.startsWith(Settings.DNS_LINK)) {
-                    return txtRecord.replaceFirst(Settings.DNS_LINK, "");
+                if (txtRecord.startsWith(IPFS.DNS_LINK)) {
+                    return txtRecord.replaceFirst(IPFS.DNS_LINK, "");
                 }
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
@@ -79,8 +79,8 @@ public class DnsAddrResolver {
         List<String> txtRecords = getTxtRecords();
         for (String txtRecord : txtRecords) {
             try {
-                if (txtRecord.startsWith(Settings.DNS_ADDR)) {
-                    String multiAddress = txtRecord.replaceFirst(Settings.DNS_ADDR, "");
+                if (txtRecord.startsWith(IPFS.DNS_ADDR)) {
+                    String multiAddress = txtRecord.replaceFirst(IPFS.DNS_ADDR, "");
                     // now get IP of multiAddress
                     String host = multiAddress.substring(0, multiAddress.indexOf("/"));
 
@@ -113,7 +113,7 @@ public class DnsAddrResolver {
         List<String> txtRecords = new ArrayList<>();
         try {
             DnsClient client = getInstance();
-            DnsQueryResult result = client.query(Settings.LIB2P_DNS, Record.TYPE.TXT);
+            DnsQueryResult result = client.query(IPFS.LIB2P_DNS, Record.TYPE.TXT);
             DnsMessage response = result.response;
             List<Record<? extends Data>> records = response.answerSection;
             for (Record<? extends Data> record : records) {

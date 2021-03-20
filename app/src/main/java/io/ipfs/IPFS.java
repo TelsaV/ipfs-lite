@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -62,14 +63,60 @@ import lite.Peer;
 import lite.PeerInfo;
 import lite.Providers;
 import lite.ResolveInfo;
-import threads.server.Settings;
-import threads.server.core.Content;
 import threads.server.core.blocks.BLOCKS;
 import threads.server.core.events.EVENTS;
 
 public class IPFS implements Listener, ContentRouting, Metrics {
     public static final int WRITE_TIMEOUT = 60;
     public static final boolean SEND_DONT_HAVES = false;
+    public static final String AGENT = "/go-ipfs/0.9.0-dev/lite";
+    public static final int TIMEOUT_BOOTSTRAP = 5;
+    public static final int LOW_WATER = 50;
+    public static final int HIGH_WATER = 150;
+    public static final String GRACE_PERIOD = "10s";
+    public static final int MIN_PEERS = 10;
+    public static final long RESOLVE_MAX_TIME = 20000; // 20 sec
+    public static final int RESOLVE_TIMEOUT = 3000; // 3 sec
+
+    public static final int CHUNK_SIZE = 262144;
+
+
+    // BlockSizeLimit specifies the maximum size an imported block can have.
+    public static final int BLOCK_SIZE_LIMIT = 1048576; // 1 MB
+    public static final String IPFS_PATH = "/ipfs/";
+    public static final String IPNS_PATH = "/ipns/";
+    public static final String P2P_PATH = "/p2p/";
+    // IPFS BOOTSTRAP
+    @NonNull
+    public static final List<String> IPFS_BOOTSTRAP_NODES = new ArrayList<>(Arrays.asList(
+            "/ip4/147.75.80.110/tcp/4001/p2p/QmbFgm5zan8P6eWWmeyfncR5feYEMPbht5b1FW1C37aQ7y", // default relay  libp2p
+            "/ip4/147.75.195.153/tcp/4001/p2p/QmW9m57aiBDHAkKj9nmFSEn7ZqrcF1fZS4bipsTCHburei",// default relay  libp2p
+            "/ip4/147.75.70.221/tcp/4001/p2p/Qme8g49gm3q4Acp7xWBKg3nAa9fxZ1YmyDJdyGgoG6LsXh",// default relay  libp2p
+
+            "/ip4/104.131.131.82/tcp/4001/p2p/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ"// mars.i.ipfs.io
+
+    ));
+    // IPFS BOOTSTRAP DNS
+    public static final String LIB2P_DNS = "_dnsaddr.bootstrap.libp2p.io";
+    public static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
+    public static final String DNS_LINK = "dnslink=";
+    // rough estimates on expected sizes
+    private static final int roughLinkBlockSize = 1 << 13; // 8KB
+    private static final int roughLinkSize = 34 + 8 + 5;// sha256 multihash + size + no name + protobuf framing
+    // DefaultLinksPerBlock governs how the importer decides how many links there
+// will be per block. This calculation is based on expected distributions of:
+//  * the expected distribution of block sizes
+//  * the expected distribution of link sizes
+//  * desired access speed
+// For now, we use:
+//
+//   var roughLinkBlockSize = 1 << 13 // 8KB
+//   var roughLinkSize = 34 + 8 + 5   // sha256 multihash + size + no name
+//                                    // + protobuf framing
+//   var DefaultLinksPerBlock = (roughLinkBlockSize / roughLinkSize)
+//                            = ( 8192 / 47 )
+//                            = (approximately) 174
+    public static final int LINKS_PER_BLOCK = roughLinkBlockSize / roughLinkSize;
 
 
     private static final String PREF_KEY = "prefKey";
@@ -127,14 +174,14 @@ public class IPFS implements Listener, ContentRouting, Metrics {
             node.setEnablePrivateNetwork(isPrivateNetworkEnabled(context));
         }
 
-        node.setAgent(Settings.AGENT);
+        node.setAgent(AGENT);
         node.setPushing(false);
         node.setPort(IPFS.getSwarmPort(context));
 
         node.setConcurrency(15);
-        node.setGracePeriod(Settings.GRACE_PERIOD);
-        node.setHighWater(Settings.HIGH_WATER);
-        node.setLowWater(Settings.LOW_WATER);
+        node.setGracePeriod(GRACE_PERIOD);
+        node.setHighWater(HIGH_WATER);
+        node.setLowWater(LOW_WATER);
         node.setResponsive(200);
 
     }
@@ -421,7 +468,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     public void bootstrap() {
         if (isDaemonRunning()) {
-            if (numSwarmPeers() < Settings.MIN_PEERS) {
+            if (numSwarmPeers() < MIN_PEERS) {
                 try {
                     Pair<List<String>, List<String>> result = DnsAddrResolver.getBootstrap();
 
@@ -429,10 +476,10 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                     List<Callable<Boolean>> tasks = new ArrayList<>();
                     ExecutorService executor = Executors.newFixedThreadPool(bootstrap.size());
                     for (String address : bootstrap) {
-                        tasks.add(() -> swarmConnect(address, null, Settings.TIMEOUT_BOOTSTRAP));
+                        tasks.add(() -> swarmConnect(address, null, TIMEOUT_BOOTSTRAP));
                     }
 
-                    List<Future<Boolean>> futures = executor.invokeAll(tasks, Settings.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
+                    List<Future<Boolean>> futures = executor.invokeAll(tasks, TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                     for (Future<Boolean> future : futures) {
                         LogUtils.info(TAG, "\nBootstrap done " + future.isDone());
                     }
@@ -442,10 +489,10 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                     if (!second.isEmpty()) {
                         executor = Executors.newFixedThreadPool(second.size());
                         for (String address : second) {
-                            tasks.add(() -> swarmConnect(address, null, Settings.TIMEOUT_BOOTSTRAP));
+                            tasks.add(() -> swarmConnect(address, null, TIMEOUT_BOOTSTRAP));
                         }
                         futures.clear();
-                        futures = executor.invokeAll(tasks, Settings.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
+                        futures = executor.invokeAll(tasks, TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
                         for (Future<Boolean> future : futures) {
                             LogUtils.info(TAG, "\nConnect done " + future.isDone());
                         }
@@ -661,7 +708,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
         AtomicReference<ResolvedName> resolvedName = new AtomicReference<>(null);
         try {
-            AtomicLong timeout = new AtomicLong(System.currentTimeMillis() + Settings.RESOLVE_MAX_TIME);
+            AtomicLong timeout = new AtomicLong(System.currentTimeMillis() + RESOLVE_MAX_TIME);
             AtomicBoolean abort = new AtomicBoolean(false);
             node.resolveName(new ResolveInfo() {
                 @Override
@@ -671,7 +718,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
                 private void setName(@NonNull String hash, long sequence) {
                     resolvedName.set(new ResolvedName(sequence,
-                            hash.replaceFirst(Content.IPFS_PATH, "")));
+                            hash.replaceFirst(IPFS_PATH, "")));
                 }
 
                 @Override
@@ -691,8 +738,8 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             return; // newest value already available
                         }
                         if (!abort.get()) {
-                            if (hash.startsWith(Content.IPFS_PATH)) {
-                                timeout.set(System.currentTimeMillis() + Settings.RESOLVE_TIMEOUT);
+                            if (hash.startsWith(IPFS_PATH)) {
+                                timeout.set(System.currentTimeMillis() + RESOLVE_TIMEOUT);
                                 setName(hash, seq);
                             } else {
                                 LogUtils.error(TAG, "invalid hash " + hash);
@@ -786,7 +833,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     @NonNull
     public String resolve(@NonNull String root, @NonNull List<String> path, @NonNull Closeable closeable) throws ClosedException {
 
-        String resultPath = Content.IPFS_PATH + root;
+        String resultPath = IPFS_PATH + root;
         for (String name : path) {
             resultPath = resultPath.concat("/").concat(name);
         }
@@ -814,7 +861,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     public boolean resolve(@NonNull String cid, @NonNull String name,
                            @NonNull Closeable closeable) throws ClosedException {
-        String res = resolve("/" + Content.IPFS + "/" + cid + "/" + name, closeable);
+        String res = resolve(IPFS_PATH + cid + "/" + name, closeable);
         return !res.isEmpty();
     }
 
@@ -1163,7 +1210,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             public boolean Connect(@NonNull Closeable closeable,
                                                    @NonNull PeerID peer, boolean protect) throws ClosedException {
                                 try {
-                                    return node.swarmConnect(Content.P2P_PATH + peer.String(),
+                                    return node.swarmConnect(P2P_PATH + peer.String(),
                                             protect, closeable::isClosed);
                                 } catch (Throwable throwable) {
                                     if (closeable.isClosed()) {
@@ -1390,29 +1437,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         return leeching;
     }
 
-    /*
-    @Override
-    public io.ipfs.format.Block getBlock(@NonNull Closeable closeable, @NonNull Cid cid) {
 
-        if (!isDaemonRunning()) {
-            return null;
-        }
-
-        try {
-
-            String result = node.getBlock(closeable::isClosed, cid.String());
-            if (!result.isEmpty()) {
-                Blockstore bs = Blockstore.NewBlockstore(blocks);
-                return bs.Get(Cid.Decode(result));
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-        if (closeable.isClosed()) {
-            throw new RuntimeException(new ClosedException());
-        }
-        return null;
-    }*/
 
     @Override
     public void FindProvidersAsync(@NonNull io.libp2p.routing.Providers providers, @NonNull Cid cid, int number) throws ClosedException {
