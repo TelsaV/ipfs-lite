@@ -687,7 +687,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     }
 
 
-    public void swarmDisconnect(String pid) {
+    public void swarmDisconnect(@NonNull String pid) {
         if (!isDaemonRunning()) {
             return;
         }
