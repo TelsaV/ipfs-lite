@@ -1166,7 +1166,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                                 node.setPort(nextFreePort());
                             }
                             LogUtils.error(TAG, "start daemon...");
-                            node.daemon(privateSharing);
+                            node.daemon();
                             LogUtils.error(TAG, "stop daemon...");
                         } catch (Throwable e) {
                             failure.set(true);
@@ -1276,6 +1276,12 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean allowConnect(String peer) {
+        // everybody can push to you
+        return true;
     }
 
     @Override
