@@ -686,6 +686,19 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         }
     }
 
+
+    public void swarmDisconnect(String pid) {
+        if (!isDaemonRunning()) {
+            return;
+        }
+        try {
+            swarm.remove(pid);
+            node.swarmDisconnect(P2P_PATH + pid);
+        } catch (Throwable e) {
+            LogUtils.error(TAG, "" + e.getLocalizedMessage());
+        }
+    }
+
     @NonNull
     public String base58(@NonNull String pid) {
         try {
