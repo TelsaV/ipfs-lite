@@ -59,7 +59,7 @@ public class NavigableIPLDNode implements NavigableNode {
             if (value > preLoader) {
                 preLoader = value;
                 int min = Math.min((value * IPFS.PRELOAD) + 1, cids.size());
-                int max = Math.min((value * IPFS.PRELOAD) + IPFS.PRELOAD + 10, cids.size()); // one extra
+                int max = Math.min((value * IPFS.PRELOAD) + IPFS.PRELOAD + 1, cids.size());
                 int dist = max - min;
                 if (dist > 0 && min < cids.size()) {
                     LogUtils.error(TAG, "min " + min + " max " + max +
