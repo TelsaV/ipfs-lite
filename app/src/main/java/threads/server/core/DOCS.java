@@ -696,8 +696,16 @@ public class DOCS {
                 answer.append("<form><table  width=\"100%\" style=\"border-spacing: 4px;\">");
                 for (Link link : links) {
 
+                    Uri.Builder builder = new Uri.Builder();
+                    builder.scheme(uri.getScheme())
+                            .authority(uri.getAuthority());
+                    for (String path : paths) {
+                        builder.appendPath(path);
+                    }
+                    builder.appendPath(link.getName());
+                    builder.appendQueryParameter("download", "0");
+                    Uri linkUri = builder.build();
 
-                    String linkUri = uri + "/" + link.getName();
 
                     answer.append("<tr>");
 
@@ -713,7 +721,7 @@ public class DOCS {
 
                     answer.append("<td width=\"100%\" style=\"word-break:break-word\">");
                     answer.append("<a href=\"");
-                    answer.append(linkUri);
+                    answer.append(linkUri.toString());
                     answer.append("\">");
                     answer.append(link.getName());
                     answer.append("</a>");
@@ -800,6 +808,16 @@ public class DOCS {
         return resolvedName.getHash();
     }
 
+    public String resolvePath(@NonNull Uri uri, @NonNull Closeable closeable) throws
+            InvalidNameException, ClosedException, ResolveNameException {
+        List<String> paths = uri.getPathSegments();
+
+        String root = getRoot(uri, closeable);
+        Objects.requireNonNull(root);
+
+        return ipfs.resolve(root, paths, closeable);
+    }
+
     @NonNull
     public WebResourceResponse getResponse(@NonNull Context context,
                                            @NonNull Uri uri, @NonNull String root,
@@ -849,7 +867,7 @@ public class DOCS {
 
             Map<String, String> responseHeaders = new HashMap<>();
             return new WebResourceResponse(mimeType, Content.UTF8, 200,
-                    "OK", responseHeaders, new BufferedInputStream(in, IPFS.CHUNK_SIZE));
+                    "OK", responseHeaders, new BufferedInputStream(in));
         } catch (Throwable throwable) {
             if (closeable.isClosed()) {
                 throw new ClosedException();

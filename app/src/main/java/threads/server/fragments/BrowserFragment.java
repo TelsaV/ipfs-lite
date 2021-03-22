@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.Closeable;
 import io.LogUtils;
+import io.ipfs.utils.TimeoutProgress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -238,13 +239,31 @@ public class BrowserFragment extends Fragment {
 
             try {
                 LogUtils.error(TAG, "downloadUrl : " + url);
-
+                String filename = URLUtil.guessFileName(url, contentDisposition, mimeType);
                 Uri uri = Uri.parse(url);
                 if (Objects.equals(uri.getScheme(), Content.IPFS) ||
                         Objects.equals(uri.getScheme(), Content.IPNS)) {
-                    contentDownloader(uri);
+                    String res = uri.getQueryParameter("download");
+                    if (Objects.equals(res, "0")) {
+                        try {
+                            String cid = docs.resolvePath(uri, new TimeoutProgress(1));
+                            Objects.requireNonNull(cid);
+                            Uri redirect = FileDocumentsProvider.getUriForIpfs(cid);
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.putExtra(Intent.EXTRA_TITLE, filename);
+                            intent.setDataAndType(redirect, mimeType);
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                            startActivity(intent);
+                        } catch (Throwable throwable) {
+                            contentDownloader(uri);
+                        } finally {
+                            mProgressBar.setVisibility(View.GONE);
+                        }
+                    } else {
+                        contentDownloader(uri);
+                    }
                 } else {
-                    String filename = URLUtil.guessFileName(url, contentDisposition, mimeType);
+
                     fileDownloader(uri, filename, mimeType, contentLength);
                 }
 

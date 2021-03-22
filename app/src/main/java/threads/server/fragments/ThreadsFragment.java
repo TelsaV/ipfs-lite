@@ -882,8 +882,6 @@ public class ThreadsFragment extends Fragment implements
 
 
                 Uri uri = FileDocumentsProvider.getUriForThread(thread);
-
-
                 Intent intent;
                 if (MimeTypes.isVideo(mimeType)) {
                     intent = new Intent(Intent.ACTION_VIEW, uri, mContext, PlayerActivity.class);

@@ -237,6 +237,17 @@ public class FileDocumentsProvider extends DocumentsProvider {
         return builder.build();
     }
 
+
+    public static Uri getUriForIpfs(String cid) {
+        Uri.Builder builder = new Uri.Builder();
+        builder.scheme(SCHEME)
+                .authority(BuildConfig.DOCUMENTS_AUTHORITY)
+                .appendPath(DOCUMENT)
+                .appendPath(cid);
+
+        return builder.build();
+    }
+
     @Nullable
     public static Uri getThumbnailUriForThread(Thread thread) {
         if (thread.isSeeding()) {
@@ -653,12 +664,9 @@ public class FileDocumentsProvider extends DocumentsProvider {
 
 
         try {
-            long idx = Long.parseLong(documentId);
-
-
             final boolean isWrite = (mode.indexOf('w') != -1);
             if (isWrite) {
-
+                long idx = Long.parseLong(documentId);
                 final int accessMode = ParcelFileDescriptor.parseMode(mode);
                 Handler handler = new Handler(getContext().getMainLooper());
                 File temp = FileProvider.getFile(getContext(), idx);
@@ -675,12 +683,18 @@ public class FileDocumentsProvider extends DocumentsProvider {
 
                         });
             } else {
+                String cid;
+                if (ipfs.isValidCID(documentId)) {
+                    cid = documentId;
+                } else {
 
-                Thread file = threads.getThreadByIdx(idx);
-                Objects.requireNonNull(file);
+                    long idx = Long.parseLong(documentId);
+                    Thread file = threads.getThreadByIdx(idx);
+                    Objects.requireNonNull(file);
 
-                String cid = file.getContent();
-                Objects.requireNonNull(cid);
+                    cid = file.getContent();
+                    Objects.requireNonNull(cid);
+                }
 
 
                 final AtomicBoolean release = new AtomicBoolean(false);
