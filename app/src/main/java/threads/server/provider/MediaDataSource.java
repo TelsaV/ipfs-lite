@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.LogUtils;
+import io.ipfs.ClosedException;
 import io.ipfs.Storage;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.BlockStore;
@@ -22,7 +23,7 @@ public class MediaDataSource extends android.media.MediaDataSource {
     private final AtomicBoolean release = new AtomicBoolean(false);
     private Reader fileReader;
 
-    public MediaDataSource(@NonNull Storage storage, @NonNull String cid) {
+    public MediaDataSource(@NonNull Storage storage, @NonNull String cid) throws ClosedException {
         BlockStore blockstore = BlockStore.NewBlockstore(storage);
         Interface exchange = new Exchange(blockstore);
         this.fileReader = Reader.getReader(release::get, blockstore, exchange, cid);
