@@ -90,46 +90,7 @@ public class DOCS {
 
 
     private void pageProvider(@NonNull String cid, @NonNull Closeable closeable) {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            long start = System.currentTimeMillis();
-            try {
-                ipfs.dhtFindProviders(cid, 10, new Providers() {
-                    @Override
-                    public void Peer(@NonNull String pid) {
-                        try {
-                            LogUtils.error(TAG, "Found Provider " + pid);
-                            if (!ipfs.isConnected(pid)) {
-                                Executors.newSingleThreadExecutor().execute(() -> {
-                                    try {
-                                        boolean result = ipfs.swarmConnect(
-                                                IPFS.P2P_PATH + pid, pid, closeable);
-                                        LogUtils.error(TAG, "Connect " + pid + " " + result);
-                                    } catch (Throwable throwable) {
-                                        LogUtils.error(TAG, throwable.getMessage());
-                                    }
-                                });
-                            }
-
-                        } catch (Throwable throwable) {
-                            LogUtils.error(TAG, throwable);
-                        }
-
-                    }
-
-                    @Override
-                    public boolean isClosed() {
-                        return closeable.isClosed();
-                    }
-                });
-
-            } catch (ClosedException ignore) {
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            } finally {
-                LogUtils.info(TAG, "Finish " + cid +
-                        " onStart [" + (System.currentTimeMillis() - start) + "]...");
-            }
-        });
+        ipfs.load(closeable, cid);
     }
 
     private void pageConnect(@NonNull String pid, @NonNull Closeable closeable) {

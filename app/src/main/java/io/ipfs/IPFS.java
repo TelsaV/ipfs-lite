@@ -418,6 +418,16 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     }
 
+    public void load(@NonNull Closeable closeable, @NonNull String cid) {
+        try {
+            if (exchange != null) {
+                exchange.load(closeable, Cid.Decode(cid));
+            }
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
     public void swarmReduce(@NonNull String pid) {
         swarm.remove(pid);
     }

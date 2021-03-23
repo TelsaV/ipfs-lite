@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.Closeable;
 import io.LogUtils;
@@ -56,14 +57,13 @@ public class ContentManager {
             searches.clear();
             priority.clear();
             notify.clear();
+            loads.clear();
         } catch (Throwable throwable){
             LogUtils.error(TAG, throwable);
         }
     }
 
     public void runWantHaves(@NonNull Closeable closeable, @NonNull Cid cid) throws ClosedException {
-
-        // TODO event for new connections add them to peers
 
         CopyOnWriteArraySet<PeerID> wants = new CopyOnWriteArraySet<>();
         Set<PeerID> haves = new HashSet<>(); // ok, does not changed by threads
@@ -181,13 +181,16 @@ public class ContentManager {
         try {
             LogUtils.info(TAG, "GetBlock Start " + cid.String());
             if (!searches.contains(cid)) {
+                AtomicBoolean done = new AtomicBoolean(false);
                 searches.add(cid);
                 valids.add(cid);
                 Executors.newSingleThreadExecutor().execute(() -> {
                     try {
-                        runWantHaves(closeable, cid);
+                        runWantHaves(()-> closeable.isClosed() || done.get(), cid);
                     } catch (ClosedException closedException) {
                         notify.Release(cid);
+                    }  finally {
+                        done.set(true);
                     }
                 });
             }
@@ -246,5 +249,67 @@ public class ContentManager {
 
     public boolean GatePeer(@NonNull PeerID peerID) {
         return faulty.contains(peerID);
+    }
+
+    private static final ExecutorService LOADS = Executors.newFixedThreadPool(4);
+    private final ConcurrentSkipListSet<Cid> loads = new ConcurrentSkipListSet<>();
+    public void Load(@NonNull Closeable closeable, @NonNull Cid cid) {
+        if(!loads.contains(cid)) {
+            loads.add(cid);
+            LogUtils.error(TAG, "Load Provider Start " + cid.String());
+            Executors.newSingleThreadExecutor().execute(() -> {
+                long start = System.currentTimeMillis();
+                try {
+
+                    network.FindProvidersAsync(new Providers() {
+
+                        @Override
+                        public void Peer(@NonNull String pid) {
+                            PeerID peer = new PeerID(pid);
+
+
+                            try {
+                                LogUtils.error(TAG, "Load Provider " + pid + " for " + cid.String());
+
+                                LOADS.execute(() -> {
+                                    try {
+                                        if (network.ConnectTo(() -> closeable.isClosed()
+                                                        || ((System.currentTimeMillis() - start) > TIMEOUT),
+                                                peer, true)) {
+                                            LogUtils.error(TAG, "Load Provider Found " + pid
+                                                    + " for " + cid.String());
+                                            priority.add(peer);
+                                        } else {
+                                            LogUtils.error(TAG, "Load Provider Connection Failed " +
+                                                    peer.String());
+                                        }
+                                    } catch (ClosedException ignore) {
+                                    } catch (Throwable throwable) {
+                                        LogUtils.error(TAG, "Load Provider Failed " +
+                                                throwable.getLocalizedMessage());
+                                    }
+                                });
+                            } catch (Throwable throwable) {
+                               LogUtils.error(TAG, throwable);
+                            }
+                        }
+
+
+                        @Override
+                        public boolean isClosed() {
+                            return closeable.isClosed();
+                        }
+                    }, cid, PROVIDERS);
+
+
+                } catch (ClosedException ignore) {
+                } catch (Throwable throwable) {
+                    LogUtils.error(TAG, throwable.getMessage());
+                } finally {
+                    LogUtils.info(TAG, "Finish " + cid.String() +
+                            " onStart [" + (System.currentTimeMillis() - start) + "]...");
+                }
+            });
+        }
     }
 }
