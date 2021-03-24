@@ -56,7 +56,7 @@ public class DagBuilderHelper {
 
 
         if (data.length > IPFS.BLOCK_SIZE_LIMIT) {
-            throw new RuntimeException("ErrSizeLimitExceeded"); // TODO
+            throw new RuntimeException(); // TODO
         }
 
         if (rawLeaves) {

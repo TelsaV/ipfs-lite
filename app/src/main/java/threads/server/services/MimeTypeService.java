@@ -8,10 +8,6 @@ import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import com.amulyakhare.textdrawable.TextDrawable;
-import com.amulyakhare.textdrawable.util.ColorGenerator;
-
 import java.util.Optional;
 
 import io.LogUtils;
@@ -19,7 +15,9 @@ import threads.server.R;
 import threads.server.Settings;
 import threads.server.magic.ContentInfo;
 import threads.server.magic.ContentInfoUtil;
+import threads.server.utils.ColorGenerator;
 import threads.server.utils.MimeType;
+import threads.server.utils.TextDrawable;
 
 public class MimeTypeService {
     public static final String SVG_FOLDER = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\"  version=\"1.1\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\"><path fill=\"#696969\" d=\"M10,4H4C2.89,4 2,4.89 2,6V18C2,19.1 2.9,20 4,20H20C21.1,20 22,19.1 22,18V8C22,6.89 21.1,6 20,6H12L10,4Z\" /></svg>";

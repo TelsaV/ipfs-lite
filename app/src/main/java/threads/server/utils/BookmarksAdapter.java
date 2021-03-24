@@ -11,8 +11,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.amulyakhare.textdrawable.util.ColorGenerator;
-
 import java.util.ArrayList;
 
 import io.LogUtils;
