@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.ClosedException;
+import io.ipfs.ProtocolNotSupported;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;
 import io.ipfs.format.BlockStore;
@@ -29,6 +30,7 @@ public class ContentManager {
     private static final ExecutorService LOADS = Executors.newFixedThreadPool(4);
     private static final ExecutorService WANTS = Executors.newFixedThreadPool(8);
     private final ConcurrentSkipListSet<Cid> searches = new ConcurrentSkipListSet<>();
+
     private final ConcurrentSkipListSet<PeerID> faulty = new ConcurrentSkipListSet<>();
     private final ConcurrentLinkedDeque<PeerID> priority = new ConcurrentLinkedDeque<>();
     private final BitSwapNetwork network;
@@ -45,7 +47,6 @@ public class ContentManager {
         for (Cid cid : cids) {
             if (!searches.contains(cid)) {
                 LogUtils.info(TAG, "HaveReceived " + cid.String());
-                faulty.remove(peer);
                 priority.push(peer); // top
             }
         }
@@ -100,10 +101,11 @@ public class ContentManager {
                                             }
                                         } catch (ClosedException ignore) {
                                             // ignore
-                                        } catch (Throwable throwable) {
+                                        } catch (ProtocolNotSupported ignore) {
                                             priority.remove(peer);
                                             faulty.add(peer);
-                                            //LogUtils.error(TAG, throwable);
+                                        } catch (Throwable throwable) {
+                                            LogUtils.error(TAG, throwable);
                                         } finally {
                                             LogUtils.error(TAG, "Provider Peer " +
                                                     peer.String() + " took " + (System.currentTimeMillis() - start));
@@ -146,7 +148,9 @@ public class ContentManager {
                         }
                     } catch (ClosedException closedException) {
                         // ignore
-                    } catch (Throwable throwable) {
+                    } catch (ProtocolNotSupported ignore) {
+                        faulty.add(peer);
+                    }  catch (Throwable throwable) {
                         LogUtils.error(TAG, throwable);
                     } finally {
                         LogUtils.error(TAG, "Priority Peer " +
@@ -172,11 +176,12 @@ public class ContentManager {
                         MessageWriter.sendHaveMessage(() -> closeable.isClosed()
                                         || ((System.currentTimeMillis() - start) > 1000), network, peer,
                                 Collections.singletonList(cid));
-                    } catch (ClosedException closedException) {
+                    } catch (ClosedException ignore) {
                         // ignore
-                    } catch (Throwable throwable) {
-                        //LogUtils.error(TAG, throwable);
+                    } catch (ProtocolNotSupported ignore) {
                         faulty.add(peer);
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
                     } finally {
                         LogUtils.error(TAG, "Network Peer " +
                                 peer.String() + " took " + (System.currentTimeMillis() - start));
@@ -218,7 +223,6 @@ public class ContentManager {
             blockStore.Put(block);
 
             if (!searches.contains(cid)) {
-                faulty.remove(peer);
                 priority.push(peer);
             }
             searches.add(cid);
@@ -240,6 +244,10 @@ public class ContentManager {
                 long start = System.currentTimeMillis();
                 try {
                     MessageWriter.sendWantsMessage(closeable, network, peer, cids);
+                } catch (ClosedException ignore) {
+                    // ignore
+                } catch (ProtocolNotSupported ignore) {
+                    faulty.add(peer);
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, "LoadBlock Error " + throwable.getLocalizedMessage());
                 } finally {
@@ -281,6 +289,7 @@ public class ContentManager {
                                                     peer.String());
                                         }
                                     } catch (ClosedException ignore) {
+                                        // ignore
                                     } catch (Throwable throwable) {
                                         LogUtils.error(TAG, "Load Provider Failed " +
                                                 throwable.getLocalizedMessage());

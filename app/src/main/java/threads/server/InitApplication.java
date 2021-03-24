@@ -69,7 +69,7 @@ public class InitApplication extends Application {
         try {
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
             LogUtils.error(TAG, "startDaemon...");
-            ipfs.startDaemon(IPFS.isPrivateSharingEnabled(getApplicationContext()));
+            ipfs.startDaemon();
             ipfs.setPusher((pid, content) -> {
                 try {
                     onMessageReceived(pid, content);

@@ -158,11 +158,12 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     @NonNull
     private Reachable reachable = Reachable.UNKNOWN;
     private StreamHandler handler;
-
+    private final boolean privateSharing;
     private IPFS(@NonNull Context context) throws Exception {
 
         events = EVENTS.getInstance(context);
         blocks = BLOCKS.getInstance(context);
+        privateSharing = IPFS.isPrivateSharingEnabled(context);
 
 
         String peerID = getPeerID(context);
@@ -1187,7 +1188,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         }
     }
 
-    public void startDaemon(boolean privateSharing) {
+    public void startDaemon() {
         if (!node.getRunning()) {
             synchronized (locker) {
                 if (!node.getRunning()) {
@@ -1268,7 +1269,8 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             public long WriteMessage(@NonNull Closeable closeable,
                                                      @NonNull PeerID peer,
                                                      @NonNull List<Protocol> protocols,
-                                                     @NonNull byte[] bytes) throws ClosedException {
+                                                     @NonNull byte[] bytes)
+                                    throws ClosedException, ProtocolNotSupported {
 
                                 try {
                                     String protos = "";
@@ -1284,7 +1286,12 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                                     if (closeable.isClosed()) {
                                         throw new ClosedException();
                                     } else {
-                                        throw new RuntimeException(throwable);
+                                        String msg = throwable.getMessage();
+                                        if(Objects.equals(msg, "protocol not supported")){
+                                            throw new ProtocolNotSupported();
+                                        } else {
+                                            throw new RuntimeException(throwable);
+                                        }
                                     }
                                 }
                             }
@@ -1302,12 +1309,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                             public PeerID Self() {
                                 return new PeerID(getPeerID());
                             }
-                        }, contentRouting, pid -> {
-                            if (privateSharing) {
-                                return shouldConnect(pid);
-                            }
-                            return true;
-                        }, protocols);
+                        }, contentRouting, protocols);
 
 
                         BlockStore blockstore = BlockStore.NewBlockstore(blocks);
@@ -1324,16 +1326,23 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     @Override
     public boolean allowConnect(String peer) {
-        // everybody can push to you
+        // everybody can connect to you
         return true;
     }
 
 
     @Override
     public boolean bitSwapGate(String pid) {
-        LogUtils.error(TAG, "BitSwapGate " + pid);
+
         Objects.requireNonNull(handler);
-        return handler.gate(new PeerID(pid));
+        boolean result;
+        if(privateSharing) {
+            result = !swarm.contains(pid);
+        } else {
+            result = handler.gate(new PeerID(pid));
+        }
+        LogUtils.error(TAG, "BitSwapGate " + pid + " gate " + result);
+        return result;
     }
 
     @Override
