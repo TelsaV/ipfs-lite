@@ -11,6 +11,8 @@ import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.google.gson.Gson;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -117,10 +119,9 @@ public class PageWorker extends Worker {
                                 HashMap<String, String> hashMap = new HashMap<>();
                                 hashMap.put(Content.IPNS, content);
                                 hashMap.put(Content.SEQ, "" + sequence);
-
-                                String cid = ipfs.storeText(hashMap.toString());
-                                Objects.requireNonNull(cid);
-                                boolean success = ipfs.notify(user.getPid(), cid);
+                                Gson gson = new Gson();
+                                String msg = gson.toJson(hashMap);
+                                boolean success = ipfs.notify(user.getPid(), msg);
 
                                 LogUtils.info(TAG, "success pushing [" + success + "]");
                             }

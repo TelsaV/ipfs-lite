@@ -70,9 +70,9 @@ public class InitApplication extends Application {
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
             LogUtils.error(TAG, "startDaemon...");
             ipfs.startDaemon(IPFS.isPrivateSharingEnabled(getApplicationContext()));
-            ipfs.setPusher((pid, cid) -> {
+            ipfs.setPusher((pid, content) -> {
                 try {
-                    onMessageReceived(pid, cid);
+                    onMessageReceived(pid, content);
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
                 }
@@ -85,7 +85,7 @@ public class InitApplication extends Application {
 
     }
 
-    public void onMessageReceived(@NonNull String pid, @NonNull String cid) {
+    public void onMessageReceived(@NonNull String pid, @NonNull String content) {
 
         try {
             Type hashMap = new TypeToken<HashMap<String, String>>() {
@@ -93,9 +93,9 @@ public class InitApplication extends Application {
 
             Objects.requireNonNull(pid);
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
-            byte[] content = ipfs.loadData(cid, new TimeoutProgress(5));
+
             Objects.requireNonNull(content);
-            Map<String, String> data = gson.fromJson(new String(content), hashMap);
+            Map<String, String> data = gson.fromJson(content, hashMap);
 
             LogUtils.error(TAG, "Push Message : " + data.toString());
 

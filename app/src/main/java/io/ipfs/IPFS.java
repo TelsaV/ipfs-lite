@@ -41,6 +41,7 @@ import io.ipfs.cid.Cid;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.BlockStore;
 import io.ipfs.format.Metrics;
+import io.ipfs.multihash.Multihash;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.LinkCloseable;
 import io.ipfs.utils.MetricsBlockStore;
@@ -378,13 +379,18 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         this.pusher = pusher;
     }
 
-    public boolean notify(@NonNull String pid, @NonNull String cid) {
+    public boolean notify(@NonNull String pid, @NonNull String content) {
         if (!isDaemonRunning()) {
             return false;
         }
         try {
             synchronized (pid.intern()) {
-                return node.push(pid, cid.getBytes()) == cid.length();
+                byte[] data = content.getBytes();
+                try(ByteArrayOutputStream buf = new ByteArrayOutputStream()) {
+                    Multihash.putUvarint(buf, data.length);
+                    buf.write(data);
+                    return node.push(pid, buf.toByteArray()) >= content.length();
+                }
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -403,14 +409,14 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     }
 
     @Override
-    public void push(String cid, String pid) {
+    public void push(String pid, String content) {
         try {
             // CID and PID are both valid objects (code done in go)
-            Objects.requireNonNull(cid);
             Objects.requireNonNull(pid);
+            Objects.requireNonNull(content);
             if (pusher != null) {
                 ExecutorService executor = Executors.newSingleThreadExecutor();
-                executor.submit(() -> pusher.push(pid, cid));
+                executor.submit(() -> pusher.push(pid, content));
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -1229,11 +1235,19 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                         BitSwapNetwork bsm = LiteHost.NewLiteHost(new Host() {
                             @Override
                             public List<PeerID> getPeers() {
-                                List<PeerID> peers = new ArrayList<>();
-                                for (String p : swarm_peers()) {
-                                    peers.add(new PeerID(p));
+                                if (privateSharing) {
+                                    List<PeerID> peers = new ArrayList<>();
+                                    for (String p : swarm) {
+                                        peers.add(new PeerID(p));
+                                    }
+                                    return peers;
+                                } else {
+                                    List<PeerID> peers = new ArrayList<>();
+                                    for (String p : swarm_peers()) {
+                                        peers.add(new PeerID(p));
+                                    }
+                                    return peers;
                                 }
-                                return peers;
                             }
 
                             @Override
