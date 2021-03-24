@@ -6,12 +6,11 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import java.io.File;
-import java.io.FileOutputStream;
+
 import java.io.IOException;
-import java.io.InputStream;
 
 import io.LogUtils;
-import io.ipfs.IPFS;
+
 import threads.server.BuildConfig;
 
 public class FileProvider {
@@ -45,26 +44,6 @@ public class FileProvider {
         return fileProvider.createDataFile(idx);
     }
 
-    @NonNull
-    public static File getFile(@NonNull Context context, @NonNull String cid, long idx) throws Exception {
-        FileProvider fileProvider = FileProvider.getInstance(context);
-        IPFS ipfs = IPFS.getInstance(context);
-
-        synchronized (cid.intern()) {
-
-            File file = fileProvider.getDataFile(idx);
-            if (!file.exists()) {
-                file = fileProvider.createDataFile(idx);
-                try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                    try (InputStream inputStream = ipfs.getInputStream(cid, () -> false)) {
-                        long copied = IPFS.copy(inputStream, outputStream);
-                        LogUtils.error(TAG, "Copied : " + copied);
-                    }
-                }
-            }
-            return file;
-        }
-    }
 
     public static FileProvider getInstance(@NonNull Context context) {
 

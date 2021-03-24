@@ -34,6 +34,7 @@ import io.LogUtils;
 import io.ipfs.ClosedException;
 import io.ipfs.DnsAddrResolver;
 import io.ipfs.IPFS;
+import io.ipfs.format.Node;
 import io.ipfs.utils.Link;
 import io.libp2p.routing.Providers;
 import lite.Peer;
@@ -769,14 +770,15 @@ public class DOCS {
         return resolvedName.getHash();
     }
 
-    public String resolvePath(@NonNull Uri uri, @NonNull Closeable closeable) throws
+    @Nullable
+    public Node resolvePath(@NonNull Uri uri, @NonNull Closeable closeable) throws
             InvalidNameException, ClosedException, ResolveNameException {
         List<String> paths = uri.getPathSegments();
 
         String root = getRoot(uri, closeable);
         Objects.requireNonNull(root);
 
-        return ipfs.resolve(root, paths, closeable);
+        return ipfs.resolveNode(root, paths, closeable);
     }
 
     @NonNull

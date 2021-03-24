@@ -867,6 +867,33 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     }
 
 
+    @Nullable
+    public io.ipfs.format.Node resolveNode(@NonNull String root, @NonNull List<String> path, @NonNull Closeable closeable) throws ClosedException {
+
+        String resultPath = IPFS_PATH + root;
+        for (String name : path) {
+            resultPath = resultPath.concat("/").concat(name);
+        }
+
+        return resolveNode(resultPath, closeable);
+
+    }
+
+    @Nullable
+    public io.ipfs.format.Node resolveNode(@NonNull String path, @NonNull Closeable closeable) throws ClosedException {
+
+        try {
+            return Resolver.resolveNode(closeable, blocks, exchange, path);
+        } catch (Throwable ignore) {
+            // common use case not resolve a a path
+        }
+        if (closeable.isClosed()) {
+            throw new ClosedException();
+        }
+        return null;
+    }
+
+
     @NonNull
     public String resolve(@NonNull String root, @NonNull List<String> path, @NonNull Closeable closeable) throws ClosedException {
 
@@ -1341,7 +1368,6 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         } else {
             result = handler.gate(new PeerID(pid));
         }
-        LogUtils.error(TAG, "BitSwapGate " + pid + " gate " + result);
         return result;
     }
 

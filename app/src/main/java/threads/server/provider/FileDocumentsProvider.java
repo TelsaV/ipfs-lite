@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,6 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.IPFS;
+import io.ipfs.format.Node;
 import io.ipfs.utils.Reader;
 import threads.server.BuildConfig;
 import threads.server.InitApplication;
@@ -237,13 +239,27 @@ public class FileDocumentsProvider extends DocumentsProvider {
         return builder.build();
     }
 
+    private static class CidInfo {
+        private final String name;
+        private final String mimeType;
+        private final long size;
 
-    public static Uri getUriForIpfs(String cid) {
+        private CidInfo(String name, String mimeType, long size) {
+            this.name = name;
+            this.mimeType = mimeType;
+            this.size = size;
+        }
+    }
+    private static final Hashtable<String, CidInfo> CID_INFO_HASHTABLE = new Hashtable<>();
+    public static Uri getUriForIpfs(@NonNull Node node, @NonNull String name, @NonNull String mimeType) {
+
+        CID_INFO_HASHTABLE.put(node.Cid().String(), new CidInfo(name, mimeType, node.Size()));
+
         Uri.Builder builder = new Uri.Builder();
         builder.scheme(SCHEME)
                 .authority(BuildConfig.DOCUMENTS_AUTHORITY)
                 .appendPath(DOCUMENT)
-                .appendPath(cid);
+                .appendPath(node.Cid().String());
 
         return builder.build();
     }
@@ -511,36 +527,50 @@ public class FileDocumentsProvider extends DocumentsProvider {
         MatrixCursor result = new MatrixCursor(resolveDocumentProjection(projection));
 
         try {
-            long idx = Long.parseLong(docId);
 
-
-            if (idx == 0) {
-
-                int flags = 0;
-                flags |= Document.FLAG_DIR_PREFERS_LAST_MODIFIED;
-                flags |= Document.FLAG_DIR_PREFERS_GRID;
-                flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
-                flags |= Document.FLAG_SUPPORTS_WRITE;
-                //flags |= Document.FLAG_SUPPORTS_DELETE;
-                //flags |= Document.FLAG_SUPPORTS_RENAME;
-                //flags |= Document.FLAG_SUPPORTS_REMOVE;
-                //flags |= Document.FLAG_SUPPORTS_MOVE;
+            if (ipfs.isValidCID(docId)) {
+                CidInfo info = CID_INFO_HASHTABLE.get(docId);
+                Objects.requireNonNull(info);
 
                 MatrixCursor.RowBuilder row = result.newRow();
                 row.add(Document.COLUMN_DOCUMENT_ID, docId);
-                row.add(Document.COLUMN_DISPLAY_NAME, rootDir);
-                row.add(Document.COLUMN_SIZE, null);
-                row.add(Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR);
+                row.add(Document.COLUMN_DISPLAY_NAME, info.name);
+                row.add(Document.COLUMN_SIZE, info.size);
+                row.add(Document.COLUMN_MIME_TYPE, info.mimeType);
                 row.add(Document.COLUMN_LAST_MODIFIED, new Date());
-                row.add(Document.COLUMN_FLAGS, flags);
-
 
             } else {
-                Thread file = threads.getThreadByIdx(idx);
-                if (file == null) {
-                    throw new FileNotFoundException();
+                long idx = Long.parseLong(docId);
+
+
+                if (idx == 0) {
+
+                    int flags = 0;
+                    flags |= Document.FLAG_DIR_PREFERS_LAST_MODIFIED;
+                    flags |= Document.FLAG_DIR_PREFERS_GRID;
+                    flags |= Document.FLAG_DIR_SUPPORTS_CREATE;
+                    flags |= Document.FLAG_SUPPORTS_WRITE;
+                    //flags |= Document.FLAG_SUPPORTS_DELETE;
+                    //flags |= Document.FLAG_SUPPORTS_RENAME;
+                    //flags |= Document.FLAG_SUPPORTS_REMOVE;
+                    //flags |= Document.FLAG_SUPPORTS_MOVE;
+
+                    MatrixCursor.RowBuilder row = result.newRow();
+                    row.add(Document.COLUMN_DOCUMENT_ID, docId);
+                    row.add(Document.COLUMN_DISPLAY_NAME, rootDir);
+                    row.add(Document.COLUMN_SIZE, null);
+                    row.add(Document.COLUMN_MIME_TYPE, DocumentsContract.Document.MIME_TYPE_DIR);
+                    row.add(Document.COLUMN_LAST_MODIFIED, new Date());
+                    row.add(Document.COLUMN_FLAGS, flags);
+
+
+                } else {
+                    Thread file = threads.getThreadByIdx(idx);
+                    if (file == null) {
+                        throw new FileNotFoundException();
+                    }
+                    includeFile(result, file);
                 }
-                includeFile(result, file);
             }
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);

@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.Closeable;
 import io.LogUtils;
+import io.ipfs.format.Node;
 import io.ipfs.utils.TimeoutProgress;
 import threads.server.MainActivity;
 import threads.server.R;
@@ -246,9 +247,10 @@ public class BrowserFragment extends Fragment {
                     String res = uri.getQueryParameter("download");
                     if (Objects.equals(res, "0")) {
                         try {
-                            String cid = docs.resolvePath(uri, new TimeoutProgress(1));
-                            Objects.requireNonNull(cid);
-                            Uri redirect = FileDocumentsProvider.getUriForIpfs(cid);
+                            Node node = docs.resolvePath(uri, new TimeoutProgress(1));
+                            Objects.requireNonNull(node);
+                            Uri redirect = FileDocumentsProvider.getUriForIpfs(
+                                    node, filename, mimeType);
                             Intent intent = new Intent(Intent.ACTION_VIEW);
                             intent.putExtra(Intent.EXTRA_TITLE, filename);
                             intent.setDataAndType(redirect, mimeType);
