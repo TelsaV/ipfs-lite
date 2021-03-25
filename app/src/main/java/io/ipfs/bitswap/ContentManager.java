@@ -267,7 +267,7 @@ public class ContentManager {
 
         try {
             Cid cid = block.Cid();
-            LogUtils.info(TAG, "Block Received " + cid.String() + " " + peer);
+            LogUtils.info(TAG, "Block Received " + cid.String() + " " + peer.String());
             blockStore.Put(block);
 
             if (matches.containsKey(cid)) {
