@@ -102,6 +102,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
     public static final String DNS_LINK = "dnslink=";
     public static final int PRELOAD = 20;
+    public static final int PRELOAD_DIST = 5;
     // rough estimates on expected sizes
     private static final int roughLinkBlockSize = 1 << 13; // 8KB
     private static final int roughLinkSize = 34 + 8 + 5;// sha256 multihash + size + no name + protobuf framing
