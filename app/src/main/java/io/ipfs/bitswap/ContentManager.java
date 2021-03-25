@@ -316,8 +316,10 @@ public class ContentManager {
                     } catch (ClosedException ignore) {
                         // ignore
                     } catch (ProtocolNotSupported ignore) {
+                        writerCounter--;
                         faulty.add(peer);
                     } catch (Throwable throwable) {
+                        writerCounter--;
                         LogUtils.error(TAG, "LoadBlock Error " + throwable.getLocalizedMessage());
                     } finally {
                         LogUtils.error(TAG, "LoadBlock " +
