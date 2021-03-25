@@ -1378,66 +1378,14 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         Objects.requireNonNull(handler);
 
 
-        READER.execute(() -> {
-            try {
-                handler.message(new io.libp2p.network.Stream() {
-                    @NonNull
-                    @Override
-                    public Protocol Protocol() {
-                        return Protocol.create(proto);
-                    }
-
-                    @NonNull
-                    @Override
-                    public PeerID RemotePeer() {
-                        return new PeerID(pid);
-                    }
-
-                    @Override
-                    public byte[] GetData() {
-                        return bytes;
-                    }
-
-                    @Nullable
-                    @Override
-                    public String GetError() {
-                        return null;
-                    }
-                });
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        });
+        READER.execute(() -> handler.message(new PeerID(pid), Protocol.create(proto), bytes));
     }
 
     @Override
     public void bitSwapError(String pid, String proto, String error) {
         LogUtils.error(TAG, "Receive error from " + pid + " proto " + proto + " error " + error);
         Objects.requireNonNull(handler);
-        handler.error(new io.libp2p.network.Stream() {
-            @NonNull
-            @Override
-            public Protocol Protocol() {
-                return Protocol.create(proto);
-            }
-
-            @NonNull
-            @Override
-            public PeerID RemotePeer() {
-                return new PeerID(pid);
-            }
-
-            @Override
-            public byte[] GetData() {
-                return null;
-            }
-
-            @Nullable
-            @Override
-            public String GetError() {
-                return error;
-            }
-        });
+        handler.error(new PeerID(pid), Protocol.create(proto), error);
     }
 
     @Override
