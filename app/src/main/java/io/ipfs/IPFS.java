@@ -1315,7 +1315,10 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                                         throw new ClosedException();
                                     } else {
                                         String msg = throwable.getMessage();
-                                        if(Objects.equals(msg, "protocol not supported")){
+                                        if(Objects.equals(msg, "protocol not supported") &&
+                                                !privateSharing){
+                                            // Note: Disabling for private sharing
+                                            // is a hack when both parties switch to private sharing
                                             throw new ProtocolNotSupported();
                                         } else {
                                             throw new RuntimeException(throwable);

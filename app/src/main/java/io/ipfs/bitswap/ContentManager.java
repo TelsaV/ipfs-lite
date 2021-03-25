@@ -163,6 +163,7 @@ public class ContentManager {
                             MessageWriter.sendWantsMessage(closeable, network, peer,
                                     Collections.singletonList(cid));
                             wants.add(peer);
+                            handled.add(peer);
                             hasRun = true;
                         } catch (ClosedException closedException) {
                             // ignore
