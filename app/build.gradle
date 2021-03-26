@@ -8,8 +8,8 @@ android {
         applicationId "threads.server"
         minSdkVersion 28
         targetSdkVersion 30
-        versionCode 244
-        versionName "2.4.4"
+        versionCode 245
+        versionName "2.4.5"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         def documentsAuthorityValue = applicationId + ".provider"

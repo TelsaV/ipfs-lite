@@ -78,7 +78,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public static final int MIN_PEERS = 10;
     public static final long RESOLVE_MAX_TIME = 20000; // 20 sec
     public static final int RESOLVE_TIMEOUT = 3000; // 3 sec
-
+    public static final long WANTS_WAIT_TIMEOUT = 2500; // 2.5 sec
     public static final int CHUNK_SIZE = 262144;
 
 

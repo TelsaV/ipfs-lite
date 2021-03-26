@@ -41,7 +41,7 @@ public class ContentManager {
 
     private final ConcurrentSkipListSet<Cid> loads = new ConcurrentSkipListSet<>();
     private final ConcurrentHashMap<Cid, ConcurrentLinkedDeque<PeerID>> matches = new ConcurrentHashMap<>();
-
+    private final Blocker blocker = new Blocker();
 
     public ContentManager(@NonNull BlockStore blockStore,
                           @NonNull BitSwapNetwork network) {
@@ -160,11 +160,14 @@ public class ContentManager {
                     if(!wants.contains(peer)) {
                         long start = System.currentTimeMillis();
                         try {
-                            MessageWriter.sendWantsMessage(closeable, network, peer,
-                                    Collections.singletonList(cid));
-                            wants.add(peer);
-                            handled.add(peer);
-                            hasRun = true;
+                            if (matches.containsKey(cid)) {
+                                MessageWriter.sendWantsMessage(closeable, network, peer,
+                                        Collections.singletonList(cid));
+                                wants.add(peer);
+                                handled.add(peer);
+                                hasRun = true;
+                                blocker.Subscribe(cid);
+                            }
                         } catch (ClosedException closedException) {
                             // ignore
                         } catch (ProtocolNotSupported ignore) {
@@ -179,6 +182,9 @@ public class ContentManager {
                 }
             }
 
+            if (closeable.isClosed()) {
+                throw new ClosedException();
+            }
 
             if (!hasRun) {
                 for (PeerID peer : priority) {
@@ -246,22 +252,25 @@ public class ContentManager {
     }
 
     public Block GetBlock(@NonNull Closeable closeable, @NonNull Cid cid) throws ClosedException {
-
         try {
             synchronized (cid.String().intern()) {
-                createMatch(cid);
-                AtomicBoolean done = new AtomicBoolean(false);
-                LogUtils.info(TAG, "BlockGet " + cid.String());
-                try {
-                    return runWantHaves(() -> closeable.isClosed() || done.get(), cid);
-                } finally {
-                    done.set(true);
+                Block block = blockStore.Get(cid);
+                if (block == null) {
+                    createMatch(cid);
+                    AtomicBoolean done = new AtomicBoolean(false);
+                    LogUtils.info(TAG, "Block Get " + cid.String());
+                    try {
+                        return runWantHaves(() -> closeable.isClosed() || done.get(), cid);
+                    } finally {
+                        done.set(true);
+                    }
                 }
+                return block;
             }
         } finally {
-            LogUtils.info(TAG, "BlockRelease  " + cid.String());
+            blocker.Release(cid);
+            LogUtils.info(TAG, "Block Release  " + cid.String());
         }
-
     }
 
     public void BlockReceived(@NonNull PeerID peer, @NonNull Block block) {
@@ -276,6 +285,7 @@ public class ContentManager {
             }
 
             matches.remove(cid);
+            blocker.Release(cid);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
