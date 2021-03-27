@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.ClosedException;
+import io.ipfs.IPFS;
 import io.ipfs.ProtocolNotSupported;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;
@@ -296,6 +297,7 @@ public class ContentManager {
     }
 
 
+
     public void LoadBlocks(@NonNull Closeable closeable, @NonNull List<Cid> cids) {
 
         LogUtils.error(TAG, "LoadBlocks " + cids.size());
@@ -303,10 +305,10 @@ public class ContentManager {
         Executors.newSingleThreadExecutor().execute(() -> {
 
             List<PeerID> handled = new ArrayList<>();
+            boolean wantsMessage = true;
             for (PeerID peer : priority) {
                 if(!handled.contains(peer)) {
                     handled.add(peer);
-
                     List<Cid> loads = new ArrayList<>();
                     for (Cid cid : cids) {
                         if(!matches.containsKey(cid)) {
@@ -314,18 +316,23 @@ public class ContentManager {
                             createMatch(cid);
                         }
                     }
-                    LogUtils.error(TAG, "LoadBlock " + peer.String());
+                    LogUtils.error(TAG, "LoadBlocks " + peer.String());
                     long start = System.currentTimeMillis();
                     try {
-                        MessageWriter.sendHaveMessage(closeable, network, peer, loads);
+                        if(wantsMessage){
+                            MessageWriter.sendWantsMessage(closeable, network, peer, loads);
+                            wantsMessage = false;
+                        } else {
+                            MessageWriter.sendHaveMessage(closeable, network, peer, loads);
+                        }
                     } catch (ClosedException ignore) {
                         // ignore
                     } catch (ProtocolNotSupported ignore) {
                         faulty.add(peer);
                     } catch (Throwable throwable) {
-                        LogUtils.error(TAG, "LoadBlock Error " + throwable.getLocalizedMessage());
+                        LogUtils.error(TAG, "LoadBlocks Error " + throwable.getLocalizedMessage());
                     } finally {
-                        LogUtils.error(TAG, "LoadBlock " +
+                        LogUtils.error(TAG, "LoadBlocks " +
                                 peer.String() + " took " + (System.currentTimeMillis() - start));
                     }
                 }
