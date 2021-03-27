@@ -68,7 +68,10 @@ import threads.server.core.blocks.BLOCKS;
 import threads.server.core.events.EVENTS;
 
 public class IPFS implements Listener, ContentRouting, Metrics {
-    public static final int WRITE_TIMEOUT = 60;
+
+    public static final int PRELOAD = 25;
+    public static final int PRELOAD_DIST = 5;
+    public static final int WRITE_TIMEOUT = 10;
     public static final boolean SEND_DONT_HAVES = false;
     public static final String AGENT = "/go-ipfs/0.9.0-dev/lite";
     public static final int TIMEOUT_BOOTSTRAP = 5;
@@ -78,7 +81,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public static final int MIN_PEERS = 10;
     public static final long RESOLVE_MAX_TIME = 20000; // 20 sec
     public static final int RESOLVE_TIMEOUT = 3000; // 3 sec
-    public static final long WANTS_WAIT_TIMEOUT = 2500; // 2.5 sec
+    public static final long WANTS_WAIT_TIMEOUT = 2000; // 2.5 sec
     public static final int CHUNK_SIZE = 262144;
 
 
@@ -101,8 +104,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
     public static final String LIB2P_DNS = "_dnsaddr.bootstrap.libp2p.io";
     public static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
     public static final String DNS_LINK = "dnslink=";
-    public static final int PRELOAD = 20;
-    public static final int PRELOAD_DIST = 5;
+
     // rough estimates on expected sizes
     private static final int roughLinkBlockSize = 1 << 13; // 8KB
     private static final int roughLinkSize = 34 + 8 + 5;// sha256 multihash + size + no name + protobuf framing
