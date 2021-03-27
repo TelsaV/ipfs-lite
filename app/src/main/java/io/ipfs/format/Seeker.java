@@ -41,7 +41,7 @@ public class Seeker {
             // If there aren't enough size hints don't seek
             // (see the `io.EOF` handling error comment below).
             if (fsNode.NumChildren() != node.getLinks().size()) {
-                throw new RuntimeException("ErrSeekNotSupported");
+                return null;
             }
 
 
@@ -56,7 +56,6 @@ public class Seeker {
                 long childSize = fsNode.BlockSize(index);
 
                 if (childSize > IPFS.CHUNK_SIZE) {
-                    // TODO here maybe
 
                     NavigableNode fetched = visitedNode.FetchChild(closeable, index);
                     stack.push(new Stage(fetched, 0));
