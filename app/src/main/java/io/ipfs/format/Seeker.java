@@ -29,7 +29,7 @@ public class Seeker {
 
 
         if (!(node instanceof ProtoNode)) {
-            throw new RuntimeException();
+            return null;
         }
 
 
