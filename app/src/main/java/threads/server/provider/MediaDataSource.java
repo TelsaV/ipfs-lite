@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.LogUtils;
 import io.ipfs.ClosedException;
-import io.ipfs.Storage;
+import io.ipfs.datastore.Storage;
 import io.ipfs.exchange.Interface;
 import io.ipfs.format.BlockStore;
 import io.ipfs.offline.Exchange;
