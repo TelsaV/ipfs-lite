@@ -361,9 +361,8 @@ public class BrowserFragment extends Fragment {
 
             @Override
             public void doUpdateVisitedHistory(WebView view, String url, boolean isReload) {
+                super.doUpdateVisitedHistory(view, url, isReload);
                 LogUtils.error(TAG, "doUpdateVisitedHistory : " + url + " " + isReload);
-
-                mListener.updateUri(docs.getOriginalUri(Uri.parse(url)));
             }
 
             @Override
