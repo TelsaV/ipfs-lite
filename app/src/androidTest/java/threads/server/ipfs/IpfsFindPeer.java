@@ -13,10 +13,9 @@ import org.junit.runner.RunWith;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.ipfs.IPFS;
 import io.LogUtils;
+import io.ipfs.IPFS;
 import lite.PeerInfo;
-import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;

@@ -6,8 +6,8 @@ import android.net.NetworkCapabilities;
 
 import androidx.annotation.NonNull;
 
-import io.ipfs.IPFS;
 import io.LogUtils;
+import io.ipfs.IPFS;
 
 class TestEnv {
     private static final String TAG = TestEnv.class.getSimpleName();
@@ -39,7 +39,6 @@ class TestEnv {
         }
 
         LogUtils.error(TAG, "Time Daemon : " + (System.currentTimeMillis() - time));
-
 
 
         return ipfs;

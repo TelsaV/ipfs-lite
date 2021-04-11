@@ -17,7 +17,6 @@ import java.util.Objects;
 
 import io.LogUtils;
 import io.ipfs.IPFS;
-import io.ipfs.utils.TimeoutProgress;
 import threads.server.core.Content;
 import threads.server.core.pages.PAGES;
 import threads.server.core.peers.PEERS;

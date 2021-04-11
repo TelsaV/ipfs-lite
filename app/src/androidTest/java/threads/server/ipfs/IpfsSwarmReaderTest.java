@@ -10,10 +10,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.ipfs.IPFS;
 import io.LogUtils;
+import io.ipfs.IPFS;
 import io.ipfs.utils.TimeoutProgress;
-import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertNotNull;
 

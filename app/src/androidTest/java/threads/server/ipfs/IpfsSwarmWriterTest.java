@@ -15,10 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
-import io.ipfs.IPFS;
 import io.LogUtils;
+import io.ipfs.IPFS;
 import lite.PeerInfo;
-import threads.server.core.Content;
 
 import static junit.framework.TestCase.assertNotNull;
 

@@ -36,7 +36,6 @@ import io.ipfs.DnsAddrResolver;
 import io.ipfs.IPFS;
 import io.ipfs.format.Node;
 import io.ipfs.utils.Link;
-import io.libp2p.routing.Providers;
 import lite.Peer;
 import threads.server.Settings;
 import threads.server.core.books.BOOKS;

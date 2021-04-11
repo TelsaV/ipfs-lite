@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.ClosedException;
-import io.ipfs.IPFS;
 import io.ipfs.ProtocolNotSupported;
 import io.ipfs.cid.Cid;
 import io.ipfs.format.Block;

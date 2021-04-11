@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import io.ipfs.IPFS;
 import io.LogUtils;
+import io.ipfs.IPFS;
 import io.ipfs.utils.Link;
 
 import static junit.framework.TestCase.assertEquals;
@@ -85,7 +85,6 @@ public class IpfsAddTest {
     @Test
     public void add_dir_test() throws Exception {
         IPFS ipfs = TestEnv.getTestInstance(context);
-
 
 
         File inputFile = new File(context.getCacheDir(), UUID.randomUUID().toString());

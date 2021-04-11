@@ -13,11 +13,11 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.ipfs.IPFS;
 import io.LogUtils;
-import io.libp2p.routing.Providers;
+import io.ipfs.IPFS;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.TimeoutProgress;
+import io.libp2p.routing.Providers;
 
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;

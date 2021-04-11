@@ -14,10 +14,10 @@ import org.junit.runner.RunWith;
 import java.util.List;
 import java.util.Objects;
 
+import io.LogUtils;
 import io.ipfs.ClosedException;
 import io.ipfs.DnsAddrResolver;
 import io.ipfs.IPFS;
-import io.LogUtils;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.TimeoutProgress;
 import lite.PeerInfo;
@@ -150,7 +150,7 @@ public class IpfsTest {
                     "QmXm3f7uKuFKK3QUL1V1oJZnpJSYX8c3vdhd94evSQUPCH",
                     new TimeoutProgress(20));
             fail();
-        } catch (ClosedException closedException){
+        } catch (ClosedException closedException) {
             return;
         }
         fail();
