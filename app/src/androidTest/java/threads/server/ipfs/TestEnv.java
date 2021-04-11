@@ -34,7 +34,7 @@ class TestEnv {
         IPFS ipfs = IPFS.getInstance(context);
 
         if (!ipfs.isDaemonRunning()) {
-            ipfs.startDaemon(false);
+            ipfs.startDaemon();
             ipfs.bootstrap();
         }
 
