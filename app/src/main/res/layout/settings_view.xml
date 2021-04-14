@@ -324,22 +324,13 @@
             android:textAppearance="@style/TextAppearance.MaterialComponents.Button"
             android:textColor="?android:colorPrimary" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/enable_private_network"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            android:padding="8dp"
-            android:text="@string/enable_private_network" />
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:text="@string/swarm_key_text" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -382,6 +373,17 @@
                 tools:ignore="ContentDescription" />
 
         </LinearLayout>
+
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/enable_private_network"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="16dp"
+            android:padding="8dp"
+            android:text="@string/enable_private_network" />
 
 
         <View
