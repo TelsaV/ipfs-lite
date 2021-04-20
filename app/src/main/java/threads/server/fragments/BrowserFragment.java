@@ -11,7 +11,6 @@ import android.os.SystemClock;
 import android.provider.DocumentsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,6 +51,7 @@ import io.Closeable;
 import io.LogUtils;
 import io.ipfs.format.Node;
 import io.ipfs.utils.TimeoutProgress;
+import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -60,6 +60,7 @@ import threads.server.core.DOCS;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
 import threads.server.core.events.EVENTS;
+import threads.server.core.events.EventViewModel;
 import threads.server.provider.FileDocumentsProvider;
 import threads.server.services.LiteService;
 import threads.server.utils.CustomWebChromeClient;
@@ -216,7 +217,7 @@ public class BrowserFragment extends Fragment {
         mCustomWebChromeClient = new CustomWebChromeClient(mActivity);
         mWebView.setWebChromeClient(mCustomWebChromeClient);
 
-        Settings.setWebSettings(mWebView);
+        Settings.setWebSettings(mWebView, Settings.isJavascriptEnabled(mContext));
 
 
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
@@ -234,7 +235,21 @@ public class BrowserFragment extends Fragment {
 
             }
         });
+        EventViewModel eventViewModel =
+                new ViewModelProvider(this).get(EventViewModel.class);
+        eventViewModel.getJavascript().observe(getViewLifecycleOwner(), (event) -> {
+            try {
+                if (event != null) {
 
+                    mWebView.getSettings().setJavaScriptEnabled(
+                            Settings.isJavascriptEnabled(mContext));
+
+                    eventViewModel.removeEvent(event);
+                }
+            } catch (Throwable e) {
+                LogUtils.error(TAG, "" + e.getLocalizedMessage(), e);
+            }
+        });
 
         mWebView.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
 
@@ -371,7 +386,7 @@ public class BrowserFragment extends Fragment {
 
                 mProgressBar.setVisibility(View.VISIBLE);
                 releaseActionMode();
-                mListener.updateUri(docs.getOriginalUri(Uri.parse(url)));
+                mListener.updateUri(Uri.parse(url));
             }
 
             @Override
@@ -474,9 +489,6 @@ public class BrowserFragment extends Fragment {
                                 "    <head>\n" +
                                 "        <meta charset=\"UTF-8\">\n" +
                                 "        <meta http-equiv=\"refresh\" content=\"0; url=" + uri.toString() + "\">\n" +
-                                "        <script type=\"text/javascript\">\n" +
-                                "            window.location.href = \"" + uri.toString() + "\"\n" +
-                                "        </script>\n" +
                                 "        <title>Page Redirection</title>\n" +
                                 "    </head>\n" +
                                 "    <body>\n" +
@@ -529,12 +541,8 @@ public class BrowserFragment extends Fragment {
 
                     try {
 
-                        Pair<Uri, Boolean> result = docs.redirectUri(uri, closeable);
-                        Uri redirectUri = result.first;
+                        Uri redirectUri = docs.redirectUri(uri, closeable);
                         if (!Objects.equals(uri, redirectUri)) {
-                            docs.storeRedirect(redirectUri, uri);
-                        }
-                        if (result.second) {
                             return createRedirectMessage(redirectUri);
                         }
 
@@ -598,8 +606,8 @@ public class BrowserFragment extends Fragment {
     }
 
 
-    private void fileDownloader(@NonNull Uri uri, @NonNull String filename, @NonNull String mimeType,
-                                long size) {
+    private void fileDownloader(@NonNull Uri uri, @NonNull String filename,
+                                @NonNull String mimeType, long size) {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle(R.string.download_title);
@@ -767,7 +775,7 @@ public class BrowserFragment extends Fragment {
         try {
             if (isResumed()) {
                 String url = mWebView.getUrl();
-                Uri uri = docs.getOriginalUri(Uri.parse(url));
+                Uri uri = Uri.parse(url);
 
                 BOOKS books = BOOKS.getInstance(context);
 

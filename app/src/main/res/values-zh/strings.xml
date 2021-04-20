@@ -139,4 +139,8 @@
     <string name="authentication">认证</string>
     <string name="password">密码</string>
     <string name="user_name">帳號</string>
+
+
+    <string name="enable_javascript">启用Javascript</string>
+    <string name="javascript_text">禁用javascript後，許多網站可能無法正常運行。</string>
 </resources>

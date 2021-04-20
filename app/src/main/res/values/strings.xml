@@ -140,4 +140,8 @@
     <string name="authentication">Authentication</string>
     <string name="password">Password</string>
     <string name="user_name">Username</string>
+
+
+    <string name="enable_javascript">Enable Javascript</string>
+    <string name="javascript_text">When javascript is disabled, many websites might not work properly.</string>
 </resources>

@@ -1252,8 +1252,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
 
-                    Uri uri = DOCS.getInstance(getApplicationContext()).getOriginalUri(
-                            Uri.parse(mBrowserFragment.getUrl()));
+                    Uri uri =  Uri.parse(mBrowserFragment.getUrl());
 
                     ComponentName[] names = {new ComponentName(getApplicationContext(), MainActivity.class)};
 
@@ -1348,8 +1347,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                     mLastClickTime = SystemClock.elapsedRealtime();
 
-                    Uri uri = DOCS.getInstance(getApplicationContext()).getOriginalUri(
-                            Uri.parse(mBrowserFragment.getUrl()));
+                    Uri uri = Uri.parse(mBrowserFragment.getUrl());
 
                     Uri uriImage = QRCodeService.getImage(getApplicationContext(), uri.toString());
                     ContentDialogFragment.newInstance(uriImage,

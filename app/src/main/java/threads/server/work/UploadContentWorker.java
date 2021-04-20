@@ -235,8 +235,6 @@ public class UploadContentWorker extends Worker {
 
                     if (threads.getThreadContent(idx) == null) {
 
-                        uri = docs.redirect(uri);
-
                         String name = docs.getFileName(uri);
 
                         String content = docs.getContent(uri, this::isStopped);

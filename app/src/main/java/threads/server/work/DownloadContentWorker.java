@@ -128,8 +128,6 @@ public class DownloadContentWorker extends Worker {
 
                 try {
 
-                    uri = docs.redirect(uri);
-
                     String content = docs.getContent(uri, this::isStopped);
 
                     String mimeType = docs.getMimeType(getApplicationContext(),

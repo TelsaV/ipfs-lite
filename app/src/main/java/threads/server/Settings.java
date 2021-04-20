@@ -133,17 +133,29 @@ public class Settings {
     public static String getDefaultSearchEngine(@NonNull String query) {
         return "https://ipfs-search.com/#/search?search=" + query;
     }
+    private static final String JAVASCRIPT_KEY = "javascriptKey";
+    public static void setJavascriptEnabled(Context context, boolean auto) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(JAVASCRIPT_KEY, auto);
+        editor.apply();
+    }
 
+    public static boolean isJavascriptEnabled(@NonNull Context context) {
+        SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
+        return sharedPref.getBoolean(JAVASCRIPT_KEY, true);
+
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
-    public static void setWebSettings(@NonNull WebView webView) {
+    public static void setWebSettings(@NonNull WebView webView, boolean enableJavascript) {
 
 
         WebSettings settings = webView.getSettings();
         settings.setUserAgentString("Mozilla/5.0 (Linux; Android " + Build.VERSION.RELEASE + ")");
 
 
-        settings.setJavaScriptEnabled(true);
+        settings.setJavaScriptEnabled(enableJavascript);
         settings.setJavaScriptCanOpenWindowsAutomatically(false);
 
 

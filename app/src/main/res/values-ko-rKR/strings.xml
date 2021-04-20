@@ -130,4 +130,8 @@
     <string name="authentication">입증</string>
     <string name="password">암호</string>
     <string name="user_name">사용자 이름</string>
+
+
+    <string name="enable_javascript">자바 스크립트 활성화</string>
+    <string name="javascript_text">자바 스크립트가 비활성화되면 많은 웹 사이트가 제대로 작동하지 않을 수 있습니다.</string>
 </resources>

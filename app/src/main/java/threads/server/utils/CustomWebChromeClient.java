@@ -104,7 +104,7 @@ public class CustomWebChromeClient extends WebChromeClient {
 
     public void onReceivedTitle(WebView view, String title) {
         try {
-            Uri uri = docs.getOriginalUri(Uri.parse(view.getUrl()));
+            Uri uri = Uri.parse(view.getUrl());
             if (title != null && !title.isEmpty()) {
                 titles.put(uri.toString(), title);
             }
@@ -115,7 +115,7 @@ public class CustomWebChromeClient extends WebChromeClient {
 
     public void onReceivedIcon(WebView view, Bitmap icon) {
         try {
-            Uri uri = docs.getOriginalUri(Uri.parse(view.getUrl()));
+            Uri uri = Uri.parse(view.getUrl());
             if (icon != null) {
                 icons.put(uri.toString(), icon);
             }

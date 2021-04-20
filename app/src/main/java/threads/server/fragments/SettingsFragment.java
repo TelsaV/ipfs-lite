@@ -231,6 +231,16 @@ public class SettingsFragment extends Fragment {
         );
 
 
+        SwitchMaterial enableJavascript = view.findViewById(R.id.enable_javascript);
+        Objects.requireNonNull(enableJavascript);
+        enableJavascript.setChecked(Settings.isJavascriptEnabled(mContext));
+        enableJavascript.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    Settings.setJavascriptEnabled(mContext, isChecked);
+
+                    EVENTS.getInstance(mContext).javascript();
+                }
+        );
+
         TextView automatic_discovery_mode_text = view.findViewById(R.id.automatic_discovery_mode_text);
 
         String auto_discovery_html = getString(R.string.automatic_discovery_mode_text);

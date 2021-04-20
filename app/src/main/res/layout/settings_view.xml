@@ -270,7 +270,22 @@
             android:layout_margin="16dp"
             android:text="@string/redirect_index_support_text" />
 
-        
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/enable_javascript"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginRight="16dp"
+            android:padding="8dp"
+            android:text="@string/enable_javascript" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:text="@string/javascript_text" />
+
         <TextView
             android:id="@+id/connection_timeout_text"
             android:layout_width="match_parent"
