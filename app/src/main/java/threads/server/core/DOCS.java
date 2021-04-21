@@ -3,7 +3,6 @@ package threads.server.core;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.util.Pair;
 import android.webkit.WebResourceResponse;
 
 import androidx.annotation.NonNull;
@@ -32,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.ClosedException;
-import io.ipfs.DnsAddrResolver;
+import io.ipfs.DnsResolver;
 import io.ipfs.IPFS;
 import io.ipfs.format.Node;
 import io.ipfs.utils.Link;
@@ -1024,7 +1023,7 @@ public class DOCS {
 
         if (ipfs.decodeName(host).isEmpty()) {
 
-            String link = DnsAddrResolver.getDNSLink(host);
+            String link = DnsResolver.resolveDnsLink(host);
             if (link.isEmpty()) {
                 // could not resolved, maybe no NETWORK
                 String dnsLink = null; // TODO books.getDnsLink(uri.toString());

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,9 +102,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
 
     ));
     // IPFS BOOTSTRAP DNS
-    public static final String LIB2P_DNS = "_dnsaddr.bootstrap.libp2p.io";
-    public static final String DNS_ADDR = "dnsaddr=/dnsaddr/";
-    public static final String DNS_LINK = "dnslink=";
+    public static final String LIB2P_DNS = "bootstrap.libp2p.io";
 
     // rough estimates on expected sizes
     private static final int roughLinkBlockSize = 1 << 13; // 8KB
@@ -497,9 +496,9 @@ public class IPFS implements Listener, ContentRouting, Metrics {
         if (isDaemonRunning()) {
             if (numSwarmPeers() < MIN_PEERS) {
                 try {
-                    Pair<List<String>, List<String>> result = DnsAddrResolver.getBootstrap();
 
-                    List<String> bootstrap = result.first;
+
+                    List<String> bootstrap = IPFS_BOOTSTRAP_NODES;
                     List<Callable<Boolean>> tasks = new ArrayList<>();
                     ExecutorService executor = Executors.newFixedThreadPool(bootstrap.size());
                     for (String address : bootstrap) {
@@ -511,7 +510,7 @@ public class IPFS implements Listener, ContentRouting, Metrics {
                         LogUtils.info(TAG, "\nBootstrap done " + future.isDone());
                     }
 
-                    List<String> second = result.second;
+                    Set<String> second = DnsResolver.resolveDnsAddress(LIB2P_DNS);;
                     tasks.clear();
                     if (!second.isEmpty()) {
                         executor = Executors.newFixedThreadPool(second.size());

@@ -16,7 +16,6 @@ import java.util.Objects;
 
 import io.LogUtils;
 import io.ipfs.ClosedException;
-import io.ipfs.DnsAddrResolver;
 import io.ipfs.IPFS;
 import io.ipfs.utils.Link;
 import io.ipfs.utils.TimeoutProgress;
