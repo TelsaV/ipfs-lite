@@ -90,13 +90,29 @@ public class ContentManager {
         Executors.newSingleThreadExecutor().execute(() -> {
             long begin = System.currentTimeMillis();
             try {
+
+                if(closeable.isClosed()){
+                    return;
+                }
+
                 network.FindProvidersAsync(new Providers() {
                     @Override
                     public void Peer(@NonNull String pid) {
+
+                        if(closeable.isClosed()){
+                            return;
+                        }
+
                         PeerID peer = new PeerID(pid);
                         LogUtils.error(TAG, "Provider Peer Step " + peer.String());
                         if (!faulty.contains(peer)) {
                             WANTS.execute(() -> {
+
+
+                                if(closeable.isClosed()){
+                                    return;
+                                }
+
                                 if (matches.containsKey(cid)) { // check still valid
                                     long start = System.currentTimeMillis();
                                     try {
@@ -346,6 +362,9 @@ public class ContentManager {
             Executors.newSingleThreadExecutor().execute(() -> {
                 long start = System.currentTimeMillis();
                 try {
+                    if(closeable.isClosed()){
+                        return;
+                    }
 
                     network.FindProvidersAsync(new Providers() {
 
@@ -353,12 +372,19 @@ public class ContentManager {
                         public void Peer(@NonNull String pid) {
                             PeerID peer = new PeerID(pid);
 
+                            if(closeable.isClosed()){
+                                return;
+                            }
 
                             try {
                                 LogUtils.error(TAG, "Load Provider " + pid + " for " + cid.String());
 
                                 LOADS.execute(() -> {
                                     try {
+                                        if(closeable.isClosed()){
+                                            return;
+                                        }
+
                                         if (network.ConnectTo(() -> closeable.isClosed()
                                                         || ((System.currentTimeMillis() - start) > TIMEOUT),
                                                 peer, true)) {
