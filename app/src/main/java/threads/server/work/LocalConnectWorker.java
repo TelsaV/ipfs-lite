@@ -54,9 +54,9 @@ public class LocalConnectWorker extends Worker {
 
     public static void connect(@NonNull Context context, @NonNull String pid,
                                @NonNull String host, int port, boolean inet6) {
-
+        /*
         WorkManager.getInstance(context).enqueueUniqueWork(
-                getUniqueId(pid), ExistingWorkPolicy.KEEP, getWork(pid, host, port, inet6));
+                getUniqueId(pid), ExistingWorkPolicy.KEEP, getWork(pid, host, port, inet6));*/
     }
 
 
@@ -82,7 +82,7 @@ public class LocalConnectWorker extends Worker {
                 if (inet6) {
                     pre = "/ip6";
                 }
-                String multiAddress = pre + host + "/tcp/" + port + "/p2p/" + pid;
+                String multiAddress = pre + host + "/udp/" + port + "/quic/p2p/" + pid;
 
                 int timeout = Settings.getConnectionTimeout(getApplicationContext());
                 ipfs.swarmConnect(multiAddress, pid, timeout);

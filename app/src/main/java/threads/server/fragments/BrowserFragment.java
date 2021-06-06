@@ -46,12 +46,12 @@ import androidx.webkit.WebViewFeature;
 import java.io.ByteArrayInputStream;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.Closeable;
 import io.LogUtils;
 import io.ipfs.format.Node;
 import io.ipfs.utils.TimeoutProgress;
-import threads.server.InitApplication;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -293,7 +293,7 @@ public class BrowserFragment extends Fragment {
         mWebView.setWebViewClient(new WebViewClient() {
 
             private final AtomicBoolean firstRun = new AtomicBoolean(true);
-
+            private final AtomicReference<String> host = new AtomicReference<>();
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
@@ -419,6 +419,12 @@ public class BrowserFragment extends Fragment {
                     Uri uri = request.getUrl();
                     LogUtils.error(TAG, "shouldOverrideUrlLoading : " + uri);
 
+                    if(!Objects.equals(host.get(), uri.getHost())){
+                        LogUtils.error(TAG, uri.getHost() + " " + host.get());
+                        docs.releaseThreads();
+                        docs.releaseContent();
+                    }
+
                     if (Objects.equals(uri.getScheme(), Content.ABOUT)) {
                         return true;
                     } else if (Objects.equals(uri.getScheme(), Content.HTTP) ||
@@ -515,6 +521,7 @@ public class BrowserFragment extends Fragment {
 
                 Uri uri = request.getUrl();
                 LogUtils.error(TAG, "shouldInterceptRequest : " + uri.toString());
+                host.set(uri.getHost());
 
                 if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                         Objects.equals(uri.getScheme(), Content.IPFS)) {

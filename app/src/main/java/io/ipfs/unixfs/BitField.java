@@ -53,8 +53,52 @@ public class BitField {
         return bf;
     }
 
+ //private static final int uintSize = 32 << (^short(0) >> 32 & 1); // 32 or 64
+
+// UintSize is the size of a uint in bits.
+    //  const UintSize = uintSize
+
+    /*
+    public static final int deBruijn64 =  0x03f79d71b4ca8b09;
+    public static int TrailingZeros64(long x) {
+        if (x == 0) {
+            return 64;
+        }
+        // If popcount is fast, replace code below with return popcount(^x & (x - 1)).
+        //
+        // x & -x leaves only the right-most bit set in the word. Let k be the
+        // index of that bit. Since only a single bit is set, the value is two
+        // to the power of k. Multiplying by a power of two is equivalent to
+        // left shifting, in this case by k bits. The de Bruijn (64 bit) constant
+        // is such that all six bit, consecutive substrings are distinct.
+        // Therefore, if we have a left shifted version of this constant we can
+        // find by how many bits it was shifted by looking at which six bit
+        // substring ended up at the top of the word.
+        // (Knuth, volume 4, section 7.3.1)
+        return (int) (deBruijn64tab[(x&-x)*deBruijn64>>(64-6)]);
+    }*/
+    static final byte[] deBruijn64tab = {
+        0, 1, 56, 2, 57, 49, 28, 3, 61, 58, 42, 50, 38, 29, 17, 4,
+                62, 47, 59, 36, 45, 43, 51, 22, 53, 39, 33, 30, 24, 18, 12, 5,
+                63, 55, 48, 27, 60, 41, 37, 16, 46, 35, 44, 21, 52, 32, 23, 11,
+                54, 26, 40, 15, 34, 20, 31, 10, 25, 14, 19, 9, 13, 8, 7, 6,
+    };
+
+    public static int logtwo(int v) {
+        if(v <= 0) {
+            throw new RuntimeException("hamt size should be a power of two");
+        }
+        int  lg2 = Integer.numberOfTrailingZeros(v);
+        if( 1<<lg2 != v) {
+            throw new RuntimeException("hamt size should be a power of two");
+        }
+        return lg2;
+    }
+
     Pair<Integer, Integer> offset(int i) /*(uint, uint8)*/ {
-        return Pair.create((bytes.length) - (((byte) (i) & 0xFF) / 8) - 1, ((byte) (i) & 0xFF) % 8);
+       // return uint(len(bf)) - (uint(i) / 8) - 1, uint8(i) % 8
+
+        return Pair.create((bytes.length) - (i / 8) - 1, i % 8);
     }
 
     /*
@@ -124,8 +168,24 @@ public class BitField {
             return cnt
         }
     */
+
+
+    // OnesBefore returns the number of bits set *before* this bit.
+    /*
+    func (bf Bitfield) OnesBefore(i int) int {
+        idx, off := bf.offset(i)
+        cnt := bits.OnesCount8(bf[idx] << (8 - off))
+        for _, b := range bf[idx+1:] {
+            cnt += bits.OnesCount8(b)
+        }
+        return cnt
+    }*/
+
     // OnesBefore returns the number of bits set *before* this bit.
     int OnesBefore(int i) {
+
+
+
         Pair<Integer, Integer> res = offset(i);
         int idx = res.first;
         int off = res.second;
@@ -151,6 +211,21 @@ public class BitField {
         return cnt
          */
         return 0;
+    }
+
+    // Bytes returns the Bitfield as a byte string.
+//
+// This function *does not* copy.
+    public byte[] Bytes() {
+
+        return bytes;
+        /* TODO
+        for i, b := range bf {
+            if b != 0 {
+                return bf[i:]
+            }
+        }
+        return nil */
     }
 
 /*

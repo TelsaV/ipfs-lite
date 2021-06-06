@@ -25,7 +25,7 @@ public class ProtoNode implements Node {
     public Cid cached;
     private byte[] data;
     private byte[] encoded;
-    private Builder mBuilder;
+    public Builder builder;
 
     public ProtoNode() {
 
@@ -38,9 +38,9 @@ public class ProtoNode implements Node {
 
     public void SetCidBuilder(@Nullable Builder builder) {
         if (builder == null) {
-            this.mBuilder = v0CidPrefix;
+            this.builder = v0CidPrefix;
         } else {
-            this.mBuilder = builder.WithCodec(Cid.DagProtobuf);
+            this.builder = builder.WithCodec(Cid.DagProtobuf);
             this.cached = Cid.Undef();
         }
     }
@@ -177,10 +177,10 @@ public class ProtoNode implements Node {
     }
 
     public Builder CidBuilder() {
-        if (mBuilder == null) {
-            mBuilder = v0CidPrefix;
+        if (builder == null) {
+            builder = v0CidPrefix;
         }
-        return mBuilder;
+        return builder;
     }
 
     public Node Copy() {
@@ -199,7 +199,7 @@ public class ProtoNode implements Node {
                 nnode.links.addAll(links);
             }
         }
-        nnode.mBuilder = mBuilder;
+        nnode.builder = builder;
 
         return nnode;
 
@@ -228,6 +228,14 @@ public class ProtoNode implements Node {
 
     }
 
+    public void AddRawLink(@NonNull String name, @NonNull Link link) {
+        encoded = null;
+
+        synchronized (links) {
+            links.add(new Link(link.getCid(), name, link.getSize()));
+        }
+    }
+
     private void AddRawLink(@NonNull Link link) {
         encoded = null;
 
@@ -236,10 +244,10 @@ public class ProtoNode implements Node {
         }
     }
 
-    public void SetData(byte[] fileData) {
+    public void SetData(byte[] data) {
         encoded = null;
         cached = Cid.Undef();
-        data = fileData;
+        this.data = data;
     }
 
     @Override

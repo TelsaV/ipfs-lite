@@ -39,7 +39,7 @@ public class Adder {
     }
 
     public Node AddLinkToDir(@NonNull Node dirNode, @NonNull String name, @NonNull Node link) {
-        Directory dir = Directory.NewDirectoryFromNode(dirNode);
+        Directory dir = Directory.NewDirectoryFromNode(dagService, dirNode);
         Objects.requireNonNull(dir);
         dir.SetCidBuilder(CidBuilder);
         dir.AddChild(name, link);
@@ -49,7 +49,7 @@ public class Adder {
     }
 
     public Node RemoveChild(@NonNull Node dirNode, @NonNull String name) {
-        Directory dir = Directory.NewDirectoryFromNode(dirNode);
+        Directory dir = Directory.NewDirectoryFromNode(dagService, dirNode);
         Objects.requireNonNull(dir);
         dir.SetCidBuilder(CidBuilder);
         dir.RemoveChild(name);

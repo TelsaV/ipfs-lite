@@ -41,7 +41,7 @@ public class Decoder {
 
         ProtoNode decnd = DecodeProtobuf(b.RawData());
         decnd.cached = c;
-        // TODO decnd.builder = c.Prefix();
+        decnd.builder = c.Prefix();
         return decnd;
     }
 
