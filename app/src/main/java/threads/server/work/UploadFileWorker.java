@@ -21,9 +21,10 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Progress;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.core.Progress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -111,7 +112,7 @@ public class UploadFileWorker extends Worker {
                     Objects.requireNonNull(inputStream);
 
 
-                    String cid = ipfs.storeInputStream(inputStream, new Progress() {
+                    Cid cid = ipfs.storeInputStream(inputStream, new Progress() {
                         @Override
                         public boolean isClosed() {
                             return isStopped();
@@ -137,7 +138,7 @@ public class UploadFileWorker extends Worker {
                     if (!isStopped()) {
                         Objects.requireNonNull(cid);
 
-                        threads.setThreadDone(idx, cid);
+                        threads.setThreadDone(idx, cid.String());
                         docs.finishDocument(idx);
 
                     }

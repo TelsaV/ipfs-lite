@@ -20,10 +20,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import io.LogUtils;
-import io.ipfs.ClosedException;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Link;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.cid.PeerId;
+import threads.lite.core.ClosedException;
+import threads.lite.utils.Link;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
@@ -81,9 +83,9 @@ public class PageWorker extends Worker {
 
             if (Settings.isPublisherEnabled(getApplicationContext())) {
 
-                if (!ipfs.isPrivateNetwork()) {
-                    ipfs.bootstrap();
-                }
+
+                ipfs.bootstrap();
+
 
                 if (ipfs.isPrivateNetwork()) {
                     ConnectService.connect(getApplicationContext());
@@ -113,18 +115,18 @@ public class PageWorker extends Worker {
 
                     for (User user : users) {
                         if (user.isLite()) {
-                            boolean connected = ipfs.isConnected(user.getPid());
-                            if (connected) {
+
 
                                 HashMap<String, String> hashMap = new HashMap<>();
                                 hashMap.put(Content.IPNS, content);
                                 hashMap.put(Content.SEQ, "" + sequence);
                                 Gson gson = new Gson();
                                 String msg = gson.toJson(hashMap);
-                                boolean success = ipfs.notify(user.getPid(), msg);
+                                boolean success = ipfs.notify(
+                                        PeerId.fromBase58(user.getPid()), msg);
 
                                 LogUtils.info(TAG, "success pushing [" + success + "]");
-                            }
+
                         }
                     }
                 }
@@ -155,14 +157,14 @@ public class PageWorker extends Worker {
 
             publishSequence(content, seq);
 
-            ipfs.publishName(content, this::isStopped, seq);
+            ipfs.publishName(Cid.decode(content), seq, this::isStopped);
         }
 
     }
 
     private void publishContent(@NonNull String content) {
         try {
-            List<Link> links = ipfs.getLinks(content, this::isStopped);
+            List<Link> links = ipfs.getLinks(Cid.decode(content), this::isStopped);
 
             if (links != null) {
                 for (Link linkInfo : links) {
@@ -174,7 +176,7 @@ public class PageWorker extends Worker {
                 }
             }
 
-            ipfs.dhtPublish(this::isStopped, content);
+            ipfs.provide(Cid.decode(content), this::isStopped);
 
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

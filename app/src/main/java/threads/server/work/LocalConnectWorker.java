@@ -13,9 +13,9 @@ import androidx.work.WorkerParameters;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
-import lite.PeerInfo;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.PeerId;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
@@ -75,7 +75,7 @@ public class LocalConnectWorker extends Worker {
 
         try {
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
-            ipfs.swarmEnhance(pid);
+            ipfs.swarmEnhance(PeerId.fromBase58(pid));
             if (!ipfs.isConnected(pid)) {
 
                 String pre = "/ip4";

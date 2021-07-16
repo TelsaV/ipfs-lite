@@ -25,9 +25,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Progress;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.core.Progress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -216,7 +217,8 @@ public class UploadFolderWorker extends Worker {
     }
 
     private long createDir(long parent, @NonNull String name, boolean init) {
-        long idx = docs.createDocument(parent, MimeType.DIR_MIME_TYPE, ipfs.createEmptyDir(),
+        long idx = docs.createDocument(parent, MimeType.DIR_MIME_TYPE,
+                Objects.requireNonNull(ipfs.createEmptyDir()).String(),
                 null, name, 0L, false, init);
         docs.finishDocument(idx);
         return idx;
@@ -270,7 +272,7 @@ public class UploadFolderWorker extends Worker {
         try (InputStream is = getApplicationContext().getContentResolver().openInputStream(uri)) {
             Objects.requireNonNull(is);
 
-            String cid = ipfs.storeInputStream(is, new Progress() {
+            Cid cid = ipfs.storeInputStream(is, new Progress() {
 
 
                 @Override
@@ -298,14 +300,12 @@ public class UploadFolderWorker extends Worker {
 
             }, size);
 
-            if (cid != null) {
-                threads.setThreadDone(idx, cid);
-                return idx;
-            } else {
-                threads.setThreadsDeleting(idx);
-            }
+
+            threads.setThreadDone(idx, cid.String());
+            return idx;
 
         } catch (Throwable throwable) {
+            threads.setThreadsDeleting(idx);
             LogUtils.error(TAG, throwable);
         }
 

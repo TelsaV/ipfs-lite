@@ -3,7 +3,7 @@ package threads.server.work;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
-
+import threads.lite.IPFS;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
@@ -19,8 +19,7 @@ import java.io.FileOutputStream;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.threads.THREADS;
 import threads.server.core.threads.Thread;

@@ -32,11 +32,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.LogUtils;
-import io.ipfs.ClosedException;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Link;
-import io.ipfs.utils.Progress;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.core.ClosedException;
+import threads.lite.core.Progress;
+import threads.lite.utils.Link;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -153,9 +154,7 @@ public class UploadContentWorker extends Worker {
                 if (bootstrap) {
                     if (!isStopped()) {
                         try {
-                            if (!ipfs.isPrivateNetwork()) {
-                                ipfs.bootstrap();
-                            }
+                            ipfs.bootstrap();
                         } catch (Throwable throwable) {
                             LogUtils.error(TAG, throwable);
                         }
@@ -185,7 +184,7 @@ public class UploadContentWorker extends Worker {
 
                     InputStream is = huc.getInputStream();
 
-                    String cid = ipfs.storeInputStream(is, new Progress() {
+                    Cid cid = ipfs.storeInputStream(is, new Progress() {
 
 
                         @Override
@@ -208,15 +207,14 @@ public class UploadContentWorker extends Worker {
                     }, size);
 
 
-                    if (cid != null) {
-                        threads.setThreadDone(idx, cid);
+
+                        threads.setThreadDone(idx, cid.String());
                         Uri newUri = FileDocumentsProvider.getUriForThread(idx);
                         threads.setThreadUri(idx, newUri.toString());
-                    } else {
-                        threads.resetThreadLeaching(idx);
-                    }
+
 
                 } catch (Throwable e) {
+                    threads.resetThreadLeaching(idx);
                     if (!isStopped()) {
                         threads.setThreadsDeleting(idx);
                         buildFailedNotification(thread.getName());
@@ -339,7 +337,7 @@ public class UploadContentWorker extends Worker {
             AtomicLong started = new AtomicLong(System.currentTimeMillis());
 
             long parent = thread.getParent();
-            if (ipfs.isDir(cid, this::isStopped)) {
+            if (ipfs.isDir(Cid.decode(cid), this::isStopped)) {
                 // empty directory
                 threads.setThreadDone(threadIdx);
                 threads.setThreadSize(threadIdx, 0L);
@@ -350,7 +348,7 @@ public class UploadContentWorker extends Worker {
                             getApplicationContext()).createDataFile(threadIdx);
 
                     AtomicLong refresh = new AtomicLong(System.currentTimeMillis());
-                    ipfs.storeToFile(file, cid,
+                    ipfs.storeToFile(file, Cid.decode(cid),
                             new Progress() {
                                 @Override
                                 public boolean isClosed() {
@@ -541,7 +539,7 @@ public class UploadContentWorker extends Worker {
 
         String name = link.getName();
         String mimeType = null;
-        if (ipfs.isDir(link.getContent(), this::isStopped)) {
+        if (ipfs.isDir(Cid.decode(link.getContent()), this::isStopped)) {
             mimeType = MimeType.DIR_MIME_TYPE;
         }
 
@@ -558,7 +556,7 @@ public class UploadContentWorker extends Worker {
         String cid = thread.getContent();
         Objects.requireNonNull(cid);
 
-        List<Link> links = ipfs.links(cid, this::isStopped);
+        List<Link> links = ipfs.links(Cid.decode(cid), this::isStopped);
 
         if (links != null) {
             if (links.isEmpty()) {
