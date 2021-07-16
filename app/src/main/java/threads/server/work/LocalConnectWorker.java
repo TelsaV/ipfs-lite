@@ -88,7 +88,6 @@ public class LocalConnectWorker extends Worker {
                 ipfs.swarmConnect(multiAddress, pid, timeout);
             }
 
-            if (ipfs.isConnected(pid)) {
 
                 PEERS peers = PEERS.getInstance(getApplicationContext());
 
@@ -113,7 +112,7 @@ public class LocalConnectWorker extends Worker {
                         }
                     }
 
-                }
+
             }
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

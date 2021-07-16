@@ -31,6 +31,7 @@ import com.google.zxing.integration.android.IntentResult;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import threads.lite.IPFS;
 import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
@@ -347,7 +348,7 @@ public class EditPeerDialogFragment extends BottomSheetDialogFragment {
                 return;
             }
 
-            if (pid.equals(ipfs.getPeerID())) {
+            if (pid.equals(ipfs.getPeerID().toBase58())) {
                 EVENTS.getInstance(mContext).warning(getString(R.string.same_pid_like_host));
                 return;
             }
