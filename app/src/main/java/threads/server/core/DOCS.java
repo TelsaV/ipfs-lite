@@ -31,11 +31,14 @@ import java.util.concurrent.TimeUnit;
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
 import threads.lite.cid.Cid;
+import threads.lite.cid.Multiaddr;
+import threads.lite.cid.PeerId;
 import threads.lite.core.Closeable;
 import threads.lite.core.ClosedException;
-import threads.lite.format.Link;
 import threads.lite.format.Node;
+import threads.lite.host.DnsResolver;
 import threads.lite.ipns.Ipns;
+import threads.lite.utils.Link;
 import threads.server.Settings;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
@@ -88,52 +91,37 @@ public class DOCS {
     }
 
 
-    private void pageProvider(@NonNull String cid, @NonNull Closeable closeable) {
-        ipfs.load(closeable, cid);
-    }
-
-    private void pageConnect(@NonNull String pid, @NonNull Closeable closeable) {
+    private void pageConnect(@NonNull PeerId peerId, @NonNull Closeable closeable) {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
-
+                String pid = peerId.toBase58();
                 Page page = pages.getPage(pid);
                 boolean connected = false;
-                if (!connected) {
-                    if (page != null) {
-                        String address = page.getAddress();
-                        if (!address.isEmpty()) {
-                            connected = ipfs.swarmConnect(
-                                    address.concat(IPFS.P2P_PATH).concat(page.getPid()),
-                                    page.getPid(), closeable);
-                        }
-                    }
-                    if (!connected) {
-                        connected = ipfs.swarmConnect(IPFS.P2P_PATH + pid,
-                                pid, closeable);
+                if (page != null) {
+                    String address = page.getAddress();
+                    if (!address.isEmpty()) {
+                        connected = ipfs.swarmConnect(
+                                address.concat(Content.P2P_PATH).concat(page.getPid()),
+                                IPFS.CONNECT_TIMEOUT);
                     }
                 }
+                if (!connected) {
+                    connected = ipfs.swarmConnect(Content.P2P_PATH + pid,
+                            IPFS.CONNECT_TIMEOUT);
+                }
 
-                if (page != null) {
-                    Peer info = ipfs.swarmPeer(pid);
-                    if (info != null) {
-                        String address = info.getAddress();
-                        if (!address.isEmpty() && !address.contains(Content.CIRCUIT)) {
-                            if (!Objects.equals(address, page.getAddress())) {
-                                pages.setPageAddress(pid, address);
-                                pages.resetBootstrap(pid);
-                            } else {
-                                pages.incrementRating(pid);
-                                // success here, same address
-                                if (!page.isBootstrap()) {
-                                    pages.setBootstrap(pid);
-                                }
-                            }
+                if (page != null && connected) {
+                    Multiaddr info = ipfs.remoteAddress(peerId, closeable);
+                    String address = info.toString();
+                    if (!address.isEmpty() && !address.contains(Content.CIRCUIT)) {
+                        if (!Objects.equals(address, page.getAddress())) {
+                            pages.setPageAddress(pid, address);
+                            pages.resetBootstrap(pid);
                         } else {
-                            if (!page.getAddress().isEmpty()) {
-                                pages.setPageAddress(pid, "");
-                            }
-                            if (page.isBootstrap()) {
-                                pages.resetBootstrap(pid);
+                            pages.incrementRating(pid);
+                            // success here, same address
+                            if (!page.isBootstrap()) {
+                                pages.setBootstrap(pid);
                             }
                         }
                     } else {
@@ -144,18 +132,18 @@ public class DOCS {
                             pages.resetBootstrap(pid);
                         }
                     }
-
                 }
+                LogUtils.debug(TAG, "Connect " + pid + " " + connected);
 
-                LogUtils.error(TAG, "Connect " + pid + " " + connected);
             } catch (ClosedException ignore) {
             } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
+                LogUtils.error(TAG, throwable.getMessage());
             } finally {
                 LogUtils.info(TAG, " finish onStart ...");
             }
         });
     }
+
 
     public void updateBookmarkTitle(@NonNull Uri uri, @NonNull String title) {
         books.setBookmarkTitle(uri.toString(), title);
@@ -194,7 +182,7 @@ public class DOCS {
     }
 
 
-    public void releaseContent(){
+    public void releaseContent() {
         ipfs.reset();
     }
 
@@ -392,36 +380,36 @@ public class DOCS {
     private void updateParentDocument(long idx, @NonNull String oldName) {
         long parent = threads.getThreadParent(idx);
 
-        String cid = threads.getThreadContent(idx);
+        Cid cid = Cid.decode(Objects.requireNonNull(threads.getThreadContent(idx)));
         Objects.requireNonNull(cid);
         String name = threads.getThreadName(idx);
         if (parent > 0) {
-            String dirCid = threads.getThreadContent(parent);
+            Cid dirCid = Cid.decode(Objects.requireNonNull(threads.getThreadContent(parent)));
             Objects.requireNonNull(dirCid);
             if (!oldName.isEmpty()) {
-                String dir = ipfs.rmLinkFromDir(dirCid, oldName);
+                Cid dir = ipfs.rmLinkFromDir(dirCid, oldName);
                 if (dir != null) {
                     dirCid = dir;
                 }
             }
-            String newDir = ipfs.addLinkToDir(dirCid, name, cid);
+            Cid newDir = ipfs.addLinkToDir(dirCid, name, cid);
             Objects.requireNonNull(newDir);
-            threads.setThreadContent(parent, newDir);
+            threads.setThreadContent(parent, newDir.String());
             threads.setThreadLastModified(parent, System.currentTimeMillis());
             updateParentDocument(parent, "");
         } else {
-            String dirCid = pages.getPageContent(ipfs.getPeerID().toBase58());
+            Cid dirCid = Cid.decode(Objects.requireNonNull(pages.getPageContent(ipfs.getPeerID().toBase58())));
             Objects.requireNonNull(dirCid);
             if (!oldName.isEmpty()) {
-                String dir = ipfs.rmLinkFromDir(dirCid, oldName);
+                Cid dir = ipfs.rmLinkFromDir(dirCid, oldName);
                 if (dir != null) {
                     dirCid = dir;
                 }
             }
             Objects.requireNonNull(dirCid);
-            String newDir = ipfs.addLinkToDir(dirCid, name, cid);
+            Cid newDir = ipfs.addLinkToDir(dirCid, name, cid);
             Objects.requireNonNull(newDir);
-            pages.setPageContent(ipfs.getPeerID().toBase58(), newDir);
+            pages.setPageContent(ipfs.getPeerID().toBase58(), newDir.String());
         }
     }
 
@@ -433,20 +421,21 @@ public class DOCS {
             String name = child.getName();
             long parent = child.getParent();
             if (parent > 0) {
-                String dirCid = threads.getThreadContent(parent);
+                Cid dirCid = Cid.decode(Objects.requireNonNull(threads.getThreadContent(parent)));
                 Objects.requireNonNull(dirCid);
-                String newDir = ipfs.rmLinkFromDir(dirCid, name);
+                Cid newDir = ipfs.rmLinkFromDir(dirCid, name);
                 if (newDir != null) {
-                    threads.setThreadContent(parent, newDir);
+                    threads.setThreadContent(parent, newDir.String());
                     threads.setThreadLastModified(parent, System.currentTimeMillis());
                     updateParentDocument(parent, "");
                 }
             } else {
-                String dirCid = pages.getPageContent(ipfs.getPeerID().toBase58());
+                Cid dirCid = Cid.decode(Objects.requireNonNull
+                        (pages.getPageContent(ipfs.getPeerID().toBase58())));
                 Objects.requireNonNull(dirCid);
-                String newDir = ipfs.rmLinkFromDir(dirCid, name);
+                Cid newDir = ipfs.rmLinkFromDir(dirCid, name);
                 if (newDir != null) {
-                    pages.setPageContent(ipfs.getPeerID().toBase58(), newDir);
+                    pages.setPageContent(ipfs.getPeerID().toBase58(), newDir.String());
                 }
             }
         }
@@ -575,7 +564,7 @@ public class DOCS {
 
 
     @NonNull
-    private String getMimeType(@NonNull Context context, @NonNull String cid,
+    private String getMimeType(@NonNull Context context, @NonNull Cid cid,
                                @NonNull Closeable closeable) throws ClosedException {
 
         if (ipfs.isDir(cid, closeable)) {
@@ -585,13 +574,13 @@ public class DOCS {
     }
 
     @NonNull
-    private String getContentMimeType(@NonNull Context context, @NonNull String cid,
+    private String getContentMimeType(@NonNull Context context, @NonNull Cid cid,
                                       @NonNull Closeable closeable) throws ClosedException {
 
 
         String mimeType = MimeType.OCTET_MIME_TYPE;
 
-        try (InputStream in = ipfs.getLoaderStream(Cid.decode(cid), closeable)) {
+        try (InputStream in = ipfs.getLoaderStream(cid, closeable)) {
             ContentInfo info = ContentInfoUtil.getInstance(context).findMatch(in);
 
             if (info != null) {
@@ -776,7 +765,7 @@ public class DOCS {
         String root = getRoot(uri, closeable);
         Objects.requireNonNull(root);
 
-        return ipfs.resolveNode(root, paths, closeable);
+        return ipfs.resolveNode(Cid.decode(root), paths, closeable);
     }
 
     @NonNull
@@ -786,20 +775,20 @@ public class DOCS {
                                            @NonNull Closeable closeable) throws Exception {
 
         if (paths.isEmpty()) {
-            if (ipfs.isDir(root, closeable)) {
-                List<Link> links = ipfs.links(root, closeable);
+            if (ipfs.isDir(Cid.decode(root), closeable)) {
+                List<Link> links = ipfs.links(Cid.decode(root), closeable);
                 String answer = generateDirectoryHtml(uri, root, paths, links);
                 return new WebResourceResponse(MimeType.HTML_MIME_TYPE, Content.UTF8,
                         new ByteArrayInputStream(answer.getBytes()));
             } else {
-                String mimeType = getContentMimeType(context, root, closeable);
-                return getContentResponse(root, mimeType, closeable);
+                String mimeType = getContentMimeType(context, Cid.decode(root), closeable);
+                return getContentResponse(Cid.decode(root), mimeType, closeable);
             }
 
 
         } else {
-            String cid = ipfs.resolve(root, paths, closeable);
-            if (cid.isEmpty()) {
+            Cid cid = ipfs.resolve(Cid.decode(root), paths, closeable);
+            if (cid == null) {
                 throw new ContentException(uri.toString());
             }
             if (ipfs.isDir(cid, closeable)) {
@@ -816,11 +805,11 @@ public class DOCS {
     }
 
     @NonNull
-    private WebResourceResponse getContentResponse(@NonNull String content,
+    private WebResourceResponse getContentResponse(@NonNull Cid cid,
                                                    @NonNull String mimeType,
                                                    @NonNull Closeable closeable) throws ClosedException {
 
-        try (InputStream in = ipfs.getLoaderStream(content, closeable)) {
+        try (InputStream in = ipfs.getLoaderStream(cid, closeable)) {
 
             if (closeable.isClosed()) {
                 throw new ClosedException();
@@ -867,13 +856,13 @@ public class DOCS {
             return root;
         }
 
-        return ipfs.resolve(root, paths, closeable);
+        return Objects.requireNonNull(ipfs.resolve(Cid.decode(root), paths, closeable)).String();
     }
 
     @NonNull
     public String getMimeType(@NonNull Context context,
                               @NonNull Uri uri,
-                              @NonNull String cid,
+                              @NonNull Cid cid,
                               @NonNull Closeable closeable) throws ClosedException {
 
         List<String> paths = uri.getPathSegments();
@@ -948,9 +937,9 @@ public class DOCS {
         }
 
         if (isRedirectIndex) {
-            String cid = ipfs.resolve(root, paths, closeable);
+            Cid cid = ipfs.resolve(Cid.decode(root), paths, closeable);
 
-            if (!cid.isEmpty()) {
+            if (cid != null) {
                 if (ipfs.isDir(cid, closeable)) {
                     boolean exists = ipfs.resolve(cid, INDEX_HTML, closeable);
 
@@ -1011,6 +1000,7 @@ public class DOCS {
         }
         throw new ResolveNameException(uri.toString());
     }
+
     @NonNull
     private String resolveUri(@NonNull Uri uri, @NonNull Closeable closeable)
             throws ResolveNameException, InvalidNameException, ClosedException {
@@ -1063,7 +1053,7 @@ public class DOCS {
 
     @Nullable
     public Page getPinsPage() {
-        return pages.getPage(ipfs.getPeerID());
+        return pages.getPage(ipfs.getPeerID().toBase58());
     }
 
     public void bootstrap() {
@@ -1071,26 +1061,25 @@ public class DOCS {
         try {
             ipfs.bootstrap();
 
-            if (ipfs.numSwarmPeers() < IPFS.MIN_PEERS) {
-                List<Page> bootstraps = pages.getBootstraps(5);
-                List<String> addresses = new ArrayList<>();
-                for (Page bootstrap : bootstraps) {
-                    String address = bootstrap.getAddress();
-                    if (!address.isEmpty()) {
-                        addresses.add(address.concat(IPFS.P2P_PATH).concat(bootstrap.getPid()));
-                    }
+            List<Page> bootstraps = pages.getBootstraps(5);
+            List<String> addresses = new ArrayList<>();
+            for (Page bootstrap : bootstraps) {
+                String address = bootstrap.getAddress();
+                if (!address.isEmpty()) {
+                    addresses.add(address.concat(Content.P2P_PATH).concat(bootstrap.getPid()));
                 }
-                if (!addresses.isEmpty()) {
-                    List<Callable<Boolean>> tasks = new ArrayList<>();
-                    ExecutorService executor = Executors.newFixedThreadPool(addresses.size());
-                    for (String address : addresses) {
-                        tasks.add(() -> ipfs.swarmConnect(address, null, IPFS.TIMEOUT_BOOTSTRAP));
-                    }
-                    List<Future<Boolean>> result = executor.invokeAll(tasks,
-                            IPFS.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
-                    for (Future<Boolean> future : result) {
-                        LogUtils.error(TAG, "Bootstrap done " + future.isDone());
-                    }
+            }
+
+            if (!addresses.isEmpty()) {
+                List<Callable<Boolean>> tasks = new ArrayList<>();
+                ExecutorService executor = Executors.newFixedThreadPool(addresses.size());
+                for (String address : addresses) {
+                    tasks.add(() -> ipfs.swarmConnect(address, IPFS.TIMEOUT_BOOTSTRAP));
+                }
+                List<Future<Boolean>> result = executor.invokeAll(tasks,
+                        IPFS.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
+                for (Future<Boolean> future : result) {
+                    LogUtils.error(TAG, "Bootstrap done " + future.isDone());
                 }
             }
         } catch (Throwable throwable) {
@@ -1107,9 +1096,6 @@ public class DOCS {
         String root = getRoot(uri, closeable);
         Objects.requireNonNull(root);
 
-        if (foreignPage(uri)) {
-            pageProvider(root, closeable);
-        }
 
         return getResponse(context, uri, root, paths, closeable);
 
@@ -1226,7 +1212,7 @@ public class DOCS {
             if (host != null && !Objects.equals(getHost(), host)) {
                 String pid = ipfs.decodeName(host);
                 if (!pid.isEmpty()) {
-                    pageConnect(pid, closeable);
+                    pageConnect(PeerId.fromBase58(pid), closeable);
                 }
             }
         } catch (Throwable throwable) {
@@ -1234,7 +1220,6 @@ public class DOCS {
         }
 
     }
-
 
 
     public void cleanupResolver(@NonNull Uri uri) {

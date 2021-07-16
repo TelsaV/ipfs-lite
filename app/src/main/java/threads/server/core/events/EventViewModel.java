@@ -41,6 +41,7 @@ public class EventViewModel extends AndroidViewModel {
     public LiveData<Event> getJavascript() {
         return eventsDatabase.eventDao().getEvent(EVENTS.JAVASCRIPT);
     }
+
     public LiveData<Event> getWarning() {
         return eventsDatabase.eventDao().getEvent(EVENTS.WARNING);
     }

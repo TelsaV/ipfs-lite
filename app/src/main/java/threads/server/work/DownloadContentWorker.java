@@ -129,17 +129,17 @@ public class DownloadContentWorker extends Worker {
 
                 try {
 
-                    String content = docs.getContent(uri, this::isStopped);
+                    Cid cid = Cid.decode(docs.getContent(uri, this::isStopped));
 
                     String mimeType = docs.getMimeType(getApplicationContext(),
-                            uri, content, this::isStopped);
+                            uri, cid, this::isStopped);
 
                     if (Objects.equals(mimeType, MimeType.DIR_MIME_TYPE)) {
                         doc = doc.createDirectory(name);
                         Objects.requireNonNull(doc);
                     }
 
-                    downloadContent(doc, content, mimeType, name);
+                    downloadContent(doc, cid, mimeType, name);
 
 
                     if (!isStopped()) {
@@ -167,7 +167,7 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void downloadContent(@NonNull DocumentFile doc, @NonNull String root,
+    private void downloadContent(@NonNull DocumentFile doc, @NonNull Cid root,
                                  @NonNull String mimeType, @NonNull String name) throws ClosedException {
 
 
@@ -176,7 +176,7 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void download(@NonNull DocumentFile doc, @NonNull String cid) throws ClosedException {
+    private void download(@NonNull DocumentFile doc, @NonNull Cid cid) throws ClosedException {
 
         long start = System.currentTimeMillis();
 
@@ -185,9 +185,9 @@ public class DownloadContentWorker extends Worker {
         String name = doc.getName();
         Objects.requireNonNull(name);
 
-        if (!ipfs.isDir(Cid.decode(cid), this::isStopped)) {
+        if (!ipfs.isDir(cid, this::isStopped)) {
 
-            try (InputStream is = ipfs.getLoaderStream(Cid.decode(cid), new Progress() {
+            try (InputStream is = ipfs.getLoaderStream(cid, new Progress() {
                 @Override
                 public boolean isClosed() {
                     return isStopped();
@@ -347,11 +347,11 @@ public class DownloadContentWorker extends Worker {
                 if (ipfs.isDir(Cid.decode(link.getContent()), this::isStopped)) {
                     DocumentFile dir = doc.createDirectory(link.getName());
                     Objects.requireNonNull(dir);
-                    downloadLinks(dir, link.getContent(), MimeType.DIR_MIME_TYPE, link.getName());
+                    downloadLinks(dir, Cid.decode(link.getContent()), MimeType.DIR_MIME_TYPE, link.getName());
                 } else {
                     String mimeType = MimeTypeService.getMimeType(link.getName());
                     download(Objects.requireNonNull(doc.createFile(mimeType, link.getName())),
-                            link.getContent());
+                            Cid.decode(link.getContent()));
                 }
             }
         }
@@ -359,11 +359,11 @@ public class DownloadContentWorker extends Worker {
     }
 
 
-    private void downloadLinks(@NonNull DocumentFile doc, @NonNull String cid,
+    private void downloadLinks(@NonNull DocumentFile doc, @NonNull Cid cid,
                                @NonNull String mimeType, @NonNull String name) throws ClosedException {
 
 
-        List<Link> links = ipfs.links(Cid.decode(cid), this::isStopped);
+        List<Link> links = ipfs.links(cid, this::isStopped);
 
         if (links != null) {
             if (links.isEmpty()) {

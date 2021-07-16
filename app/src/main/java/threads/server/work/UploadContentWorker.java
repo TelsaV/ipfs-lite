@@ -235,10 +235,10 @@ public class UploadContentWorker extends Worker {
 
                         String name = docs.getFileName(uri);
 
-                        String content = docs.getContent(uri, this::isStopped);
+                        Cid cid = Cid.decode(docs.getContent(uri, this::isStopped));
 
                         String mimeType = docs.getMimeType(getApplicationContext(),
-                                uri, content, this::isStopped);
+                                uri, cid, this::isStopped);
 
                         List<Thread> names = threads.getThreadsByNameAndParent(name, 0L);
                         names.remove(thread);
@@ -247,7 +247,7 @@ public class UploadContentWorker extends Worker {
                         }
                         threads.setThreadName(idx, name);
                         threads.setThreadMimeType(idx, mimeType);
-                        threads.setThreadContent(idx, content);
+                        threads.setThreadContent(idx, cid.String());
 
                         downloadThread(idx);
 

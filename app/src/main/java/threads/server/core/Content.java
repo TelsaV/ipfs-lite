@@ -33,4 +33,5 @@ public class Content extends Hashtable<String, String> {
     public static final String FILE = "file";
     public static final String ABOUT = "about";
 
+    public static final String P2P_PATH = "/p2p/";
 }
