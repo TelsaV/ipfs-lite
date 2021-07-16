@@ -26,9 +26,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Progress;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.core.Progress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -232,7 +233,7 @@ public class CopyDirectoryWorker extends Worker {
             try (OutputStream os = getApplicationContext().getContentResolver().
                     openOutputStream(file.getUri())) {
                 Objects.requireNonNull(os);
-                ipfs.storeToOutputStream(os, new Progress() {
+                ipfs.storeToOutputStream(os, Cid.decode(cid), new Progress() {
 
 
                     @Override
@@ -257,7 +258,7 @@ public class CopyDirectoryWorker extends Worker {
                     }
 
 
-                }, cid);
+                });
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
             }

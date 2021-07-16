@@ -29,8 +29,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Objects;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.DOCS;
