@@ -99,6 +99,7 @@ import threads.server.provider.FileDocumentsProvider;
 import threads.server.provider.FileProvider;
 import threads.server.services.DiscoveryService;
 import threads.server.services.LiteService;
+import threads.server.services.LocalConnectService;
 import threads.server.services.QRCodeService;
 import threads.server.services.RegistrationService;
 import threads.server.services.UploadService;
@@ -111,7 +112,6 @@ import threads.server.utils.SelectionViewModel;
 import threads.server.work.BackupWorker;
 import threads.server.work.DeleteThreadsWorker;
 import threads.server.work.DownloadContentWorker;
-import threads.server.work.LocalConnectWorker;
 import threads.server.work.SwarmConnectWorker;
 import threads.server.work.UploadFilesWorker;
 import threads.server.work.UploadFolderWorker;
@@ -429,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements
                         boolean connect = !Objects.equals(peerID, serviceName);
                         if (connect) {
                             InetAddress inetAddress = serviceInfo.getHost();
-                            LocalConnectWorker.connect(getApplicationContext(),
+                            LocalConnectService.connect(getApplicationContext(),
                                     serviceName, serviceInfo.getHost().toString(),
                                     serviceInfo.getPort(), inetAddress instanceof Inet6Address);
                         }

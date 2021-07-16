@@ -87,9 +87,9 @@ public class PageWorker extends Worker {
                 ipfs.bootstrap();
 
 
-                if (ipfs.isPrivateNetwork()) {
-                    ConnectService.connect(getApplicationContext());
-                }
+
+                ConnectService.connect(getApplicationContext());
+
 
                 if (!isStopped()) {
                     publishPage();
@@ -145,9 +145,8 @@ public class PageWorker extends Worker {
             String content = page.getContent();
             Objects.requireNonNull(content);
 
-            if (!IPFS.isPrivateSharingEnabled(getApplicationContext())) {
-                Executors.newSingleThreadExecutor().execute(() -> publishContent(content));
-            }
+            Executors.newSingleThreadExecutor().execute(() -> publishContent(content));
+
 
             LogUtils.error(TAG, "Start publish name " + content);
 

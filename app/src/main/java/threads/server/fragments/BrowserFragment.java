@@ -51,7 +51,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import threads.lite.LogUtils;
 import threads.lite.core.Closeable;
 import threads.lite.core.TimeoutCloseable;
-import threads.lite.core.TimeoutProgress;
 import threads.lite.format.Node;
 import threads.server.MainActivity;
 import threads.server.R;
@@ -295,6 +294,7 @@ public class BrowserFragment extends Fragment {
 
             private final AtomicBoolean firstRun = new AtomicBoolean(true);
             private final AtomicReference<String> host = new AtomicReference<>();
+
             @Override
             public void onPageCommitVisible(WebView view, String url) {
                 super.onPageCommitVisible(view, url);
@@ -420,7 +420,7 @@ public class BrowserFragment extends Fragment {
                     Uri uri = request.getUrl();
                     LogUtils.error(TAG, "shouldOverrideUrlLoading : " + uri);
 
-                    if(!Objects.equals(host.get(), uri.getHost())){
+                    if (!Objects.equals(host.get(), uri.getHost())) {
                         LogUtils.error(TAG, uri.getHost() + " " + host.get());
                         docs.releaseThreads();
                         docs.releaseContent();

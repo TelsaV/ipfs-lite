@@ -23,7 +23,6 @@ import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Objects;
 
-
 import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
