@@ -31,8 +31,7 @@ import com.google.zxing.integration.android.IntentResult;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.events.EVENTS;

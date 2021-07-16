@@ -23,8 +23,8 @@ import com.bumptech.glide.Glide;
 
 import java.util.Objects;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
@@ -115,7 +115,8 @@ public class AccountDialogFragment extends DialogFragment {
     private void shareQRCode(@NonNull Uri uri, @NonNull Uri url) {
 
         try {
-            String peerID = IPFS.getPeerID(mContext);
+            IPFS ipfs = IPFS.getInstance(mContext);
+            String peerID = ipfs.getPeerID().toBase58();
             Objects.requireNonNull(peerID);
             String text = getString(R.string.account_access);
 
