@@ -31,6 +31,7 @@ public class Settings {
     private static final String ENABLE_PUBLISHER_KEY = "enablePublisherKey";
     private static final String SORT_KEY = "sortKey";
     private static final String SEQUENCE = "sequence";
+    private static final String JAVASCRIPT_KEY = "javascriptKey";
 
     public static int getSequence(@NonNull Context context) {
 
@@ -48,7 +49,6 @@ public class Settings {
         editor.apply();
     }
 
-
     public static void setPublisherEnabled(Context context, boolean enable) {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -60,7 +60,6 @@ public class Settings {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
         return sharedPref.getBoolean(ENABLE_PUBLISHER_KEY, true);
     }
-
 
     public static void setRedirectUrlEnabled(Context context, boolean enable) {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
@@ -133,7 +132,7 @@ public class Settings {
     public static String getDefaultSearchEngine(@NonNull String query) {
         return "https://ipfs-search.com/#/search?search=" + query;
     }
-    private static final String JAVASCRIPT_KEY = "javascriptKey";
+
     public static void setJavascriptEnabled(Context context, boolean auto) {
         SharedPreferences sharedPref = context.getSharedPreferences(APP_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();

@@ -16,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Arrays;
 
-
 import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.magic.entries.MagicEntries;

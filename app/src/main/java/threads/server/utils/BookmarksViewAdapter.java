@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.core.books.BOOKS;

@@ -207,10 +207,9 @@ public class UploadContentWorker extends Worker {
                     }, size);
 
 
-
-                        threads.setThreadDone(idx, cid.String());
-                        Uri newUri = FileDocumentsProvider.getUriForThread(idx);
-                        threads.setThreadUri(idx, newUri.toString());
+                    threads.setThreadDone(idx, cid.String());
+                    Uri newUri = FileDocumentsProvider.getUriForThread(idx);
+                    threads.setThreadUri(idx, newUri.toString());
 
 
                 } catch (Throwable e) {

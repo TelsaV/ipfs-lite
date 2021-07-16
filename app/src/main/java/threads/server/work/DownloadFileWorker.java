@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import threads.lite.LogUtils;
-import threads.lite.core.Progress;
 import threads.lite.utils.ReaderProgress;
 import threads.server.MainActivity;
 import threads.server.R;

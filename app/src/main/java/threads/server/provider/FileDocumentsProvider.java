@@ -65,7 +65,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
             DocumentsContract.Document.COLUMN_FLAGS,
             DocumentsContract.Document.COLUMN_SIZE
     };
-
+    private static final Hashtable<String, CidInfo> CID_INFO_HASHTABLE = new Hashtable<>();
     private String appName;
     private String rootDir;
     private THREADS threads;
@@ -240,18 +240,6 @@ public class FileDocumentsProvider extends DocumentsProvider {
         return builder.build();
     }
 
-    private static class CidInfo {
-        private final String name;
-        private final String mimeType;
-        private final long size;
-
-        private CidInfo(String name, String mimeType, long size) {
-            this.name = name;
-            this.mimeType = mimeType;
-            this.size = size;
-        }
-    }
-    private static final Hashtable<String, CidInfo> CID_INFO_HASHTABLE = new Hashtable<>();
     public static Uri getUriForIpfs(@NonNull Node node, @NonNull String name, @NonNull String mimeType) {
 
         CID_INFO_HASHTABLE.put(node.getCid().String(), new CidInfo(name, mimeType, node.size()));
@@ -703,18 +691,18 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 File temp = FileProvider.getFile(getContext(), idx);
                 return ParcelFileDescriptor.open(temp, accessMode, handler,
                         e -> {
-                    try {
-                        Cid cid = ipfs.storeFile(temp);
-                        Objects.requireNonNull(cid);
+                            try {
+                                Cid cid = ipfs.storeFile(temp);
+                                Objects.requireNonNull(cid);
 
-                        long size = temp.length();
-                        threads.setThreadSize(idx, size);
-                        threads.setThreadDone(idx, cid.String());
+                                long size = temp.length();
+                                threads.setThreadSize(idx, size);
+                                threads.setThreadDone(idx, cid.String());
 
-                        docs.finishDocument(idx);
-                    } catch (Throwable throwable){
-                        LogUtils.error(TAG, throwable);
-                    }
+                                docs.finishDocument(idx);
+                            } catch (Throwable throwable) {
+                                LogUtils.error(TAG, throwable);
+                            }
 
                         });
             } else {
@@ -782,6 +770,18 @@ public class FileDocumentsProvider extends DocumentsProvider {
         docs = DOCS.getInstance(context);
         InitApplication.syncData(context);
         return true;
+    }
+
+    private static class CidInfo {
+        private final String name;
+        private final String mimeType;
+        private final long size;
+
+        private CidInfo(String name, String mimeType, long size) {
+            this.name = name;
+            this.mimeType = mimeType;
+            this.size = size;
+        }
     }
 
 }

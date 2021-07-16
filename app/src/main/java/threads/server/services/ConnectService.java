@@ -51,15 +51,13 @@ public class ConnectService {
         IPFS ipfs = IPFS.getInstance(context);
 
 
-
-
         // now check old addresses
         PEERS peers = PEERS.getInstance(context);
         User user = peers.getUserByPid(pid);
         Objects.requireNonNull(user);
         String address = user.getAddress();
         if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-            if ( ipfs.swarmConnect(PeerId.fromBase58(pid), new TimeoutCloseable(5))) {
+            if (ipfs.swarmConnect(PeerId.fromBase58(pid), new TimeoutCloseable(5))) {
                 return true;
             }
         }

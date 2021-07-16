@@ -55,7 +55,7 @@ public class InitApplication extends Application {
         IPFS ipfs = IPFS.getInstance(context);
         PEERS peers = PEERS.getInstance(context);
         List<String> swarm = peers.getSwarm();
-        for (String pid:swarm) {
+        for (String pid : swarm) {
             ipfs.swarmEnhance(PeerId.fromBase58(pid));
         }
 

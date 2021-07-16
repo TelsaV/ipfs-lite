@@ -4,7 +4,6 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
 import threads.lite.cid.PeerId;
@@ -47,19 +46,19 @@ public class LocalConnectService {
                 PeerInfo pInfo = ipfs.getPeerInfo(PeerId.fromBase58(pid), new TimeoutCloseable(5));
 
 
-                    if (!peers.getUserIsLite(pid)) {
+                if (!peers.getUserIsLite(pid)) {
 
-                        String agent = pInfo.getAgent();
-                        if (!agent.isEmpty()) {
-                            peers.setUserAgent(pid, agent);
-                            if (agent.endsWith("lite")) {
-                                peers.setUserLite(pid);
-                            }
+                    String agent = pInfo.getAgent();
+                    if (!agent.isEmpty()) {
+                        peers.setUserAgent(pid, agent);
+                        if (agent.endsWith("lite")) {
+                            peers.setUserLite(pid);
                         }
                     }
                 }
+            }
 
-            } catch (Throwable throwable) {
+        } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
     }

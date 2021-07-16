@@ -6,9 +6,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import java.io.File;
-
 import java.io.IOException;
-
 
 import threads.lite.LogUtils;
 import threads.server.BuildConfig;

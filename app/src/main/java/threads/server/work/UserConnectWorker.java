@@ -112,22 +112,22 @@ public class UserConnectWorker extends Worker {
         ipfs.swarmEnhance(pid);
 
 
-            if (!isStopped()) {
-                // now check old addresses
-                PEERS peers = PEERS.getInstance(getApplicationContext());
-                User user = peers.getUserByPid(pid.toBase58());
-                Objects.requireNonNull(user);
-                String address = user.getAddress();
-                if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-                    if (ipfs.swarmConnect(pid, new TimeoutCloseable(timeout))) {
-                        return;
-                    }
+        if (!isStopped()) {
+            // now check old addresses
+            PEERS peers = PEERS.getInstance(getApplicationContext());
+            User user = peers.getUserByPid(pid.toBase58());
+            Objects.requireNonNull(user);
+            String address = user.getAddress();
+            if (!address.isEmpty() && !address.contains("p2p-circuit")) {
+                if (ipfs.swarmConnect(pid, new TimeoutCloseable(timeout))) {
+                    return;
                 }
             }
+        }
 
-            if (!isStopped()) {
-                ipfs.swarmConnect(pid, new TimeoutCloseable(timeout));
-            }
+        if (!isStopped()) {
+            ipfs.swarmConnect(pid, new TimeoutCloseable(timeout));
+        }
 
     }
 }

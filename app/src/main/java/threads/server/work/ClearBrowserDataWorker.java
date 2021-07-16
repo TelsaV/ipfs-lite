@@ -21,12 +21,10 @@ import androidx.work.WorkerParameters;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-
 import threads.lite.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.DOCS;
-
 import threads.server.core.events.EVENTS;
 import threads.server.core.pages.PAGES;
 import threads.server.core.threads.THREADS;

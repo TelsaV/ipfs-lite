@@ -22,7 +22,6 @@ import androidx.work.WorkerParameters;
 import java.util.List;
 import java.util.Objects;
 
-
 import threads.lite.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
