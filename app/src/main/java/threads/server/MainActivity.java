@@ -71,8 +71,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
 import threads.server.core.DeleteOperation;
@@ -397,7 +397,8 @@ public class MainActivity extends AppCompatActivity implements
 
     private void registerService(int port) {
         try {
-            String peerID = IPFS.getPeerID(getApplicationContext());
+            IPFS ipfs = IPFS.getInstance(getApplicationContext());
+            String peerID = ipfs.getPeerID().toBase58();
             Objects.requireNonNull(peerID);
             String serviceType = "_ipfs-discovery._udp";
             NsdServiceInfo serviceInfo = new NsdServiceInfo();
@@ -622,7 +623,8 @@ public class MainActivity extends AppCompatActivity implements
 
                             String user = result.getPeerID();
                             String address = result.getPeerAddress();
-                            String peerID = IPFS.getPeerID(getApplicationContext());
+                            IPFS ipfs = IPFS.getInstance(getApplicationContext());
+                            String peerID = ipfs.getPeerID().toBase58();
                             if (user.equals(peerID)) {
                                 EVENTS.getInstance(getApplicationContext()).
                                         warning(getString(R.string.same_pid_like_host));
@@ -1530,7 +1532,8 @@ public class MainActivity extends AppCompatActivity implements
                     mLastClickTime = SystemClock.elapsedRealtime();
 
 
-                    String peerID = IPFS.getPeerID(getApplicationContext());
+                    IPFS ipfs = IPFS.getInstance(getApplicationContext());
+                    String peerID = ipfs.getPeerID().toBase58();
                     Objects.requireNonNull(peerID);
 
                     Uri uri = QRCodeService.getImage(getApplicationContext(), peerID);
@@ -2011,7 +2014,7 @@ public class MainActivity extends AppCompatActivity implements
         try {
             if (Settings.isAutoDiscovery(getApplicationContext())) {
                 IPFS ipfs = IPFS.getInstance(getApplicationContext());
-                registerService((int) ipfs.getSwarmPort());
+                registerService((int) ipfs.getPort());
             }
         } catch (Throwable e) {
             LogUtils.error(TAG, e);

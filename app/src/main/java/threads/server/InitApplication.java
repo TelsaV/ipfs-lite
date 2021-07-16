@@ -12,11 +12,13 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.PeerId;
 import threads.server.core.Content;
 import threads.server.core.pages.PAGES;
 import threads.server.core.peers.PEERS;
@@ -52,7 +54,11 @@ public class InitApplication extends Application {
     public static void syncData(@NonNull Context context) {
         IPFS ipfs = IPFS.getInstance(context);
         PEERS peers = PEERS.getInstance(context);
-        ipfs.swarmEnhance(peers.getSwarm());
+        List<String> swarm = peers.getSwarm();
+        for (String pid:swarm) {
+            ipfs.swarmEnhance(PeerId.fromBase58(pid));
+        }
+
     }
 
     @Override
@@ -68,7 +74,7 @@ public class InitApplication extends Application {
         try {
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
             LogUtils.error(TAG, "startDaemon...");
-            ipfs.startDaemon();
+            ipfs.daemon();
             ipfs.setPusher((pid, content) -> {
                 try {
                     onMessageReceived(pid, content);
@@ -84,7 +90,7 @@ public class InitApplication extends Application {
 
     }
 
-    public void onMessageReceived(@NonNull String pid, @NonNull String content) {
+    public void onMessageReceived(@NonNull PeerId pid, @NonNull String content) {
 
         try {
             Type hashMap = new TypeToken<HashMap<String, String>>() {
@@ -108,8 +114,8 @@ public class InitApplication extends Application {
             if (sequence >= 0) {
                 if (ipfs.isValidCID(ipns)) {
                     PAGES pages = PAGES.getInstance(getApplicationContext());
-                    pages.setPageSequence(pid, sequence);
-                    pages.setPageContent(pid, ipns);
+                    pages.setPageSequence(pid.toBase58(), sequence);
+                    pages.setPageContent(pid.toBase58(), ipns);
                 }
             }
 
