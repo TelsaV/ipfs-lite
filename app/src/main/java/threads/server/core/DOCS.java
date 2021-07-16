@@ -28,14 +28,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import io.Closeable;
-import io.LogUtils;
-import io.ipfs.ClosedException;
-import io.ipfs.DnsResolver;
-import io.ipfs.IPFS;
-import io.ipfs.format.Node;
-import io.ipfs.utils.Link;
-import lite.Peer;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.core.Closeable;
+import threads.lite.core.ClosedException;
+import threads.lite.format.Link;
+import threads.lite.format.Node;
+import threads.lite.ipns.Ipns;
 import threads.server.Settings;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
@@ -70,7 +70,7 @@ public class DOCS {
         threads = THREADS.getInstance(context);
         pages = PAGES.getInstance(context);
         books = BOOKS.getInstance(context);
-        host = ipfs.getHost();
+        host = ipfs.getPeerID().toBase32();
         refreshRedirectOptions(context);
         initPinsPage();
     }
@@ -97,7 +97,7 @@ public class DOCS {
             try {
 
                 Page page = pages.getPage(pid);
-                boolean connected = ipfs.isConnected(pid);
+                boolean connected = false;
                 if (!connected) {
                     if (page != null) {
                         String address = page.getAddress();
@@ -225,7 +225,7 @@ public class DOCS {
 
     @Nullable
     public String getLocalName() {
-        return pages.getPageContent(ipfs.getPeerID());
+        return pages.getPageContent(ipfs.getPeerID().toBase58());
     }
 
     private void deleteDocument(long idx) {
@@ -280,7 +280,7 @@ public class DOCS {
                     threads.removeThread(thread);
                     if (cid != null) {
                         if (!threads.isReferenced(cid)) {
-                            ipfs.rm(cid, true);
+                            ipfs.rm(Cid.decode(cid));
                         }
                     }
                 }
@@ -410,7 +410,7 @@ public class DOCS {
             threads.setThreadLastModified(parent, System.currentTimeMillis());
             updateParentDocument(parent, "");
         } else {
-            String dirCid = pages.getPageContent(ipfs.getPeerID());
+            String dirCid = pages.getPageContent(ipfs.getPeerID().toBase58());
             Objects.requireNonNull(dirCid);
             if (!oldName.isEmpty()) {
                 String dir = ipfs.rmLinkFromDir(dirCid, oldName);
@@ -421,7 +421,7 @@ public class DOCS {
             Objects.requireNonNull(dirCid);
             String newDir = ipfs.addLinkToDir(dirCid, name, cid);
             Objects.requireNonNull(newDir);
-            pages.setPageContent(ipfs.getPeerID(), newDir);
+            pages.setPageContent(ipfs.getPeerID().toBase58(), newDir);
         }
     }
 
@@ -442,11 +442,11 @@ public class DOCS {
                     updateParentDocument(parent, "");
                 }
             } else {
-                String dirCid = pages.getPageContent(ipfs.getPeerID());
+                String dirCid = pages.getPageContent(ipfs.getPeerID().toBase58());
                 Objects.requireNonNull(dirCid);
                 String newDir = ipfs.rmLinkFromDir(dirCid, name);
                 if (newDir != null) {
-                    pages.setPageContent(ipfs.getPeerID(), newDir);
+                    pages.setPageContent(ipfs.getPeerID().toBase58(), newDir);
                 }
             }
         }
@@ -540,16 +540,16 @@ public class DOCS {
         try {
             Page page = getPinsPage();
             if (page == null) {
-                page = pages.createPage(ipfs.getPeerID());
-                String dir = ipfs.createEmptyDir();
+                page = pages.createPage(ipfs.getPeerID().toBase58());
+                Cid dir = ipfs.createEmptyDir();
                 Objects.requireNonNull(dir);
-                page.setContent(dir);
+                page.setContent(dir.String());
                 pages.storePage(page);
             }
             // just for backup, in case something happen before
             page = getPinsPage();
             Objects.requireNonNull(page);
-            String dir = ipfs.createEmptyDir();
+            Cid dir = ipfs.createEmptyDir();
             Objects.requireNonNull(dir);
 
             List<Thread> pins = threads.getPins();
@@ -560,11 +560,11 @@ public class DOCS {
                     String link = pin.getContent();
                     Objects.requireNonNull(link);
                     String name = pin.getName();
-                    dir = ipfs.addLinkToDir(dir, name, link);
+                    dir = ipfs.addLinkToDir(dir, name, Cid.decode(link));
                     Objects.requireNonNull(dir);
                 }
             }
-            page.setContent(dir);
+            page.setContent(dir.String());
             pages.storePage(page);
 
 
@@ -591,7 +591,7 @@ public class DOCS {
 
         String mimeType = MimeType.OCTET_MIME_TYPE;
 
-        try (InputStream in = ipfs.getLoaderStream(cid, closeable)) {
+        try (InputStream in = ipfs.getLoaderStream(Cid.decode(cid), closeable)) {
             ContentInfo info = ContentInfoUtil.getInstance(context).findMatch(in);
 
             if (info != null) {
@@ -752,7 +752,7 @@ public class DOCS {
         }
 
 
-        IPFS.ResolvedName resolvedName = ipfs.resolveName(name, sequence, closeable);
+        Ipns.Entry resolvedName = ipfs.resolveName(name, sequence, closeable);
         if (resolvedName == null) {
 
             if (cid != null) {
@@ -1069,9 +1069,7 @@ public class DOCS {
     public void bootstrap() {
 
         try {
-            if (!ipfs.isPrivateNetwork()) {
-                ipfs.bootstrap();
-            }
+            ipfs.bootstrap();
 
             if (ipfs.numSwarmPeers() < IPFS.MIN_PEERS) {
                 List<Page> bootstraps = pages.getBootstraps(5);
@@ -1257,7 +1255,7 @@ public class DOCS {
     }
 
     public boolean isPrivateNetwork(@NonNull Context context) {
-        return ipfs.isPrivateNetwork() || IPFS.isPrivateSharingEnabled(context);
+        return false;
     }
 
     public void refreshRedirectOptions(@NonNull Context context) {

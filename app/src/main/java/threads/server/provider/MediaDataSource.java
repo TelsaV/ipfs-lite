@@ -9,14 +9,14 @@ import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.LogUtils;
-import io.ipfs.ClosedException;
-import io.ipfs.datastore.Storage;
-import io.ipfs.exchange.Interface;
-import io.ipfs.format.BlockStore;
-import io.ipfs.offline.Exchange;
-import io.ipfs.utils.Reader;
-import threads.server.core.blocks.BLOCKS;
+import threads.lite.LogUtils;
+import threads.lite.bitswap.Interface;
+import threads.lite.cid.Cid;
+import threads.lite.core.ClosedException;
+import threads.lite.data.Storage;
+import threads.lite.format.BlockStore;
+import threads.lite.utils.Exchange;
+import threads.lite.utils.Reader;
 
 public class MediaDataSource extends android.media.MediaDataSource {
     private static final String TAG = MediaDataSource.class.getSimpleName();
@@ -24,9 +24,9 @@ public class MediaDataSource extends android.media.MediaDataSource {
     private Reader fileReader;
 
     public MediaDataSource(@NonNull Storage storage, @NonNull String cid) throws ClosedException {
-        BlockStore blockstore = BlockStore.NewBlockstore(storage);
+        BlockStore blockstore = BlockStore.createBlockStore(storage);
         Interface exchange = new Exchange(blockstore);
-        this.fileReader = Reader.getReader(release::get, blockstore, exchange, cid);
+        this.fileReader = Reader.getReader(release::get, blockstore, exchange, Cid.decode(cid));
     }
 
     public static Bitmap getVideoFrame(@NonNull Context context, @NonNull String cid, long time) {
@@ -36,7 +36,8 @@ public class MediaDataSource extends android.media.MediaDataSource {
 
         try {
 
-            retriever.setDataSource(new MediaDataSource(BLOCKS.getInstance(context), cid));
+            retriever.setDataSource(new MediaDataSource(
+                    threads.lite.data.BLOCKS.getInstance(context), cid));
 
             if (time <= 0) {
                 return retriever.getFrameAtTime();

@@ -16,8 +16,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
@@ -140,7 +140,7 @@ public class DaemonService extends Service {
                 builder.setContentText(getString(R.string.service_is_running));
                 builder.setContentIntent(viewIntent);
                 builder.setSubText(getApplicationContext().getString(
-                        R.string.port) + " " + ipfs.getSwarmPort());
+                        R.string.port) + " " + ipfs.getPort());
                 builder.setColor(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary));
                 builder.setCategory(Notification.CATEGORY_SERVICE);
 

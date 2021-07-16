@@ -34,9 +34,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
-import lite.Peer;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.PeerId;
+import threads.lite.core.TimeoutCloseable;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.Content;
@@ -81,7 +82,7 @@ public class PeersFragment extends Fragment implements
 
             for (String pid : users) {
                 try {
-                    boolean value = ipfs.isConnected(pid);
+                    boolean value = false;
                     boolean preValue = peers.isUserConnected(pid);
 
                     if (preValue != value) {
@@ -369,7 +370,7 @@ public class PeersFragment extends Fragment implements
     private void clickUserView(@NonNull String pid) {
         try {
             IPFS ipfs = IPFS.getInstance(mContext);
-            String uri = Content.IPNS + "://" + ipfs.base32(pid);
+            String uri = Content.IPNS + "://" + PeerId.fromBase58(pid).toBase32();
             mListener.openBrowserView(Uri.parse(uri));
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -451,11 +452,9 @@ public class PeersFragment extends Fragment implements
 
         try {
             IPFS ipfs = IPFS.getInstance(mContext);
-            String address = "";
-            Peer info = ipfs.swarmPeer(user.getPid());
-            if (info != null) {
-                address = info.getAddress();
-            }
+            String address = ipfs.remoteAddress(
+                    PeerId.fromBase58(user.getPid()), new TimeoutCloseable(3)).toString();
+
             Uri uri = QRCodeService.getImage(mContext, user.getPid());
             InfoDialogFragment.newInstance(uri, user.getPid(),
                     getString(R.string.peer_access, user.getAlias()),

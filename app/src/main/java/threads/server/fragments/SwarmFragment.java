@@ -16,12 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
-import lite.Peer;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.PeerId;
+import threads.lite.core.TimeoutCloseable;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.events.EVENTS;
@@ -93,7 +95,7 @@ public class SwarmFragment extends Fragment implements
         if (isResumed()) {
             try {
                 IPFS ipfs = IPFS.getInstance(mContext);
-                List<String> peers = ipfs.swarmPeers();
+                List<String> peers = Collections.emptyList();//ipfs.getPeers(); // TODO
                 peers.sort(String::compareTo);
                 mSwarmAdapter.updateData(peers);
             } catch (Throwable e) {
@@ -110,8 +112,7 @@ public class SwarmFragment extends Fragment implements
         mLastClickTime = SystemClock.elapsedRealtime();
 
         try {
-            IPFS ipfs = IPFS.getInstance(mContext);
-            String uri = Content.IPNS + "://" + ipfs.base32(peer);
+            String uri = Content.IPNS + "://" + PeerId.fromBase58(peer).toBase32();
             mListener.openBrowserView(Uri.parse(uri));
         } catch (Throwable e) {
             LogUtils.error(TAG, e);
@@ -170,22 +171,16 @@ public class SwarmFragment extends Fragment implements
             }
 
             // CHECKED
-            String peerID = ipfs.getPeerID();
+            PeerId peerID = ipfs.getPeerID();
 
-            if (pid.equals(peerID)) {
+            if (pid.equals(peerID.toBase58())) {
                 EVENTS.getInstance(mContext).warning(getString(R.string.same_pid_like_host));
                 return;
             }
 
-            Peer info = ipfs.swarmPeer(pid);
-            String address = null;
-            if (info != null) {
-                address = info.getAddress();
-            }
 
-            if (address != null && address.contains(Content.CIRCUIT)) {
-                address = null;
-            }
+            String address = ipfs.remoteAddress(PeerId.fromBase58(pid),
+                    new TimeoutCloseable(3)).toString();
 
             EditPeerDialogFragment.newInstance(pid, address).show(
                     getParentFragmentManager(), EditPeerDialogFragment.TAG);
@@ -202,11 +197,9 @@ public class SwarmFragment extends Fragment implements
 
         try {
             IPFS ipfs = IPFS.getInstance(mContext);
-            String address = "";
-            Peer info = ipfs.swarmPeer(pid);
-            if (info != null) {
-                address = info.getAddress();
-            }
+            String address = ipfs.remoteAddress(PeerId.fromBase58(pid),
+                    new TimeoutCloseable(3)).toString();
+
             Uri uri = QRCodeService.getImage(mContext, pid);
             InfoDialogFragment.newInstance(uri, pid,
                     getString(R.string.peer_access, pid),

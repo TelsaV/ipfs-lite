@@ -48,10 +48,10 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.Closeable;
-import io.LogUtils;
-import io.ipfs.format.Node;
-import io.ipfs.utils.TimeoutProgress;
+import threads.lite.LogUtils;
+import threads.lite.core.Closeable;
+import threads.lite.core.TimeoutProgress;
+import threads.lite.format.Node;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;

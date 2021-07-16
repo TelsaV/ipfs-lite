@@ -13,8 +13,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.PeerId;
+import threads.lite.core.TimeoutCloseable;
 import threads.server.Settings;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
@@ -49,9 +51,7 @@ public class ConnectService {
         IPFS ipfs = IPFS.getInstance(context);
 
 
-        if (ipfs.isConnected(pid)) {
-            return true;
-        }
+
 
         // now check old addresses
         PEERS peers = PEERS.getInstance(context);
@@ -59,13 +59,13 @@ public class ConnectService {
         Objects.requireNonNull(user);
         String address = user.getAddress();
         if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-            if (ipfs.swarmConnect(IPFS.P2P_PATH + pid, null, 5)) {
+            if ( ipfs.swarmConnect(PeerId.fromBase58(pid), new TimeoutCloseable(5))) {
                 return true;
             }
         }
         int timeout = Settings.getConnectionTimeout(context);
 
-        return ipfs.swarmConnect(IPFS.P2P_PATH + pid, null, timeout);
+        return ipfs.swarmConnect(PeerId.fromBase58(pid), new TimeoutCloseable(timeout));
 
 
     }

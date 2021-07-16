@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.util.Optional;
 
-import io.LogUtils;
+import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.Settings;
 import threads.server.magic.ContentInfo;

@@ -35,11 +35,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.Closeable;
-import io.LogUtils;
-import io.ipfs.IPFS;
-import io.ipfs.format.Node;
-import io.ipfs.utils.Reader;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.core.Closeable;
+import threads.lite.format.Node;
+import threads.lite.utils.Reader;
 import threads.server.BuildConfig;
 import threads.server.InitApplication;
 import threads.server.R;
@@ -253,13 +254,13 @@ public class FileDocumentsProvider extends DocumentsProvider {
     private static final Hashtable<String, CidInfo> CID_INFO_HASHTABLE = new Hashtable<>();
     public static Uri getUriForIpfs(@NonNull Node node, @NonNull String name, @NonNull String mimeType) {
 
-        CID_INFO_HASHTABLE.put(node.Cid().String(), new CidInfo(name, mimeType, node.Size()));
+        CID_INFO_HASHTABLE.put(node.getCid().String(), new CidInfo(name, mimeType, node.size()));
 
         Uri.Builder builder = new Uri.Builder();
         builder.scheme(SCHEME)
                 .authority(BuildConfig.DOCUMENTS_AUTHORITY)
                 .appendPath(DOCUMENT)
-                .appendPath(node.Cid().String());
+                .appendPath(node.getCid().String());
 
         return builder.build();
     }
@@ -673,7 +674,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
             if (Objects.equals(type, MimeType.DIR_MIME_TYPE)) {
                 seeding = true;
                 init = false;
-                content = ipfs.createEmptyDir();
+                content = Objects.requireNonNull(ipfs.createEmptyDir()).String();
             }
             long idx = docs.createDocument(parent, type, content, null, displayName,
                     0L, seeding, init);
@@ -702,14 +703,18 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 File temp = FileProvider.getFile(getContext(), idx);
                 return ParcelFileDescriptor.open(temp, accessMode, handler,
                         e -> {
-                            String cid = ipfs.storeFile(temp);
-                            Objects.requireNonNull(cid);
+                    try {
+                        Cid cid = ipfs.storeFile(temp);
+                        Objects.requireNonNull(cid);
 
-                            long size = temp.length();
-                            threads.setThreadSize(idx, size);
-                            threads.setThreadDone(idx, cid);
+                        long size = temp.length();
+                        threads.setThreadSize(idx, size);
+                        threads.setThreadDone(idx, cid.String());
 
-                            docs.finishDocument(idx);
+                        docs.finishDocument(idx);
+                    } catch (Throwable throwable){
+                        LogUtils.error(TAG, throwable);
+                    }
 
                         });
             } else {
@@ -732,7 +737,7 @@ public class FileDocumentsProvider extends DocumentsProvider {
                 if (signal != null) {
                     closeable = signal::isCanceled;
                 }
-                final Reader reader = ipfs.getReader(cid, closeable);
+                final Reader reader = ipfs.getReader(Cid.decode(cid), closeable);
                 Handler handler = new Handler(getContext().getMainLooper());
 
                 return mStorageManager.openProxyFileDescriptor(

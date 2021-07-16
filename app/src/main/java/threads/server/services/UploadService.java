@@ -11,8 +11,9 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
 import threads.server.R;
 import threads.server.core.DOCS;
 import threads.server.core.events.EVENTS;
@@ -37,17 +38,17 @@ public class UploadService {
         executor.submit(() -> {
             try {
 
-                String cid = ipfs.storeText(text);
+                Cid cid = ipfs.storeText(text);
                 Objects.requireNonNull(cid);
                 if (!createTxtFile) {
                     List<Thread> sameEntries = threads.getThreadsByContentAndParent(
-                            cid, parent);
+                            cid.String(), parent);
 
 
                     if (sameEntries.isEmpty()) {
 
-                        long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid,
-                                null, cid, text.length(), true, false);
+                        long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid.String(),
+                                null, cid.String(), text.length(), true, false);
 
                         docs.finishDocument(idx);
 
@@ -66,7 +67,7 @@ public class UploadService {
 
                     String name = "TXT_" + timeStamp + ".txt";
 
-                    long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid,
+                    long idx = docs.createDocument(parent, MimeType.PLAIN_MIME_TYPE, cid.String(),
                             null, name, text.length(), true, false);
 
                     docs.finishDocument(idx);

@@ -17,8 +17,10 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.PeerId;
+import threads.lite.core.TimeoutCloseable;
 import threads.server.BuildConfig;
 import threads.server.R;
 import threads.server.core.Content;
@@ -102,9 +104,8 @@ public class LiteService {
                 if (host != null) {
                     IPFS ipfs = IPFS.getInstance(context);
 
-                    if (!ipfs.isConnected(host)) {
-                        ipfs.swarmConnect(IPFS.P2P_PATH + host, null, 10);
-                    }
+                    ipfs.swarmConnect(PeerId.decodeName(host), new TimeoutCloseable(10));
+
                 }
             } catch (Throwable throwable) {
                 LogUtils.error(TAG, throwable);
@@ -229,7 +230,6 @@ public class LiteService {
             try {
                 PEERS peers = PEERS.getInstance(context);
                 EVENTS events = EVENTS.getInstance(context);
-                IPFS ipfs = IPFS.getInstance(context);
 
                 if (!peers.hasUser(user)) {
                     String userName = user;
@@ -237,7 +237,8 @@ public class LiteService {
                         userName = name;
                     }
 
-                    User newUser = peers.createUser(ipfs.base58(user), userName);
+                    User newUser = peers.createUser(
+                            PeerId.decodeName(user).toBase58(), userName);
 
                     if (address != null) {
                         newUser.setAddress(address);
