@@ -27,9 +27,9 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
-import io.ipfs.utils.ReaderProgress;
+import threads.lite.LogUtils;
+import threads.lite.core.Progress;
+import threads.lite.utils.ReaderProgress;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -158,7 +158,7 @@ public class DownloadFileWorker extends Worker {
                         try (OutputStream os = getApplicationContext().
                                 getContentResolver().openOutputStream(child.getUri())) {
                             Objects.requireNonNull(os);
-                            IPFS.copy(is, os, new ReaderProgress() {
+                            threads.lite.IPFS.copy(is, os, new ReaderProgress() {
                                 @Override
                                 public long getSize() {
                                     return size;

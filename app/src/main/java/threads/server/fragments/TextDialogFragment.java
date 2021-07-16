@@ -20,7 +20,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.Objects;
 
-import io.LogUtils;
+
+import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.events.EVENTS;

@@ -25,8 +25,8 @@ import com.google.android.material.textfield.TextInputLayout;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.LogUtils;
-import io.ipfs.IPFS;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
@@ -126,7 +126,7 @@ public class NewFolderDialogFragment extends DialogFragment {
                     DOCS docs = DOCS.getInstance(mContext);
                     IPFS ipfs = IPFS.getInstance(mContext);
                     long idx = docs.createDocument(parent, MimeType.DIR_MIME_TYPE,
-                            ipfs.createEmptyDir(),
+                            Objects.requireNonNull(ipfs.createEmptyDir()).String(),
                             null, name, 0L, true, false);
                     docs.finishDocument(idx);
 

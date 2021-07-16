@@ -27,11 +27,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.LogUtils;
-import io.ipfs.ClosedException;
-import io.ipfs.IPFS;
-import io.ipfs.utils.Link;
-import io.ipfs.utils.Progress;
+import threads.lite.IPFS;
+import threads.lite.LogUtils;
+import threads.lite.cid.Cid;
+import threads.lite.core.ClosedException;
+import threads.lite.core.Progress;
+import threads.lite.utils.Link;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.Settings;
@@ -184,9 +185,9 @@ public class DownloadContentWorker extends Worker {
         String name = doc.getName();
         Objects.requireNonNull(name);
 
-        if (!ipfs.isDir(cid, this::isStopped)) {
+        if (!ipfs.isDir(Cid.decode(cid), this::isStopped)) {
 
-            try (InputStream is = ipfs.getLoaderStream(cid, new Progress() {
+            try (InputStream is = ipfs.getLoaderStream(Cid.decode(cid), new Progress() {
                 @Override
                 public boolean isClosed() {
                     return isStopped();
@@ -343,7 +344,7 @@ public class DownloadContentWorker extends Worker {
 
         for (Link link : links) {
             if (!isStopped()) {
-                if (ipfs.isDir(link.getContent(), this::isStopped)) {
+                if (ipfs.isDir(Cid.decode(link.getContent()), this::isStopped)) {
                     DocumentFile dir = doc.createDirectory(link.getName());
                     Objects.requireNonNull(dir);
                     downloadLinks(dir, link.getContent(), MimeType.DIR_MIME_TYPE, link.getName());
@@ -362,7 +363,7 @@ public class DownloadContentWorker extends Worker {
                                @NonNull String mimeType, @NonNull String name) throws ClosedException {
 
 
-        List<Link> links = ipfs.links(cid, this::isStopped);
+        List<Link> links = ipfs.links(Cid.decode(cid), this::isStopped);
 
         if (links != null) {
             if (links.isEmpty()) {

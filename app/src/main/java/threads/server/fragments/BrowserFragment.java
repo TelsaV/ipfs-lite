@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import threads.lite.LogUtils;
 import threads.lite.core.Closeable;
+import threads.lite.core.TimeoutCloseable;
 import threads.lite.core.TimeoutProgress;
 import threads.lite.format.Node;
 import threads.server.MainActivity;
@@ -262,7 +263,7 @@ public class BrowserFragment extends Fragment {
                     String res = uri.getQueryParameter("download");
                     if (Objects.equals(res, "0")) {
                         try {
-                            Node node = docs.resolvePath(uri, new TimeoutProgress(1));
+                            Node node = docs.resolvePath(uri, new TimeoutCloseable(1));
                             Objects.requireNonNull(node);
                             Uri redirect = FileDocumentsProvider.getUriForIpfs(
                                     node, filename, mimeType);

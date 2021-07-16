@@ -26,7 +26,7 @@ import threads.lite.LogUtils;
 import threads.server.MainActivity;
 import threads.server.R;
 import threads.server.core.DOCS;
-import threads.server.core.blocks.BLOCKS;
+
 import threads.server.core.events.EVENTS;
 import threads.server.core.pages.PAGES;
 import threads.server.core.threads.THREADS;
@@ -186,7 +186,7 @@ public class ClearBrowserDataWorker extends Worker {
             fileProvider.cleanDataDir();
 
             // Clear browser data
-            BLOCKS.getInstance(getApplicationContext()).clear();
+            threads.lite.data.BLOCKS.getInstance(getApplicationContext()).clear();
             PAGES.getInstance(getApplicationContext()).clear();
             THREADS.getInstance(getApplicationContext()).clear();
 

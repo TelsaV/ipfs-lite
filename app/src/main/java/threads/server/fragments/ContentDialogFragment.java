@@ -20,7 +20,8 @@ import com.bumptech.glide.Glide;
 
 import java.util.Objects;
 
-import io.LogUtils;
+
+import threads.lite.LogUtils;
 import threads.server.R;
 import threads.server.core.Content;
 
