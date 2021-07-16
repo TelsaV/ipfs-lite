@@ -13,6 +13,7 @@ import android.content.res.Configuration;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
+import android.net.LinkProperties;
 import android.net.Network;
 import android.net.Uri;
 import android.net.nsd.NsdManager;
@@ -365,7 +366,26 @@ public class MainActivity extends AppCompatActivity implements
             networkCallback = new ConnectivityManager.NetworkCallback() {
                 @Override
                 public void onAvailable(Network network) {
-                    SwarmConnectWorker.dialing(getApplicationContext());
+                    try {
+                        ConnectivityManager connectivityManager =
+                                (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+
+                        LinkProperties linkProperties = connectivityManager.getLinkProperties(network);
+                        String interfaceName = null;
+                        if (linkProperties != null) {
+                            interfaceName = linkProperties.getInterfaceName();
+                        }
+
+                        IPFS ipfs = IPFS.getInstance(getApplicationContext());
+                        if (interfaceName != null) {
+                            ipfs.updateNetwork(interfaceName);
+                        }
+                    } catch (Throwable throwable) {
+                        LogUtils.error(TAG, throwable);
+                    } finally {
+                        SwarmConnectWorker.dialing(getApplicationContext());
+                    }
+
                 }
 
                 @Override

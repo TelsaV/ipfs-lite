@@ -109,7 +109,7 @@ public class IPFS {
     public static final int BLOCK_SIZE_LIMIT = 1048576; // 1 MB
     public static final long RESOLVE_MAX_TIME = 30000; // 30 sec
     public static final boolean SEND_DONT_HAVES = false;
-    public static final boolean BITSWAP_ENGINE_ACTIVE = false;
+    public static final boolean BITSWAP_ENGINE_ACTIVE = true;
     public static final int PROTOCOL_READER_LIMIT = 1000;
     public static final int TIMEOUT_BOOTSTRAP = 10;
     public static final int MAX_STREAMS = 100;

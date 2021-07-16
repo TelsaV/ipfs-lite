@@ -87,7 +87,6 @@ public class PageWorker extends Worker {
                 ipfs.bootstrap();
 
 
-
                 ConnectService.connect(getApplicationContext());
 
 
@@ -116,16 +115,15 @@ public class PageWorker extends Worker {
                     for (User user : users) {
                         if (user.isLite()) {
 
+                            HashMap<String, String> hashMap = new HashMap<>();
+                            hashMap.put(Content.IPNS, content);
+                            hashMap.put(Content.SEQ, "" + sequence);
+                            Gson gson = new Gson();
+                            String msg = gson.toJson(hashMap);
+                            boolean success = ipfs.notify(
+                                    PeerId.fromBase58(user.getPid()), msg);
 
-                                HashMap<String, String> hashMap = new HashMap<>();
-                                hashMap.put(Content.IPNS, content);
-                                hashMap.put(Content.SEQ, "" + sequence);
-                                Gson gson = new Gson();
-                                String msg = gson.toJson(hashMap);
-                                boolean success = ipfs.notify(
-                                        PeerId.fromBase58(user.getPid()), msg);
-
-                                LogUtils.info(TAG, "success pushing [" + success + "]");
+                            LogUtils.info(TAG, "success pushing [" + success + "]");
 
                         }
                     }
