@@ -100,7 +100,7 @@ public class IPFS {
     public static final String LS = "ls";
     public static final String APRN = "libp2p";
 
-
+    public static final int DEFAULT_PORT = 5001;
     public static final int PRELOAD = 25;
     public static final int PRELOAD_DIST = 5;
     public static final int CHUNK_SIZE = 262144;

@@ -170,7 +170,7 @@ public class LiteHost {
                 new Ipns(), alpha, IPFS.DHT_BUCKET_SIZE);
 
         this.bitSwap = new BitSwap(blockstore, this);
-        int port = 4001;
+        int port = IPFS.DEFAULT_PORT;
         if (!isLocalPortFree(port)) {
             port = nextFreePort();
         }
