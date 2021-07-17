@@ -66,16 +66,14 @@ dependencies {
     // API (LICENSE done)
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.62'
 
-    // https://mvnrepository.com/artifact/at.favre.lib/hkdf
-    implementation group: 'at.favre.lib', name: 'hkdf', version: '1.0.1'
+    // API (LICENSE done)
+    implementation 'at.favre.lib:hkdf:1.0.1'
 
-    // https://mvnrepository.com/artifact/commons-cli/commons-cli
-    implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
+    // API (LICENSE done)
+    implementation 'commons-cli:commons-cli:1.4'
 
-    // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
-
-    implementation 'org.glassfish:javax.json:1.1.4'
+    // API (LICENSE done)
+    implementation'org.apache.commons:commons-lang3:3.12.0'
 
     // API (LICENSE done)
     annotationProcessor 'androidx.room:room-compiler:2.3.0'
