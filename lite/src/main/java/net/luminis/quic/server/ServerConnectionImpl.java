@@ -161,7 +161,7 @@ public class ServerConnectionImpl extends QuicConnectionImpl implements ServerCo
         maxOpenStreamsBidi = 100;
         streamManager = new StreamManager(this, Role.Server, log, maxOpenStreamsUni, maxOpenStreamsBidi);
 
-        this.log.getQLog().emitConnectionCreatedEvent(Instant.now());
+
     }
 
     @Override
@@ -481,7 +481,6 @@ public class ServerConnectionImpl extends QuicConnectionImpl implements ServerCo
     @Override
     protected void terminate() {
         super.terminate();
-        log.getQLog().emitConnectionTerminatedEvent();
         closeCallback.accept(connectionId);
     }
 

@@ -82,71 +82,88 @@ public class StreamHandler {
         reader.clear();
     }
 
+    public void closeOutputStream() {
+        try {
+            outputStream.close();
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
 
     public void channelRead0(@NonNull byte[] msg) throws Exception {
 
-        reader.load(msg);
+        try {
+            reader.load(msg);
 
-        if (reader.isDone()) {
-            for (String token : reader.getTokens()) {
+            if (reader.isDone()) {
+                for (String token : reader.getTokens()) {
 
-                LogUtils.debug(TAG, "Token " + token + " StreamId " + streamId + " PeerId " + peerId);
+                    LogUtils.debug(TAG, "Token " + token + " StreamId " + streamId + " PeerId " + peerId);
 
-                protocol = token;
-                switch (token) {
-                    case IPFS.STREAM_PROTOCOL:
-                        if (!init.getAndSet(true)) {
-                            writeAndFlush(DataHandler.writeToken(IPFS.STREAM_PROTOCOL));
-                        }
-                        break;
-                    case IPFS.PUSH_PROTOCOL:
-                        writeAndFlush(DataHandler.writeToken(IPFS.PUSH_PROTOCOL));
-                        break;
-                    case IPFS.BITSWAP_PROTOCOL:
-                        writeAndFlush(DataHandler.writeToken(IPFS.BITSWAP_PROTOCOL));
-                        time = System.currentTimeMillis();
-                        break;
-                    case IPFS.IDENTITY_PROTOCOL:
-                        writeAndFlush(DataHandler.writeToken(IPFS.IDENTITY_PROTOCOL));
-
-                        IdentifyOuterClass.Identify response =
-                                host.createIdentity(connection.getRemoteAddress());
-
-                        writeAndFlush(DataHandler.encode(response));
-                        return;
-                    default:
-                        LogUtils.debug(TAG, "Ignore " + token +
-                                " StreamId " + streamId + " PeerId " + peerId);
-                        writeAndFlush(DataHandler.writeToken(IPFS.NA));
-                        return;
-                }
-            }
-            byte[] message = reader.getMessage();
-
-            if (message != null) {
-                if (protocol != null) {
-                    switch (protocol) {
-                        case IPFS.BITSWAP_PROTOCOL:
-                            host.forwardMessage(peerId,
-                                    MessageOuterClass.Message.parseFrom(message));
-
-                            LogUtils.debug(TAG, "Time " + (System.currentTimeMillis() - time) +
-                                    " StreamId " + streamId + " PeerId " + peerId);
+                    protocol = token;
+                    switch (token) {
+                        case IPFS.STREAM_PROTOCOL:
+                            if (!init.getAndSet(true)) {
+                                writeAndFlush(DataHandler.writeToken(IPFS.STREAM_PROTOCOL));
+                            }
                             break;
                         case IPFS.PUSH_PROTOCOL:
-                            host.push(peerId, message);
+                            writeAndFlush(DataHandler.writeToken(IPFS.PUSH_PROTOCOL));
                             break;
+                        case IPFS.BITSWAP_PROTOCOL:
+                            writeAndFlush(DataHandler.writeToken(IPFS.BITSWAP_PROTOCOL));
+                            time = System.currentTimeMillis();
+                            break;
+                        case IPFS.IDENTITY_PROTOCOL:
+                            writeAndFlush(DataHandler.writeToken(IPFS.IDENTITY_PROTOCOL));
+
+                            IdentifyOuterClass.Identify response =
+                                    host.createIdentity(connection.getRemoteAddress());
+
+                            writeAndFlush(DataHandler.encode(response));
+                            return;
                         default:
-                            throw new ProtocolIssue("StreamHandler invalid protocol");
+                            LogUtils.debug(TAG, "Ignore " + token +
+                                    " StreamId " + streamId + " PeerId " + peerId);
+                            writeAndFlush(DataHandler.writeToken(IPFS.NA));
+                            closeOutputStream();
+                            return;
                     }
-                } else {
-                    throw new ProtocolIssue("StreamHandler invalid protocol");
                 }
+                byte[] message = reader.getMessage();
+
+                if (message != null) {
+                    if (protocol != null) {
+                        switch (protocol) {
+                            case IPFS.BITSWAP_PROTOCOL:
+                                host.forwardMessage(peerId,
+                                        MessageOuterClass.Message.parseFrom(message));
+
+                                LogUtils.debug(TAG, "Time " + (System.currentTimeMillis() - time) +
+                                        " StreamId " + streamId + " PeerId " + peerId);
+                                break;
+                            case IPFS.PUSH_PROTOCOL:
+                                host.push(peerId, message);
+                                break;
+                            default:
+                                throw new Exception("StreamHandler invalid protocol");
+                        }
+                    } else {
+                        throw new Exception("StreamHandler invalid protocol");
+                    }
+                }
+            } else {
+                LogUtils.debug(TAG, "Iteration " + protocol + " " + reader.hasRead() + " "
+                        + reader.expectedBytes() + " StreamId " + streamId + " PeerId " + peerId +
+                        " Tokens " + reader.getTokens().toString());
             }
-        } else {
-            LogUtils.debug(TAG, "Iteration " + protocol + " " + reader.hasRead() + " "
-                    + reader.expectedBytes() + " StreamId " + streamId + " PeerId " + peerId +
-                    " Tokens " + reader.getTokens().toString());
+
+        } catch (ProtocolIssue protocolIssue) {
+            LogUtils.error(TAG, protocolIssue.getMessage() +
+                    " StreamId " + streamId + " PeerId " + peerId);
+            writeAndFlush(DataHandler.writeToken(IPFS.NA));
+            closeOutputStream();
+
         }
     }
 }

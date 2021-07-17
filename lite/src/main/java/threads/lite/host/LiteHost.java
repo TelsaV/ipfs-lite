@@ -26,6 +26,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -43,6 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -159,16 +161,61 @@ public class LiteHost {
     public LiteHost(@NonNull LiteHostCertificate selfSignedCertificate,
                     @NonNull PrivKey privKey,
                     @NonNull BlockStore blockstore,
-                    int port, int alpha) {
+                    int alpha) {
         this.selfSignedCertificate = selfSignedCertificate;
         this.privKey = privKey;
-        this.port = port;
+
 
         this.routing = new KadDht(this,
                 new Ipns(), alpha, IPFS.DHT_BUCKET_SIZE);
 
         this.bitSwap = new BitSwap(blockstore, this);
+        int port = 4001;
+        if (!isLocalPortFree(port)) {
+            port = nextFreePort();
+        }
+        this.port = port;
+        try {
+            List<Version> supportedVersions = new ArrayList<>();
+            supportedVersions.add(Version.IETF_draft_29);
+            supportedVersions.add(Version.QUIC_version_1);
 
+            boolean requireRetry = false; // TODO what does it mean
+            server = new Server(port, IPFS.APRN, new
+                    FileInputStream(selfSignedCertificate.certificate()),
+                    new FileInputStream(selfSignedCertificate.privateKey()),
+                    supportedVersions, requireRetry, new ApplicationProtocolConnectionFactory() {
+                @Override
+                public ApplicationProtocolConnection createConnection(String protocol,
+                                                                      QuicConnection quicConnection) {
+                    return new ServerHandler(LiteHost.this, quicConnection);
+                }
+            });
+            server.start();
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+
+    }
+
+    private static int nextFreePort() {
+        int port = ThreadLocalRandom.current().nextInt(4001, 65535);
+        while (true) {
+            if (isLocalPortFree(port)) {
+                return port;
+            } else {
+                port = ThreadLocalRandom.current().nextInt(4001, 65535);
+            }
+        }
+    }
+
+    private static boolean isLocalPortFree(int port) {
+        try {
+            new ServerSocket(port).close();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public void relays() {
@@ -194,7 +241,6 @@ public class LiteHost {
         return System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1);
     }
 
-
     @NonNull
     public Routing getRouting() {
         return routing;
@@ -205,11 +251,9 @@ public class LiteHost {
         return bitSwap;
     }
 
-
     public boolean gatePeer(@NonNull PeerId peerID) {
         return !swarmContains(peerID);
     }
-
 
     public void receiveMessage(@NonNull PeerId peer, @NonNull BitSwapMessage incoming) {
         bitSwap.receiveMessage(peer, incoming);
@@ -221,29 +265,6 @@ public class LiteHost {
 
     public void addConnectionHandler(@NonNull ConnectionHandler connectionHandler) {
         handlers.add(connectionHandler);
-    }
-
-    public void daemon() {
-        try {
-            List<Version> supportedVersions = new ArrayList<>();
-            supportedVersions.add(Version.IETF_draft_29);
-            supportedVersions.add(Version.QUIC_version_1);
-
-            boolean requireRetry = false; // TODO what does it mean
-            server = new Server(port, IPFS.APRN, new
-                    FileInputStream(selfSignedCertificate.certificate()),
-                    new FileInputStream(selfSignedCertificate.privateKey()),
-                    supportedVersions, requireRetry, new ApplicationProtocolConnectionFactory() {
-                @Override
-                public ApplicationProtocolConnection createConnection(String protocol,
-                                                                      QuicConnection quicConnection) {
-                    return new ServerHandler(LiteHost.this, quicConnection);
-                }
-            });
-            server.start();
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
     }
 
     public void forwardMessage(@NonNull PeerId peerId, @NonNull MessageLite msg) {
@@ -387,11 +408,9 @@ public class LiteHost {
         return IdentityService.getPeerInfo(peerId, conn);
     }
 
-
     public void swarmReduce(@NonNull PeerId peerId) {
         swarm.remove(peerId);
     }
-
 
     private boolean isSupported(@NonNull Multiaddr address, boolean acceptLocal) {
 
@@ -423,7 +442,6 @@ public class LiteHost {
         return address.has(Protocol.Type.QUIC);
     }
 
-
     public boolean addToAddressBook(@NonNull PeerId peerId,
                                     @NonNull Collection<Multiaddr> addresses,
                                     boolean acceptSiteLocal) {
@@ -447,7 +465,6 @@ public class LiteHost {
         }
         return added;
     }
-
 
     private void handleConnection(@NonNull PeerId peerId) {
 
@@ -521,7 +538,6 @@ public class LiteHost {
             throw new RuntimeException(throwable);
         }
     }
-
 
     @NonNull
     public List<Multiaddr> listenAddresses() {
@@ -692,7 +708,6 @@ public class LiteHost {
 
     }
 
-
     public void push(@NonNull PeerId peerId, @NonNull byte[] content) {
         try {
             Objects.requireNonNull(peerId);
@@ -711,7 +726,6 @@ public class LiteHost {
     public void setPush(@Nullable Push push) {
         this.push = push;
     }
-
 
     @NonNull
     public Multiaddr transform(@NonNull InetSocketAddress inetSocketAddress) {
@@ -759,11 +773,9 @@ public class LiteHost {
         return builder.build();
     }
 
-
     private List<String> getProtocols() {
         return Arrays.asList(IPFS.STREAM_PROTOCOL, IPFS.IDENTITY_PROTOCOL, IPFS.BITSWAP_PROTOCOL);
     }
-
 
     public void shutdown() {
         try {
@@ -776,7 +788,6 @@ public class LiteHost {
             server = null;
         }
     }
-
 
     public QuicClientConnectionImpl dial(@NonNull Multiaddr multiaddr) throws IOException {
 
@@ -860,4 +871,7 @@ public class LiteHost {
         }
     }
 
+    public int getPort() {
+        return port;
+    }
 }

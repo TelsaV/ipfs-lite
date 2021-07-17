@@ -27,7 +27,7 @@ import net.luminis.quic.crypto.Keys;
 import net.luminis.quic.frame.QuicFrame;
 import net.luminis.quic.log.Logger;
 import net.luminis.quic.packet.RetryPacket;
-import net.luminis.quic.qlog.QLog;
+
 import net.luminis.quic.recovery.RecoveryManager;
 import net.luminis.quic.recovery.RttEstimator;
 
@@ -78,7 +78,7 @@ public class SenderImpl implements Sender, CongestionControlEventListener {
     private final CongestionController congestionController;
     private final RttEstimator rttEstimater;
     private final Logger log;
-    private final QLog qlog;
+
     private final SendRequestQueue[] sendRequestQueue = new SendRequestQueue[EncryptionLevel.values().length];
     private final GlobalPacketAssembler packetAssembler;
     private final GlobalAckGenerator globalAckGenerator;
@@ -109,7 +109,7 @@ public class SenderImpl implements Sender, CongestionControlEventListener {
         this.peerAddress = peerAddress;
         this.connection = connection;
         this.log = log;
-        this.qlog = log.getQLog();
+
 
         Arrays.stream(EncryptionLevel.values()).forEach(level -> {
             int levelIndex = level.ordinal();
@@ -400,7 +400,7 @@ public class SenderImpl implements Sender, CongestionControlEventListener {
 
         List packetsSent = itemsToSend.stream().map(item -> item.getPacket()).collect(Collectors.toList());
         log.sent(timeSent, packetsSent);
-        qlog.emitPacketSentEvent(packetsSent, timeSent);
+
     }
 
     private List<SendItem> assemblePacket() {

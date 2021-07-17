@@ -20,8 +20,6 @@ package net.luminis.quic.log;
 
 import net.luminis.quic.EncryptionLevel;
 import net.luminis.quic.packet.QuicPacket;
-import net.luminis.quic.qlog.NullQLog;
-import net.luminis.quic.qlog.QLog;
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -204,9 +202,5 @@ public class NullLogger implements Logger {
     public void sentPacketInfo(String info) {
     }
 
-    @Override
-    public QLog getQLog() {
-        return new NullQLog();
-    }
 }
 

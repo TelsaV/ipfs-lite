@@ -33,7 +33,7 @@ public class LocalConnectService {
             boolean connect = ipfs.swarmConnect(multiAddress, IPFS.CONNECT_TIMEOUT);
 
 
-            LogUtils.error(TAG, "Success " + connect + " " + pid);
+            LogUtils.error(TAG, "Success " + connect + " " + pid + " " + multiAddress);
 
             PEERS peers = PEERS.getInstance(context);
 
@@ -41,7 +41,6 @@ public class LocalConnectService {
             if (user == null) {
                 user = peers.createUser(PeerId.fromBase58(pid).toBase58(), pid);
                 peers.storeUser(user);
-
 
                 PeerInfo pInfo = ipfs.getPeerInfo(PeerId.fromBase58(pid), new TimeoutCloseable(5));
 
@@ -51,7 +50,7 @@ public class LocalConnectService {
                     String agent = pInfo.getAgent();
                     if (!agent.isEmpty()) {
                         peers.setUserAgent(pid, agent);
-                        if (agent.endsWith("lite")) {
+                        if (agent.contains(IPFS.AGENT_PREFIX)) {
                             peers.setUserLite(pid);
                         }
                     }

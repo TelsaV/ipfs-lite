@@ -22,8 +22,6 @@ import com.google.common.base.Strings;
 
 import net.luminis.quic.EncryptionLevel;
 import net.luminis.quic.packet.QuicPacket;
-import net.luminis.quic.qlog.NullQLog;
-import net.luminis.quic.qlog.QLog;
 import net.luminis.tls.util.ByteUtils;
 
 import java.nio.ByteBuffer;
@@ -416,11 +414,6 @@ public abstract class BaseLogger implements Logger {
             LocalDateTime localTimeNow = LocalDateTime.from(time.atZone(ZoneId.systemDefault()));
             return timeFormatter.format(localTimeNow);
         }
-    }
-
-    @Override
-    public QLog getQLog() {
-        return new NullQLog();
     }
 
     abstract protected void log(String message);

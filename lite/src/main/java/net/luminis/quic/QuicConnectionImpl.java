@@ -340,7 +340,7 @@ public abstract class QuicConnectionImpl implements QuicConnection, FrameProcess
     }
 
     protected void processPacket(Instant timeReceived, QuicPacket packet) {
-        log.getQLog().emitPacketReceivedEvent(packet, timeReceived);
+
 
         if (!connectionState.closingOrDraining()) {
             ProcessResult result = packet.accept(this, timeReceived);
@@ -482,14 +482,14 @@ public abstract class QuicConnectionImpl implements QuicConnection, FrameProcess
         getStreamManager().abortAll();
         getSender().stop();
         LogUtils.debug(TAG, "Idle timeout: silently closing connection after " + idleTime + " ms of inactivity (" + bytesToHex(getSourceConnectionId()) + ")");
-        log.getQLog().emitConnectionClosedEvent(Instant.now());
+
         terminate();
     }
 
     protected void immediateClose(EncryptionLevel level) {
         // https://tools.ietf.org/html/draft-ietf-quic-transport-32#section-10.2
         immediateCloseWithError(level, NO_ERROR.value, "close app");
-        log.getQLog().emitConnectionClosedEvent(Instant.now(), NO_ERROR.value, null);
+
     }
 
     /**
@@ -533,7 +533,7 @@ public abstract class QuicConnectionImpl implements QuicConnection, FrameProcess
             postProcessingActions.add(() -> terminate());
         }
 
-        log.getQLog().emitConnectionClosedEvent(Instant.now(), error, errorReason);
+
     }
 
     protected void handlePacketInClosingState(QuicPacket packet) {

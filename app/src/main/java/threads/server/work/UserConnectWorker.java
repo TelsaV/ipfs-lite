@@ -76,7 +76,7 @@ public class UserConnectWorker extends Worker {
                     String agent = pInfo.getAgent();
                     if (!agent.isEmpty()) {
                         peers.setUserAgent(pid, agent);
-                        if (agent.endsWith("lite")) {
+                        if (agent.contains(IPFS.AGENT_PREFIX)) {
                             peers.setUserLite(pid);
                         }
                     }

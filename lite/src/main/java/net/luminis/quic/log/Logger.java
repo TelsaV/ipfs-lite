@@ -20,7 +20,7 @@ package net.luminis.quic.log;
 
 import net.luminis.quic.EncryptionLevel;
 import net.luminis.quic.packet.QuicPacket;
-import net.luminis.quic.qlog.QLog;
+
 
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -113,8 +113,6 @@ public interface Logger {
     void receivedPacketInfo(String info);
 
     void sentPacketInfo(String info);
-
-    QLog getQLog();
 
     enum TimeFormat {
         Short,

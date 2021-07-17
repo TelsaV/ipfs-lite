@@ -37,7 +37,6 @@ public class IpfsServerTest {
     public void server_test() throws Exception {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
-        ipfs.daemon();
 
         Multiaddr multiaddr = new Multiaddr("/ip4/127.0.0.1" + "/udp/" + ipfs.getPort() + "/quic");
 

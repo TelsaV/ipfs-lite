@@ -372,7 +372,6 @@ public class KadDht implements Routing {
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         } finally {
-            //conn.close();
             LogUtils.debug(TAG, "Send " + success + " took " + (System.currentTimeMillis() - time));
         }
     }
@@ -420,7 +419,6 @@ public class KadDht implements Routing {
             LogUtils.error(TAG, ioException);
             throw new ConnectionIssue();
         } finally {
-            conn.close();
             LogUtils.debug(TAG, "Request " + success + " took " +
                     (System.currentTimeMillis() - time));
         }

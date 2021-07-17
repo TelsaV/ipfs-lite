@@ -22,7 +22,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -42,7 +41,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -154,11 +152,11 @@ public class IPFS {
     public static final int RELAY_GRACE_PERIOD = 60;
     public static final long DHT_SEND_READ_TIMEOUT = 2;
     public static final int MIN_STREAMS = 0;
-    public static final int DHT_STREAM_SIZE_LIMIT = 10000;
+    public static final int DHT_STREAM_SIZE_LIMIT = 20480;
     public static final int IDENTITY_STREAM_SIZE_LIMIT = 10000;
     public static final boolean BITSWAP_SUPPORT_LOAD_PROVIDERS = true;
 
-    private static final String SWARM_PORT_KEY = "swarmPortKey";
+
     private static final String PRIVATE_KEY = "privateKey";
     private static final String PUBLIC_KEY = "publicKey";
     private static final String CONCURRENCY_KEY = "concurrencyKey";
@@ -199,7 +197,7 @@ public class IPFS {
     private final LiteHost host;
     @NonNull
     private final PrivKey privateKey;
-    private final int port;
+
     @NonNull
     private Reachable reachable = Reachable.UNKNOWN;
     @Nullable
@@ -213,12 +211,6 @@ public class IPFS {
         KeyPair keypair = getKeyPair(context);
 
 
-        int checkPort = getPort(context);
-        if (isLocalPortFree(checkPort)) {
-            port = checkPort;
-        } else {
-            port = nextFreePort();
-        }
         //privateKey = Rsa.generateRsaKeyPair(2048, new SecureRandom()).first;
         privateKey = new Rsa.RsaPrivateKey(keypair.getPrivate(), keypair.getPublic());
         LiteHostCertificate selfSignedCertificate = new LiteHostCertificate(context,
@@ -229,7 +221,7 @@ public class IPFS {
 
 
         BlockStore blockstore = BlockStore.createBlockStore(blocks);
-        this.host = new LiteHost(selfSignedCertificate, privateKey, blockstore, port, alpha);
+        this.host = new LiteHost(selfSignedCertificate, privateKey, blockstore, alpha);
 
 
         if (IPFS.CONNECTION_SERVICE_ENABLED) {
@@ -259,11 +251,6 @@ public class IPFS {
         editor.apply();
     }
 
-    public static int getPort(@NonNull Context context) {
-
-        SharedPreferences sharedPref = context.getSharedPreferences(PREF_KEY, Context.MODE_PRIVATE);
-        return sharedPref.getInt(SWARM_PORT_KEY, 5001);
-    }
 
     @SuppressWarnings("UnusedReturnValue")
     public static long copy(InputStream source, OutputStream sink) throws IOException {
@@ -338,29 +325,6 @@ public class IPFS {
         return INSTANCE;
     }
 
-    private static int nextFreePort() {
-        int port = ThreadLocalRandom.current().nextInt(4001, 65535);
-        while (true) {
-            if (isLocalPortFree(port)) {
-                return port;
-            } else {
-                port = ThreadLocalRandom.current().nextInt(4001, 65535);
-            }
-        }
-    }
-
-    private static boolean isLocalPortFree(int port) {
-        try {
-            new ServerSocket(port).close();
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    public void daemon() {
-        this.host.daemon();
-    }
 
     private KeyPair getKeyPair(@NonNull Context context) throws NoSuchAlgorithmException, InvalidKeySpecException {
 
@@ -449,7 +413,7 @@ public class IPFS {
     }
 
     public int getPort() {
-        return port;
+        return host.getPort();
     }
 
 

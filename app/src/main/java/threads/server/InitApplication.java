@@ -70,11 +70,11 @@ public class InitApplication extends Application {
 
         createChannel(getApplicationContext());
 
-
+        long time = System.currentTimeMillis();
         try {
             IPFS ipfs = IPFS.getInstance(getApplicationContext());
-            LogUtils.error(TAG, "startDaemon...");
-            ipfs.daemon();
+
+            //ipfs.daemon();
             ipfs.setPusher((pid, content) -> {
                 try {
                     onMessageReceived(pid, content);
@@ -84,6 +84,9 @@ public class InitApplication extends Application {
             });
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
+        } finally {
+            LogUtils.error(TAG, "finish start daemon ... " +
+                    (System.currentTimeMillis() - time));
         }
 
         InitApplicationWorker.initialize(getApplicationContext());

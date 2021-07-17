@@ -60,7 +60,7 @@ public class PageWorker extends Worker {
         return new PeriodicWorkRequest.Builder(PageWorker.class, time, TimeUnit.HOURS)
                 .addTag(TAG)
                 .setInitialDelay(5, TimeUnit.SECONDS)
-                .setConstraints(builder.build())
+                //.setConstraints(builder.build()) TODO
                 .build();
 
     }
@@ -106,15 +106,16 @@ public class PageWorker extends Worker {
 
     private void publishSequence(@NonNull String content, long sequence) {
 
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            try {
-                List<User> users = PEERS.getInstance(getApplicationContext()).getUsers();
-                if (!users.isEmpty()) {
 
-                    for (User user : users) {
-                        if (user.isLite()) {
+        List<User> users = PEERS.getInstance(getApplicationContext()).getUsers();
+        if (!users.isEmpty()) {
 
+            for (User user : users) {
+                if (user.isLite()) {
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    executor.submit(() -> {
+
+                        try {
                             HashMap<String, String> hashMap = new HashMap<>();
                             hashMap.put(Content.IPNS, content);
                             hashMap.put(Content.SEQ, "" + sequence);
@@ -123,15 +124,15 @@ public class PageWorker extends Worker {
                             boolean success = ipfs.notify(
                                     PeerId.fromBase58(user.getPid()), msg);
 
-                            LogUtils.info(TAG, "success pushing [" + success + "]");
-
+                            LogUtils.error(TAG, "success pushing " +
+                                    user.getPid() + " [" + success + "]");
+                        } catch (Throwable throwable) {
+                            LogUtils.error(TAG, throwable);
                         }
-                    }
+                    });
                 }
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
             }
-        });
+        }
     }
 
     private void publishPage() throws ClosedException {

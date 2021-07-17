@@ -15,6 +15,7 @@ import bitswap.pb.MessageOuterClass;
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
 import threads.lite.cid.PeerId;
+import threads.lite.core.ProtocolIssue;
 import threads.lite.utils.DataHandler;
 
 
@@ -24,8 +25,7 @@ public class BitSwapStream {
     private final BitSwap bitSwap;
     @NonNull
     private final DataHandler reader = new DataHandler(
-            new HashSet<>(Arrays.asList(IPFS.STREAM_PROTOCOL, IPFS.BITSWAP_PROTOCOL,
-                    IPFS.IDENTITY_PROTOCOL, "/ipfs/ping/1.0.0")
+            new HashSet<>(Arrays.asList(IPFS.STREAM_PROTOCOL, IPFS.BITSWAP_PROTOCOL)
             ), IPFS.MESSAGE_SIZE_MAX);
     @NonNull
     private final PeerId peerId;
@@ -94,41 +94,46 @@ public class BitSwapStream {
 
     public void channelRead0(@NonNull byte[] msg) throws Exception {
 
-        reader.load(msg);
+        try {
+            reader.load(msg);
 
-        if (reader.isDone()) {
-            for (String token : reader.getTokens()) {
+            if (reader.isDone()) {
 
-                switch (token) {
-                    case IPFS.STREAM_PROTOCOL:
-                        if (!init.getAndSet(true)) {
-                            writeAndFlush(DataHandler.writeToken(IPFS.STREAM_PROTOCOL));
-                        }
-                        break;
-                    case IPFS.BITSWAP_PROTOCOL:
-                        writeAndFlush(DataHandler.writeToken(IPFS.BITSWAP_PROTOCOL));
-                        break;
-                    default:
-                        LogUtils.debug(TAG, "Ignore " + token +
-                                " StreamId " + streamId + " PeerId " + peerId);
-                        writeAndFlush(DataHandler.writeToken(IPFS.NA));
-                        return;
+                for (String token : reader.getTokens()) {
+
+                    switch (token) {
+                        case IPFS.STREAM_PROTOCOL:
+                            if (!init.getAndSet(true)) {
+                                writeAndFlush(DataHandler.writeToken(IPFS.STREAM_PROTOCOL));
+                            }
+                            break;
+                        case IPFS.BITSWAP_PROTOCOL:
+                            writeAndFlush(DataHandler.writeToken(IPFS.BITSWAP_PROTOCOL));
+                            break;
+                        default:
+                            throw new Exception("Programming error");
+                    }
                 }
-            }
-            byte[] message = reader.getMessage();
+                byte[] message = reader.getMessage();
 
-            if (message != null) {
-                bitSwap.receiveMessage(peerId,
-                        BitSwapMessage.newMessageFromProto(
-                                MessageOuterClass.Message.parseFrom(message)));
-                LogUtils.debug(TAG, "Time " + (System.currentTimeMillis() - time) +
-                        " StreamId " + streamId + " PeerId " + peerId);
+                if (message != null) {
+                    bitSwap.receiveMessage(peerId,
+                            BitSwapMessage.newMessageFromProto(
+                                    MessageOuterClass.Message.parseFrom(message)));
+                    LogUtils.debug(TAG, "Time " + (System.currentTimeMillis() - time) +
+                            " StreamId " + streamId + " PeerId " + peerId);
 
+                }
+            } else {
+                LogUtils.debug(TAG, "Iteration " + reader.hasRead() + " "
+                        + reader.expectedBytes() + " StreamId " + streamId + " PeerId " + peerId +
+                        " Tokens " + reader.getTokens().toString());
             }
-        } else {
-            LogUtils.debug(TAG, "Iteration " + reader.hasRead() + " "
-                    + reader.expectedBytes() + " StreamId " + streamId + " PeerId " + peerId +
-                    " Tokens " + reader.getTokens().toString());
+        } catch (ProtocolIssue protocolIssue) {
+            LogUtils.debug(TAG, protocolIssue.getMessage() +
+                    " StreamId " + streamId + " PeerId " + peerId);
+            writeAndFlush(DataHandler.writeToken(IPFS.NA));
+            closeOutputStream();
         }
     }
 }
