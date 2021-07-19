@@ -472,7 +472,7 @@ public class KadDht implements Routing {
         long start = System.currentTimeMillis();
         try {
             runLookupWithFollowup(closeable, key, (ctx, p) -> {
-                Dht.Message pms = findPeerSingle(ctx, p, id.getBytes());
+                Dht.Message pms = findPeerSingle(ctx, p, key);
 
                 Set<PeerId> peers = evalClosestPeers(pms);
                 for (PeerId peerId : peers) {

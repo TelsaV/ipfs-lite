@@ -766,7 +766,16 @@ public class IPFS {
     public void publishName(@NonNull Cid cid, int sequence, @NonNull Closeable closeable) {
 
         try {
-            host.PublishName(closeable, privateKey, IPFS_PATH + cid.String(), getPeerID(), sequence);
+            host.publishName(closeable, privateKey, IPFS_PATH + cid.String(), getPeerID(), sequence);
+        } catch (Throwable throwable) {
+            LogUtils.error(TAG, throwable);
+        }
+    }
+
+    public void publishName(@NonNull String name, int sequence, @NonNull Closeable closeable) {
+
+        try {
+            host.publishName(closeable, privateKey, name, getPeerID(), sequence);
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         }
@@ -778,8 +787,7 @@ public class IPFS {
 
 
     public void findProviders(@NonNull Routing.Providers providers,
-                              @NonNull Cid cid,
-                              @NonNull Closeable closeable) {
+                              @NonNull Cid cid, @NonNull Closeable closeable) {
         try {
             host.findProviders(closeable, providers, cid);
         } catch (Throwable throwable) {
@@ -955,6 +963,11 @@ public class IPFS {
     public Ipns.Entry resolveName(@NonNull String name, long last,
                                   @NonNull Closeable closeable) {
 
+        return resolveName(PeerId.decodeName(name), last, closeable);
+    }
+
+    @Nullable
+    private Ipns.Entry resolveName(@NonNull PeerId id, long last, @NonNull Closeable closeable) {
 
         long time = System.currentTimeMillis();
 
@@ -962,7 +975,6 @@ public class IPFS {
         try {
             AtomicLong timeout = new AtomicLong(System.currentTimeMillis() + RESOLVE_MAX_TIME);
 
-            PeerId id = PeerId.decodeName(name);
             byte[] ipns = IPFS.IPNS_PATH.getBytes();
             byte[] ipnsKey = Bytes.concat(ipns, id.getBytes());
 
@@ -970,7 +982,6 @@ public class IPFS {
                     () -> (timeout.get() < System.currentTimeMillis()) || closeable.isClosed(),
                     entry -> {
 
-                        String value = entry.getValue();
                         long sequence = entry.getSequence();
 
                         LogUtils.debug(TAG, "IpnsEntry : " + entry.toString() +
@@ -983,12 +994,9 @@ public class IPFS {
                             return;
                         }
 
-                        if (value.startsWith(IPFS_PATH)) {
-                            resolvedName.set(entry);
-                            timeout.set(System.currentTimeMillis() + RESOLVE_TIMEOUT);
-                        } else {
-                            LogUtils.error(TAG, "invalid value " + value);
-                        }
+
+                        resolvedName.set(entry);
+                        timeout.set(System.currentTimeMillis() + RESOLVE_TIMEOUT);
 
                     }, ipnsKey);
 
@@ -997,7 +1005,7 @@ public class IPFS {
         }
 
 
-        LogUtils.debug(TAG, "Finished resolve name " + name + " " +
+        LogUtils.debug(TAG, "Finished resolve name " + id.toBase58() + " " +
                 (System.currentTimeMillis() - time));
 
 

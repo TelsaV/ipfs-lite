@@ -374,17 +374,15 @@ public class LiteHost {
         }
     }
 
-    public void PublishName(@NonNull Closeable closable,
-                            @NonNull PrivKey privKey,
-                            @NonNull String path,
-                            @NonNull PeerId id, int sequence) {
+    public void publishName(@NonNull Closeable closable, @NonNull PrivKey privKey,
+                            @NonNull String name, @NonNull PeerId id, int sequence) {
 
 
         Date eol = Date.from(new Date().toInstant().plus(DefaultRecordEOL));
 
         Duration duration = Duration.ofHours(IPFS.IPNS_DURATION);
         ipns.pb.Ipns.IpnsEntry
-                record = Ipns.create(privKey, path.getBytes(), sequence, eol, duration);
+                record = Ipns.create(privKey, name.getBytes(), sequence, eol, duration);
 
         PubKey pk = privKey.publicKey();
 
@@ -696,7 +694,7 @@ public class LiteHost {
                     failure++;
                 }
 
-                LogUtils.debug(TAG, "Run " + run + " Success " + success + " " +
+                LogUtils.error(TAG, "Run " + run + " Success " + success + " " +
                         "Failure " + failure +
                         " Peer " + peerId.toBase58() + " " +
                         address + " " + (System.currentTimeMillis() - start));

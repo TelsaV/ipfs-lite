@@ -1,5 +1,5 @@
 /*
- * Copyright © 2019, 2020, 2021 Peter Doornbosch
+ * Copyright Â© 2019, 2020, 2021 Peter Doornbosch
  *
  * This file is part of Kwik, an implementation of the QUIC protocol in Java.
  *
@@ -18,43 +18,19 @@
  */
 package net.luminis.quic.tls;
 
-import net.luminis.quic.Bytes;
-import net.luminis.quic.InvalidIntegerEncodingException;
-import net.luminis.quic.ProtocolError;
-import net.luminis.quic.QuicConstants;
-import net.luminis.quic.Role;
-import net.luminis.quic.TransportParameters;
-import net.luminis.quic.VariableLengthInteger;
-import net.luminis.quic.Version;
+import net.luminis.quic.*;
 import net.luminis.quic.log.Logger;
 import net.luminis.tls.alert.DecodeErrorException;
-import net.luminis.tls.extension.Extension;
 import net.luminis.tls.util.ByteUtils;
+import net.luminis.tls.extension.Extension;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.Locale;
 
-import static net.luminis.quic.QuicConstants.TransportParameterId.ack_delay_exponent;
-import static net.luminis.quic.QuicConstants.TransportParameterId.active_connection_id_limit;
-import static net.luminis.quic.QuicConstants.TransportParameterId.disable_active_migration;
-import static net.luminis.quic.QuicConstants.TransportParameterId.initial_max_data;
-import static net.luminis.quic.QuicConstants.TransportParameterId.initial_max_stream_data_bidi_local;
-import static net.luminis.quic.QuicConstants.TransportParameterId.initial_max_stream_data_bidi_remote;
-import static net.luminis.quic.QuicConstants.TransportParameterId.initial_max_stream_data_uni;
-import static net.luminis.quic.QuicConstants.TransportParameterId.initial_max_streams_bidi;
-import static net.luminis.quic.QuicConstants.TransportParameterId.initial_max_streams_uni;
-import static net.luminis.quic.QuicConstants.TransportParameterId.initial_source_connection_id;
-import static net.luminis.quic.QuicConstants.TransportParameterId.max_ack_delay;
-import static net.luminis.quic.QuicConstants.TransportParameterId.max_idle_timeout;
-import static net.luminis.quic.QuicConstants.TransportParameterId.max_udp_payload_size;
-import static net.luminis.quic.QuicConstants.TransportParameterId.original_destination_connection_id;
-import static net.luminis.quic.QuicConstants.TransportParameterId.preferred_address;
-import static net.luminis.quic.QuicConstants.TransportParameterId.retry_source_connection_id;
-import static net.luminis.quic.QuicConstants.TransportParameterId.stateless_reset_token;
+import static net.luminis.quic.QuicConstants.TransportParameterId.*;
 import static net.luminis.quic.Role.Server;
 
 /**
@@ -63,15 +39,25 @@ import static net.luminis.quic.Role.Server;
  */
 public class QuicTransportParametersExtension extends Extension {
 
+    private static final int MINIMUM_EXTENSION_LENGTH = 2;
     public static final int CODEPOINT_IETFDRAFT = 0xffa5;
     public static final int CODEPOINT_V1 = 0x39;
-    private static final int MINIMUM_EXTENSION_LENGTH = 2;
+
     private final Version quicVersion;
-    private final TransportParameters params;
     private Role senderRole;
     private byte[] data;
+    private TransportParameters params;
     private Integer discardTransportParameterSize;
 
+
+    public static boolean isCodepoint(Version quicVersion, int extensionType) {
+        if (quicVersion == Version.QUIC_version_1) {
+            return extensionType == CODEPOINT_V1;
+        }
+        else {
+            return extensionType == CODEPOINT_IETFDRAFT;
+        }
+    }
 
     public QuicTransportParametersExtension() {
         this(Version.getDefault());
@@ -84,7 +70,6 @@ public class QuicTransportParametersExtension extends Extension {
 
     /**
      * Creates a Quic Transport Parameters Extension for use in a Client Hello.
-     *
      * @param quicVersion
      * @param senderRole
      */
@@ -92,14 +77,6 @@ public class QuicTransportParametersExtension extends Extension {
         this.quicVersion = quicVersion;
         this.params = params;
         this.senderRole = senderRole;
-    }
-
-    public static boolean isCodepoint(Version quicVersion, int extensionType) {
-        if (quicVersion == Version.QUIC_version_1) {
-            return extensionType == CODEPOINT_V1;
-        } else {
-            return extensionType == CODEPOINT_IETFDRAFT;
-        }
     }
 
     @Override
@@ -116,11 +93,11 @@ public class QuicTransportParametersExtension extends Extension {
     }
 
     private void serialize() {
-        ByteBuffer buffer = ByteBuffer.allocate(100 + (discardTransportParameterSize != null ? discardTransportParameterSize : 0));
+        ByteBuffer buffer = ByteBuffer.allocate(100 + (discardTransportParameterSize != null? discardTransportParameterSize: 0));
 
         // https://tools.ietf.org/html/draft-ietf-quic-tls-32#section-8.2
         // "quic_transport_parameters(0xffa5)"
-        buffer.putShort((short) (quicVersion == Version.QUIC_version_1 ? CODEPOINT_V1 : CODEPOINT_IETFDRAFT));
+        buffer.putShort((short) (quicVersion == Version.QUIC_version_1? CODEPOINT_V1: CODEPOINT_IETFDRAFT));
 
         // Format is same as any TLS extension, so next are 2 bytes length
         buffer.putShort((short) 0);  // PlaceHolder, will be correctly set at the end of this method.
@@ -264,11 +241,13 @@ public class QuicTransportParametersExtension extends Extension {
             buffer.get(destinationCid);
             log.debug("- original destination connection id: ", destinationCid);
             params.setOriginalDestinationConnectionId(destinationCid);
-        } else if (parameterId == max_idle_timeout.value) {
+        }
+        else if (parameterId == max_idle_timeout.value) {
             long idleTimeout = VariableLengthInteger.parseLong(buffer);
             log.debug("- max idle timeout: " + idleTimeout);
             params.setMaxIdleTimeout(idleTimeout);
-        } else if (parameterId == stateless_reset_token.value) {
+        }
+        else if (parameterId == stateless_reset_token.value) {
             // "This transport parameter MUST NOT be sent by a client, but MAY be sent by a server. "
             if (senderRol != Server) {
                 throw new DecodeErrorException("server only parameter in transport parameter extension");
@@ -276,64 +255,78 @@ public class QuicTransportParametersExtension extends Extension {
             byte[] resetToken = new byte[16];
             buffer.get(resetToken);
             log.debug("- stateless reset token: " + ByteUtils.bytesToHex(resetToken));
-        } else if (parameterId == max_udp_payload_size.value) {
+        }
+        else if (parameterId == max_udp_payload_size.value) {
             int maxPacketSize = VariableLengthInteger.parse(buffer);
             log.debug("- max udp payload size: " + maxPacketSize);
             params.setMaxUdpPayloadSize(maxPacketSize);
-        } else if (parameterId == initial_max_data.value) {
+        }
+        else if (parameterId == initial_max_data.value) {
             long maxData = VariableLengthInteger.parseLong(buffer);
             log.debug("- initial max data: " + maxData);
             params.setInitialMaxData(maxData);
-        } else if (parameterId == initial_max_stream_data_bidi_local.value) {
+        }
+        else if (parameterId == initial_max_stream_data_bidi_local.value) {
             int maxStreamDataBidiLocal = VariableLengthInteger.parse(buffer);
             log.debug("- initial max stream data bidi local: " + maxStreamDataBidiLocal);
             params.setInitialMaxStreamDataBidiLocal(maxStreamDataBidiLocal);
-        } else if (parameterId == initial_max_stream_data_bidi_remote.value) {
+        }
+        else if (parameterId == initial_max_stream_data_bidi_remote.value) {
             long maxStreamDataBidiRemote = VariableLengthInteger.parseLong(buffer);
             log.debug("- initial max stream data bidi remote: " + maxStreamDataBidiRemote);
             params.setInitialMaxStreamDataBidiRemote(maxStreamDataBidiRemote);
-        } else if (parameterId == initial_max_stream_data_uni.value) {
+        }
+        else if (parameterId == initial_max_stream_data_uni.value) {
             long maxStreamDataUni = VariableLengthInteger.parseLong(buffer);
             log.debug("- initial max stream data uni: " + maxStreamDataUni);
             params.setInitialMaxStreamDataUni(maxStreamDataUni);
-        } else if (parameterId == initial_max_streams_bidi.value) {
+        }
+        else if (parameterId == initial_max_streams_bidi.value) {
             long maxBidiStreams = VariableLengthInteger.parseLong(buffer);
             log.debug("- initial max bidi streams: " + maxBidiStreams);
             params.setInitialMaxStreamsBidi(maxBidiStreams);
-        } else if (parameterId == initial_max_streams_uni.value) {
+        }
+        else if (parameterId == initial_max_streams_uni.value) {
             long maxUniStreams = VariableLengthInteger.parseLong(buffer);
             log.debug("- max uni streams: " + maxUniStreams);
             params.setInitialMaxStreamsUni(maxUniStreams);
-        } else if (parameterId == ack_delay_exponent.value) {
+        }
+        else if (parameterId == ack_delay_exponent.value) {
             int ackDelayExponent = VariableLengthInteger.parse(buffer);
             log.debug("- ack delay exponent: " + ackDelayExponent);
             params.setAckDelayExponent(ackDelayExponent);
-        } else if (parameterId == max_ack_delay.value) {
+        }
+        else if (parameterId == max_ack_delay.value) {
             // https://tools.ietf.org/html/draft-ietf-quic-transport-30#section-18.2
             // "The maximum acknowledgement delay is an integer value indicating the maximum amount of time in
             //  milliseconds by which the endpoint will delay sending acknowledgments. "
             int maxAckDelay = VariableLengthInteger.parse(buffer);
             log.debug("- max ack delay: " + maxAckDelay);
             params.setMaxAckDelay(maxAckDelay);
-        } else if (parameterId == disable_active_migration.value) {
+        }
+        else if (parameterId == disable_active_migration.value) {
             log.debug("- disable migration");
             params.setDisableMigration(true);
-        } else if (parameterId == preferred_address.value) {
+        }
+        else if (parameterId == preferred_address.value) {
             // "This transport parameter is only sent by a server."
             if (senderRol != Server) {
                 throw new DecodeErrorException("server only parameter in transport parameter extension");
             }
             parsePreferredAddress(buffer, log);
-        } else if (parameterId == active_connection_id_limit.value) {
+        }
+        else if (parameterId == active_connection_id_limit.value) {
             int activeConnectionIdLimit = VariableLengthInteger.parse(buffer);
             log.debug("- active connection id limit: " + activeConnectionIdLimit);
             params.setActiveConnectionIdLimit(activeConnectionIdLimit);
-        } else if (parameterId == initial_source_connection_id.value) {
+        }
+        else if (parameterId == initial_source_connection_id.value) {
             byte[] initialSourceCid = new byte[size];
             buffer.get(initialSourceCid);
             log.debug("- initial source connection id: " + initialSourceCid);
             params.setInitialSourceConnectionId(initialSourceCid);
-        } else if (parameterId == retry_source_connection_id.value) {
+        }
+        else if (parameterId == retry_source_connection_id.value) {
             // "This transport parameter is only sent by a server."
             if (senderRol != Server) {
                 throw new DecodeErrorException("server only parameter in transport parameter extension");
@@ -342,19 +335,25 @@ public class QuicTransportParametersExtension extends Extension {
             buffer.get(retrySourceCid);
             log.debug("- retry source connection id: " + retrySourceCid);
             params.setRetrySourceConnectionId(retrySourceCid);
-        } else {
-            String msg = String.format(Locale.ENGLISH, "- unknown transport parameter 0x%04x, size %d", parameterId, size);
+        }
+        else {
             String extension = "";
             if (parameterId == 0x0020) extension = "datagram";
             if (parameterId == 0x0040) extension = "multi-path";
             if (parameterId == 0x1057) extension = "loss-bits";
             if (parameterId == 0x173e) extension = "discard";
             if (parameterId == 0x2ab2) extension = "grease-quic-bit";
-            if (parameterId == 0x7157) extension = "timestamp";
+            if (parameterId == 0x7157) extension = "timestamp";  // https://datatracker.ietf.org/doc/html/draft-huitema-quic-ts-02#section-5
+            if (parameterId == 0x7158) extension = "timestamp";  // https://datatracker.ietf.org/doc/html/draft-huitema-quic-ts-05#section-5
             if (parameterId == 0x73db) extension = "version-negotiation";
-            if (parameterId == 0xde1a) extension = "delayed-ack";
-            if (!StringUtils.isBlank(extension)) {
-                msg += " (" + extension + " extension)";
+            if (parameterId == 0xde1a) extension = "delayed-ack";  // https://datatracker.ietf.org/doc/html/draft-iyengar-quic-delayed-ack-01#section-3
+            if (parameterId == 0xff02de1aL) extension = "delayed-ack";  // https://datatracker.ietf.org/doc/html/draft-iyengar-quic-delayed-ack-02#section-3
+            String msg;
+            if (StringUtils.isBlank(extension)) {
+                msg = String.format("- unknown transport parameter 0x%04x, size %d", parameterId, size);
+            }
+            else {
+                msg = String.format("- unsupported transport parameter 0x%04x, size %d (%s)", parameterId, size, extension);
             }
             log.warn(msg);
             buffer.get(new byte[size]);
@@ -392,7 +391,8 @@ public class QuicTransportParametersExtension extends Extension {
             preferredAddress.setStatelessResetToken(buffer, 16); //
 
             params.setPreferredAddress(preferredAddress);
-        } catch (UnknownHostException invalidIpAddressLength) {
+        }
+        catch (UnknownHostException invalidIpAddressLength) {
             // Impossible
             throw new RuntimeException();
         }
