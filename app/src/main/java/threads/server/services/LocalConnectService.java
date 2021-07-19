@@ -6,9 +6,11 @@ import androidx.annotation.NonNull;
 
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
+import threads.lite.cid.Multiaddr;
 import threads.lite.cid.PeerId;
 import threads.lite.core.TimeoutCloseable;
 import threads.lite.host.PeerInfo;
+import threads.server.InitApplication;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
 
@@ -22,7 +24,8 @@ public class LocalConnectService {
         try {
             IPFS ipfs = IPFS.getInstance(context);
 
-            ipfs.swarmEnhance(PeerId.fromBase58(pid));
+            PeerId peerId = PeerId.fromBase58(pid);
+            ipfs.swarmEnhance(peerId);
 
             String pre = "/ip4";
             if (inet6) {
@@ -30,7 +33,10 @@ public class LocalConnectService {
             }
             String multiAddress = pre + host + "/udp/" + port + "/quic/p2p/" + pid;
 
-            boolean connect = ipfs.swarmConnect(multiAddress, IPFS.CONNECT_TIMEOUT);
+            ipfs.addMultiAddress(peerId, new Multiaddr(multiAddress));
+
+            boolean connect = ipfs.connect(peerId, InitApplication.USER_GRACE_PERIOD,
+                    new TimeoutCloseable(IPFS.CONNECT_TIMEOUT));
 
 
             LogUtils.error(TAG, "Success " + connect + " " + pid + " " + multiAddress);

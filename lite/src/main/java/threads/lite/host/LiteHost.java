@@ -153,7 +153,7 @@ public class LiteHost {
     @NonNull
     private final Set<PeerId> swarm = ConcurrentHashMap.newKeySet();
     @NonNull
-    private final AtomicBoolean inet6 = new AtomicBoolean(false);
+    public final AtomicBoolean inet6 = new AtomicBoolean(false);
     @Nullable
     private Push push;
     private Server server;
@@ -336,43 +336,11 @@ public class LiteHost {
 
     public boolean findPeer(@NonNull Closeable closeable, @NonNull PeerId peerId) {
         AtomicBoolean done = new AtomicBoolean(false);
-        routing.findPeer(() -> closeable.isClosed() || done.get(), peerId1 -> {
-            try {
-                done.set(true);
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        }, peerId);
+        routing.findPeer(() -> closeable.isClosed() || done.get(), peerId1 -> done.set(true), peerId);
         return done.get();
     }
 
-    @NonNull
-    public QuicClientConnection connectTo(@NonNull Closeable closeable, @NonNull PeerId peerId, int timeout)
-            throws ClosedException, ConnectionIssue {
 
-        try {
-            return connect(closeable, peerId, timeout, IPFS.GRACE_PERIOD,
-                    IPFS.MIN_STREAMS, IPFS.MESSAGE_SIZE_MAX);
-        } catch (ConnectionIssue e) {
-            AtomicReference<QuicClientConnection> connectionAtomicReference = new AtomicReference<>(null);
-            AtomicBoolean done = new AtomicBoolean(false);
-            routing.findPeer(() -> closeable.isClosed() || done.get(), peerId1 -> {
-                try {
-                    connectionAtomicReference.set(connect(closeable, peerId1, timeout,
-                            IPFS.GRACE_PERIOD, IPFS.MIN_STREAMS, IPFS.MESSAGE_SIZE_MAX));
-                    done.set(true);
-                } catch (ConnectionIssue ignore) {
-                } catch (Throwable throwable) {
-                    LogUtils.error(TAG, throwable);
-                }
-            }, peerId);
-            QuicClientConnection connection = connectionAtomicReference.get();
-            if (connection == null) {
-                throw new ConnectionIssue();
-            }
-            return connection;
-        }
-    }
 
     public void publishName(@NonNull Closeable closable, @NonNull PrivKey privKey,
                             @NonNull String name, @NonNull PeerId id, int sequence) {
@@ -694,7 +662,7 @@ public class LiteHost {
                     failure++;
                 }
 
-                LogUtils.error(TAG, "Run " + run + " Success " + success + " " +
+                LogUtils.debug(TAG, "Run " + run + " Success " + success + " " +
                         "Failure " + failure +
                         " Peer " + peerId.toBase58() + " " +
                         address + " " + (System.currentTimeMillis() - start));

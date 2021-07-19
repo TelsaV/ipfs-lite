@@ -50,7 +50,6 @@ import identify.pb.IdentifyOuterClass;
 import threads.lite.cid.Cid;
 import threads.lite.cid.Multiaddr;
 import threads.lite.cid.PeerId;
-import threads.lite.cid.Protocol;
 import threads.lite.core.Closeable;
 import threads.lite.core.ClosedException;
 import threads.lite.core.Progress;
@@ -690,9 +689,11 @@ public class IPFS {
     }
 
 
-    public boolean swarmConnect(@NonNull String multiAddress, int timeout) {
+    public boolean connect(@NonNull PeerId peerId, int maxIdleTimeoutInSeconds,
+                           @NonNull Closeable closeable) {
         try {
-            return swarmConnect(new TimeoutCloseable(timeout), multiAddress, timeout);
+            return host.connect(closeable, peerId, IPFS.CONNECT_TIMEOUT,
+                    maxIdleTimeoutInSeconds, IPFS.MIN_STREAMS, IPFS.MESSAGE_SIZE_MAX).isConnected();
         } catch (ClosedException | ConnectionIssue ignore) {
             // ignore
         } catch (Throwable throwable) {
@@ -700,6 +701,7 @@ public class IPFS {
         }
         return false;
     }
+
 
     @Nullable
     public Node resolveNode(@NonNull Cid root, @NonNull List<String> path, @NonNull Closeable closeable) throws ClosedException {
@@ -1091,45 +1093,22 @@ public class IPFS {
         return host.findPeer(closeable, peerId);
     }
 
-    public boolean swarmConnect(@NonNull PeerId peerId, @NonNull Closeable closeable) {
-        try {
-            return host.connectTo(closeable, peerId, IPFS.CONNECT_TIMEOUT).isConnected();
-        } catch (ClosedException | ConnectionIssue ignore) {
-            // ignore
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-        return false;
+    public void addMultiAddress(@NonNull PeerId peerId, @NonNull Multiaddr multiaddr) {
+        host.addToAddressBook(peerId, Collections.singletonList(multiaddr), true);
     }
 
-    private boolean swarmConnect(@NonNull Closeable closeable,
-                                 @NonNull String multiAddress,
-                                 int timeout) throws ClosedException, ConnectionIssue {
+    public boolean swarmConnect(@NonNull PeerId peerId, int maxIdleTimeoutInSeconds,
+                                @NonNull Closeable closeable) {
 
-
-        Multiaddr multiaddr = new Multiaddr(multiAddress);
-        String name = multiaddr.getStringComponent(Protocol.Type.P2P);
-        Objects.requireNonNull(name);
-        PeerId peerId = PeerId.fromBase58(name);
-        Objects.requireNonNull(peerId);
-
-        try {
-            if (multiAddress.startsWith(IPFS.P2P_PATH)) {
-                return swarmConnect(peerId, closeable);
-            } else {
-                host.addToAddressBook(peerId, Collections.singletonList(multiaddr), true);
-                return host.connect(closeable, peerId, timeout, IPFS.GRACE_PERIOD,
-                        IPFS.MIN_STREAMS, IPFS.MESSAGE_SIZE_MAX).isConnected();
+        boolean result = connect(peerId, maxIdleTimeoutInSeconds, closeable);
+        if (!result) {
+            if (findPeer(peerId, closeable)) {
+                return connect(peerId, maxIdleTimeoutInSeconds, closeable);
             }
-
-        } catch (ClosedException | ConnectionIssue exception) {
-            throw exception;
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
         }
-
-        return false;
+        return result;
     }
+
 
     @NonNull
     public LiteHost getHost() {
@@ -1143,6 +1122,7 @@ public class IPFS {
     public void updateNetwork(@NonNull String networkInterface) {
         getHost().updateNetwork(networkInterface);
     }
+
 
     public interface Connector {
         void connected(@NonNull PeerId peerId);

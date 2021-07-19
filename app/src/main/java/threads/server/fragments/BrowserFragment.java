@@ -543,19 +543,12 @@ public class BrowserFragment extends Fragment {
 
                     Closeable closeable = () -> !docs.shouldRun(thread.getId());
 
-                    if (docs.foreignPage(uri)) {
-                        docs.connectUri(uri, closeable);
-                    }
 
                     try {
 
                         Uri redirectUri = docs.redirectUri(uri, closeable);
                         if (!Objects.equals(uri, redirectUri)) {
                             return createRedirectMessage(redirectUri);
-                        }
-
-                        if (docs.foreignPage(redirectUri)) {
-                            docs.connectUri(redirectUri, closeable);
                         }
 
                         return docs.getResponse(mContext, redirectUri, closeable);

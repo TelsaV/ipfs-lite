@@ -26,7 +26,7 @@ import threads.server.work.InitApplicationWorker;
 
 public class InitApplication extends Application {
     private static final String TAG = InitApplication.class.getSimpleName();
-
+    public static final int USER_GRACE_PERIOD = 60 * 60 * 24;
     private final Gson gson = new Gson();
 
     private static void createChannel(@NonNull Context context) {

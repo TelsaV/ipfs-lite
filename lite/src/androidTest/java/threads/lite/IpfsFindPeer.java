@@ -43,8 +43,7 @@ public class IpfsFindPeer {
 
         PeerId relay = PeerId.fromBase58("QmW9m57aiBDHAkKj9nmFSEn7ZqrcF1fZS4bipsTCHburei");
 
-        boolean result = ipfs.swarmConnect(IPFS.P2P_PATH + relay.toBase58(),
-                30);
+        boolean result = ipfs.findPeer(relay, new TimeoutCloseable(10));
         LogUtils.debug(TAG, relay.toBase58() + " " + result);
         assertTrue(result);
 

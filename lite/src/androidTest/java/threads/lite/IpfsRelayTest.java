@@ -32,15 +32,44 @@ public class IpfsRelayTest {
         context = ApplicationProvider.getApplicationContext();
     }
 
+
+    @Test
+    public void test_relay_connect() {
+        IPFS ipfs = TestEnv.getTestInstance(context);
+
+        if (ipfs.getHost().inet6.get()) {
+            return;
+        }
+
+        PeerId relay1 = PeerId.fromBase58("QmW9m57aiBDHAkKj9nmFSEn7ZqrcF1fZS4bipsTCHburei");
+
+        boolean result = ipfs.connect(relay1, 100, new TimeoutCloseable(10));
+
+        assert (result);
+
+
+        PeerId relay2 = PeerId.fromBase58("Qme8g49gm3q4Acp7xWBKg3nAa9fxZ1YmyDJdyGgoG6LsXh");
+
+        result = ipfs.connect(relay2, 100, new TimeoutCloseable(10));
+
+        assertTrue(result);
+
+    }
+
     @Test
     public void test_relay_canHop() {
         IPFS ipfs = TestEnv.getTestInstance(context);
+
+        if (ipfs.getHost().inet6.get()) {
+            return;
+        }
         long start = System.currentTimeMillis();
 
 
         PeerId relay = PeerId.fromBase58("QmW9m57aiBDHAkKj9nmFSEn7ZqrcF1fZS4bipsTCHburei");
-        boolean result = ipfs.swarmConnect(IPFS.P2P_PATH + relay.toBase58(),
-                IPFS.CONNECT_TIMEOUT);
+        boolean result = ipfs.swarmConnect(relay, 100,
+                new TimeoutCloseable(10));
+
         assertTrue(result);
 
         try {
@@ -56,8 +85,7 @@ public class IpfsRelayTest {
         start = System.currentTimeMillis();
         relay = PeerId.fromBase58("Qme8g49gm3q4Acp7xWBKg3nAa9fxZ1YmyDJdyGgoG6LsXh");
 
-        result = ipfs.swarmConnect(IPFS.P2P_PATH + relay.toBase58(),
-                IPFS.CONNECT_TIMEOUT);
+        result = ipfs.connect(relay, 100, new TimeoutCloseable(10));
         assertTrue(result);
 
 
@@ -75,6 +103,10 @@ public class IpfsRelayTest {
     // @Test (not working, waiting for new relay + punchhole concept)
     public void test_findRelays() {
         IPFS ipfs = TestEnv.getTestInstance(context);
+
+        if (ipfs.getHost().inet6.get()) {
+            return;
+        }
         long start = System.currentTimeMillis();
 
         try {
@@ -95,9 +127,10 @@ public class IpfsRelayTest {
     public void test_relay_dialPeer() {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
+        if (ipfs.getHost().inet6.get()) {
+            return;
+        }
         PeerId peerId = PeerId.fromBase58("12D3KooWLfmzMdAje4F6F6q68jYRatu1JQaz2KB4j8ambYahd1xh");
-
-
         AtomicBoolean succes = new AtomicBoolean(false);
 
         try {

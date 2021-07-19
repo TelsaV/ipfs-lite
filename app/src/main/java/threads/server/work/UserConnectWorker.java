@@ -14,9 +14,11 @@ import java.util.Objects;
 
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
+import threads.lite.cid.Multiaddr;
 import threads.lite.cid.PeerId;
 import threads.lite.core.TimeoutCloseable;
 import threads.lite.host.PeerInfo;
+import threads.server.InitApplication;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.peers.PEERS;
@@ -119,14 +121,13 @@ public class UserConnectWorker extends Worker {
             Objects.requireNonNull(user);
             String address = user.getAddress();
             if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-                if (ipfs.swarmConnect(pid, new TimeoutCloseable(timeout))) {
-                    return;
-                }
+                ipfs.addMultiAddress(pid, new Multiaddr(address));
             }
         }
 
         if (!isStopped()) {
-            ipfs.swarmConnect(pid, new TimeoutCloseable(timeout));
+            ipfs.swarmConnect(pid, InitApplication.USER_GRACE_PERIOD,
+                    new TimeoutCloseable(timeout));
         }
 
     }

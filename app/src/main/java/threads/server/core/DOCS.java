@@ -22,12 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import crypto.pb.Crypto;
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
 import threads.lite.cid.Cid;
@@ -35,10 +35,12 @@ import threads.lite.cid.Multiaddr;
 import threads.lite.cid.PeerId;
 import threads.lite.core.Closeable;
 import threads.lite.core.ClosedException;
+import threads.lite.core.TimeoutCloseable;
 import threads.lite.format.Node;
 import threads.lite.host.DnsResolver;
 import threads.lite.ipns.Ipns;
 import threads.lite.utils.Link;
+import threads.server.InitApplication;
 import threads.server.Settings;
 import threads.server.core.books.BOOKS;
 import threads.server.core.books.Bookmark;
@@ -100,14 +102,14 @@ public class DOCS {
                 if (page != null) {
                     String address = page.getAddress();
                     if (!address.isEmpty()) {
-                        connected = ipfs.swarmConnect(
-                                address.concat(Content.P2P_PATH).concat(page.getPid()),
-                                IPFS.CONNECT_TIMEOUT);
+                        ipfs.addMultiAddress(peerId, new Multiaddr(address));
+                        connected = ipfs.connect(peerId, InitApplication.USER_GRACE_PERIOD,
+                                new TimeoutCloseable(IPFS.CONNECT_TIMEOUT));
                     }
                 }
                 if (!connected) {
-                    connected = ipfs.swarmConnect(Content.P2P_PATH + pid,
-                            IPFS.CONNECT_TIMEOUT);
+                    connected = ipfs.swarmConnect(peerId, InitApplication.USER_GRACE_PERIOD,
+                            new TimeoutCloseable(10));
                 }
 
                 if (page != null && connected) {
@@ -715,7 +717,7 @@ public class DOCS {
 
     @NonNull
     public String resolveName(@NonNull Uri uri, @NonNull String name,
-                              @NonNull Closeable closeable) throws ResolveNameException, ClosedException {
+                              @NonNull Closeable closeable) throws ResolveNameException {
 
         if (Objects.equals(getHost(), name)) {
             String local = getLocalName();
@@ -741,8 +743,8 @@ public class DOCS {
         }
 
 
-        Ipns.Entry resolvedName = ipfs.resolveName(name, sequence, closeable);
-        if (resolvedName == null) {
+        Ipns.Entry entry = ipfs.resolveName(name, sequence, closeable);
+        if (entry == null) {
 
             if (cid != null) {
                 resolves.put(pid, cid);
@@ -751,10 +753,16 @@ public class DOCS {
 
             throw new ResolveNameException(uri.toString());
         }
-        resolves.put(pid, resolvedName.getHash());
-        pages.setPageContent(pid, resolvedName.getHash());
-        pages.setPageSequence(pid, resolvedName.getSequence());
-        return resolvedName.getHash();
+
+        // todo not sure it this makes sense at all
+        if (entry.getKeyType().equals(Crypto.KeyType.Ed25519)) {
+            pageConnect(entry.getPeerId(), closeable);
+        }
+
+        resolves.put(pid, entry.getHash());
+        pages.setPageContent(pid, entry.getHash());
+        pages.setPageSequence(pid, entry.getSequence());
+        return entry.getHash();
     }
 
     @Nullable
@@ -1062,24 +1070,16 @@ public class DOCS {
             ipfs.bootstrap();
 
             List<Page> bootstraps = pages.getBootstraps(5);
-            List<String> addresses = new ArrayList<>();
-            for (Page bootstrap : bootstraps) {
-                String address = bootstrap.getAddress();
-                if (!address.isEmpty()) {
-                    addresses.add(address.concat(Content.P2P_PATH).concat(bootstrap.getPid()));
-                }
-            }
-
-            if (!addresses.isEmpty()) {
-                List<Callable<Boolean>> tasks = new ArrayList<>();
-                ExecutorService executor = Executors.newFixedThreadPool(addresses.size());
-                for (String address : addresses) {
-                    tasks.add(() -> ipfs.swarmConnect(address, IPFS.TIMEOUT_BOOTSTRAP));
-                }
-                List<Future<Boolean>> result = executor.invokeAll(tasks,
-                        IPFS.TIMEOUT_BOOTSTRAP, TimeUnit.SECONDS);
-                for (Future<Boolean> future : result) {
-                    LogUtils.error(TAG, "Bootstrap done " + future.isDone());
+            if (bootstraps.size() > 0) {
+                ExecutorService executor = Executors.newFixedThreadPool(bootstraps.size());
+                for (Page bootstrap : bootstraps) {
+                    PeerId peerId = PeerId.fromBase58(bootstrap.getPid());
+                    String address = bootstrap.getAddress();
+                    if (!address.isEmpty()) {
+                        ipfs.addMultiAddress(peerId, new Multiaddr(address));
+                    }
+                    executor.execute(() -> ipfs.connect(peerId, InitApplication.USER_GRACE_PERIOD,
+                            new TimeoutCloseable(IPFS.CONNECT_TIMEOUT)));
                 }
             }
         } catch (Throwable throwable) {
@@ -1204,23 +1204,6 @@ public class DOCS {
         }
         return null;
     }
-
-    public void connectUri(@NonNull Uri uri, @NonNull Closeable closeable) {
-
-        try {
-            String host = getHost(uri);
-            if (host != null && !Objects.equals(getHost(), host)) {
-                String pid = ipfs.decodeName(host);
-                if (!pid.isEmpty()) {
-                    pageConnect(PeerId.fromBase58(pid), closeable);
-                }
-            }
-        } catch (Throwable throwable) {
-            LogUtils.error(TAG, throwable);
-        }
-
-    }
-
 
     public void cleanupResolver(@NonNull Uri uri) {
 

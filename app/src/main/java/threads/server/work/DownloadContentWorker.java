@@ -118,11 +118,6 @@ public class DownloadContentWorker extends Worker {
                 setForegroundAsync(foregroundInfo);
             }
 
-            if (Objects.equals(uri.getScheme(), Content.IPNS)) {
-                if (!isStopped()) {
-                    LiteService.connectUri(getApplicationContext(), uri);
-                }
-            }
 
             if (Objects.equals(uri.getScheme(), Content.IPNS) ||
                     Objects.equals(uri.getScheme(), Content.IPFS)) {

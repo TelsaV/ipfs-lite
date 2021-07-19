@@ -93,29 +93,6 @@ public class LiteService {
         return null;
     }
 
-    public static void connectUri(@NonNull Context context, @NonNull Uri uri) {
-
-
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.submit(() -> {
-            try {
-
-                String host = getHost(uri);
-                if (host != null) {
-                    IPFS ipfs = IPFS.getInstance(context);
-
-                    ipfs.swarmConnect(PeerId.decodeName(host), new TimeoutCloseable(10));
-
-                }
-            } catch (Throwable throwable) {
-                LogUtils.error(TAG, throwable);
-            }
-        });
-
-
-    }
-
-
     @Nullable
     public static Uri getContentUri(@NonNull Context context) {
         Objects.requireNonNull(context);

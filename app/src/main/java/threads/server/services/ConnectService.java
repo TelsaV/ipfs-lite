@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit;
 
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
+import threads.lite.cid.Multiaddr;
 import threads.lite.cid.PeerId;
 import threads.lite.core.TimeoutCloseable;
+import threads.server.InitApplication;
 import threads.server.Settings;
 import threads.server.core.peers.PEERS;
 import threads.server.core.peers.User;
@@ -56,14 +58,14 @@ public class ConnectService {
         User user = peers.getUserByPid(pid);
         Objects.requireNonNull(user);
         String address = user.getAddress();
+        PeerId peerId = PeerId.fromBase58(pid);
         if (!address.isEmpty() && !address.contains("p2p-circuit")) {
-            if (ipfs.swarmConnect(PeerId.fromBase58(pid), new TimeoutCloseable(5))) {
-                return true;
-            }
+            ipfs.addMultiAddress(peerId, new Multiaddr(address));
         }
         int timeout = Settings.getConnectionTimeout(context);
 
-        return ipfs.swarmConnect(PeerId.fromBase58(pid), new TimeoutCloseable(timeout));
+        return ipfs.swarmConnect(peerId, InitApplication.USER_GRACE_PERIOD,
+                new TimeoutCloseable(timeout));
 
 
     }

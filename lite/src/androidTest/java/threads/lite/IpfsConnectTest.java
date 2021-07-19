@@ -40,10 +40,10 @@ public class IpfsConnectTest {
     public void swarm_connect() {
 
         IPFS ipfs = TestEnv.getTestInstance(context);
-        String pc = "QmRxoQNy1gNGMM1746Tw8UBNBF8axuyGkzcqb2LYFzwuXd";
+        PeerId pc = PeerId.fromBase58("QmRxoQNy1gNGMM1746Tw8UBNBF8axuyGkzcqb2LYFzwuXd");
 
         // TIMEOUT not working
-        boolean result = ipfs.swarmConnect(IPFS.P2P_PATH + pc, 6);
+        boolean result = ipfs.swarmConnect(pc, IPFS.GRACE_PERIOD, new TimeoutCloseable(15));
         assertFalse(result);
 
     }
@@ -57,18 +57,18 @@ public class IpfsConnectTest {
 
         LogUtils.debug(TAG, "Stage 1");
 
-        boolean result = ipfs.swarmConnect(IPFS.P2P_PATH + relay, 1);
+        boolean result = ipfs.swarmConnect(relay, IPFS.GRACE_PERIOD, new TimeoutCloseable(1));
         assertFalse(result);
 
         LogUtils.debug(TAG, "Stage 2");
 
-        result = ipfs.swarmConnect(IPFS.P2P_PATH + relay, 10);
+        result = ipfs.swarmConnect(relay, IPFS.GRACE_PERIOD, new TimeoutCloseable(10));
         assertFalse(result);
 
         LogUtils.debug(TAG, "Stage 3");
 
         relay = ipfs.getPeerId(DUMMY_PID);
-        result = ipfs.swarmConnect(IPFS.P2P_PATH + relay, 10);
+        result = ipfs.swarmConnect(relay, IPFS.GRACE_PERIOD, new TimeoutCloseable(10));
         assertFalse(result);
 
         LogUtils.debug(TAG, "Stage 4");
