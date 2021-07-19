@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import net.luminis.quic.QuicConnection;
+
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.Objects;
 import threads.lite.IPFS;
 import threads.lite.LogUtils;
 import threads.lite.cid.PeerId;
+import threads.lite.host.ConnectionHandler;
 import threads.server.core.Content;
 import threads.server.core.pages.PAGES;
 import threads.server.core.peers.PEERS;
@@ -80,6 +83,21 @@ public class InitApplication extends Application {
                     onMessageReceived(pid, content);
                 } catch (Throwable throwable) {
                     LogUtils.error(TAG, throwable);
+                }
+            });
+
+            ipfs.getHost().addConnectionHandler(new ConnectionHandler() {
+                @Override
+                public void outgoingConnection(@NonNull PeerId peerId,
+                                               @NonNull QuicConnection connection) {
+                    LogUtils.info(TAG, "Outgoing connection " + peerId);
+                }
+
+                @Override
+                public void incomingConnection(@NonNull PeerId peerId,
+                                               @NonNull QuicConnection connection) {
+                    LogUtils.error(TAG, "Incoming connection " + peerId);
+                    // TODO
                 }
             });
         } catch (Throwable throwable) {
