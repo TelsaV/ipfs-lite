@@ -59,7 +59,7 @@ public class IpfsProvideTest {
 
 
     @Test
-    public void test_host_provide() throws IOException {
+    public void test_host_provide() {
         IPFS ipfs = TestEnv.getTestInstance(context);
 
         PeerId self = ipfs.getPeerID();

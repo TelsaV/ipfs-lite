@@ -60,7 +60,7 @@ public class PageWorker extends Worker {
         return new PeriodicWorkRequest.Builder(PageWorker.class, time, TimeUnit.HOURS)
                 .addTag(TAG)
                 .setInitialDelay(5, TimeUnit.SECONDS)
-                //.setConstraints(builder.build()) TODO
+                .setConstraints(builder.build())
                 .build();
 
     }
@@ -94,7 +94,6 @@ public class PageWorker extends Worker {
                     publishPage();
                 }
             }
-        } catch (ClosedException ignore) {
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
         } finally {
@@ -135,7 +134,7 @@ public class PageWorker extends Worker {
         }
     }
 
-    private void publishPage() throws ClosedException {
+    private void publishPage() {
 
 
         Page page = docs.getPinsPage();

@@ -88,13 +88,15 @@ import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
+import threads.lite.LogUtils;
+
 import static net.luminis.quic.QuicConnectionImpl.Status.Connected;
 import static net.luminis.quic.QuicConstants.TransportErrorCode.INVALID_TOKEN;
 import static net.luminis.quic.QuicConstants.TransportErrorCode.TRANSPORT_PARAMETER_ERROR;
 
 
 public class ServerConnectionImpl extends QuicConnectionImpl implements ServerConnection, TlsStatusEventHandler {
-
+    private static final String TAG = ServerConnectionImpl.class.getSimpleName();
     private static final int TOKEN_SIZE = 37;
     private final Random random;
     private final SenderImpl sender;
@@ -264,7 +266,12 @@ public class ServerConnectionImpl extends QuicConnectionImpl implements ServerCo
             }
         }
 
-        applicationProtocolRegistry.startApplicationProtocolConnection(negotiatedApplicationProtocol, this);
+        try {
+            applicationProtocolRegistry.startApplicationProtocolConnection(negotiatedApplicationProtocol, this);
+        } catch (Throwable throwable){
+            LogUtils.error(TAG, throwable);
+            close();
+        }
     }
 
     private void sendHandshakeDone(QuicFrame frame) {

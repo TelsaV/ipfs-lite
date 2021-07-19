@@ -181,16 +181,19 @@ public class LiteHost {
             supportedVersions.add(Version.QUIC_version_1);
 
             boolean requireRetry = false; // TODO what does it mean
-            server = new Server(port, IPFS.APRN, new
-                    FileInputStream(selfSignedCertificate.certificate()),
+            server = new Server(port, IPFS.APRN,
+                    new FileInputStream(selfSignedCertificate.certificate()),
                     new FileInputStream(selfSignedCertificate.privateKey()),
-                    supportedVersions, requireRetry, new ApplicationProtocolConnectionFactory() {
-                @Override
-                public ApplicationProtocolConnection createConnection(String protocol,
-                                                                      QuicConnection quicConnection) {
-                    return new ServerHandler(LiteHost.this, quicConnection);
-                }
-            });
+                    supportedVersions, requireRetry,
+                    new ApplicationProtocolConnectionFactory() {
+                        @Override
+                        public ApplicationProtocolConnection createConnection(String protocol,
+                                                                              QuicConnection quicConnection) throws Exception {
+
+                            return new ServerHandler(LiteHost.this, quicConnection);
+
+                        }
+                    });
             server.start();
         } catch (Throwable throwable) {
             LogUtils.error(TAG, throwable);
@@ -432,13 +435,18 @@ public class LiteHost {
         return added;
     }
 
-    private void handleConnection(@NonNull PeerId peerId) {
+    public void handleConnection(@NonNull PeerId peerId, @NonNull QuicConnection connection,
+                                 boolean incoming) {
 
         if (handlers.size() > 0) {
             executors.execute(() -> {
                 for (ConnectionHandler handle : handlers) {
                     try {
-                        handle.connected(peerId);
+                        if (incoming) {
+                            handle.incomingConnection(peerId, connection);
+                        } else {
+                            handle.outgoingConnection(peerId, connection);
+                        }
                     } catch (Throwable throwable) {
                         LogUtils.error(TAG, throwable);
                     }
@@ -647,7 +655,7 @@ public class LiteHost {
                 //quicClientConnection.setPeerInitiatedStreamCallback(quicStream ->
                 //       new StreamHandler(quicClientConnection, quicStream, peerId, LiteHost.this));
 
-                handleConnection(peerId);
+                handleConnection(peerId, quicClientConnection, false);
                 run = true;
                 return quicClientConnection;
             } catch (TimeoutException ignore) {
@@ -840,4 +848,5 @@ public class LiteHost {
     public int getPort() {
         return port;
     }
+
 }

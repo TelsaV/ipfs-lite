@@ -161,7 +161,6 @@ public class IPFS {
     private static final String CONCURRENCY_KEY = "concurrencyKey";
     private static final String TAG = IPFS.class.getSimpleName();
     private static final String PREF_KEY = IPFS.TAG;
-    private static final boolean CONNECTION_SERVICE_ENABLED = false;
     private static final boolean BOOTSTRAP_ENHANCE_SWARM = false;
 
     // rough estimates on expected sizes
@@ -199,8 +198,7 @@ public class IPFS {
 
     @NonNull
     private Reachable reachable = Reachable.UNKNOWN;
-    @Nullable
-    private Connector connector;
+
 
     private IPFS(@NonNull Context context) throws Exception {
 
@@ -222,10 +220,6 @@ public class IPFS {
         BlockStore blockstore = BlockStore.createBlockStore(blocks);
         this.host = new LiteHost(selfSignedCertificate, privateKey, blockstore, alpha);
 
-
-        if (IPFS.CONNECTION_SERVICE_ENABLED) {
-            host.addConnectionHandler(this::connected);
-        }
     }
 
     private static void setPublicKey(@NonNull Context context, @NonNull String key) {
@@ -1071,23 +1065,11 @@ public class IPFS {
         }
     }
 
-    public void setConnector(@Nullable Connector connector) {
-        this.connector = connector;
-    }
-
 
     public Set<Multiaddr> getAddresses(@NonNull PeerId peerId) {
         return host.getAddresses(peerId);
     }
 
-    public void connected(@NonNull PeerId peerId) {
-        if (host.swarmContains(peerId)) {
-            if (connector != null) {
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                executor.submit(() -> connector.connected(peerId));
-            }
-        }
-    }
 
     public boolean findPeer(@NonNull PeerId peerId, @NonNull Closeable closeable) {
         return host.findPeer(closeable, peerId);
@@ -1121,11 +1103,6 @@ public class IPFS {
 
     public void updateNetwork(@NonNull String networkInterface) {
         getHost().updateNetwork(networkInterface);
-    }
-
-
-    public interface Connector {
-        void connected(@NonNull PeerId peerId);
     }
 
 

@@ -20,7 +20,10 @@ package net.luminis.quic.server;
 
 import net.luminis.quic.QuicConnection;
 
+import java.io.IOException;
+
 public abstract class ApplicationProtocolConnectionFactory {
 
-    public abstract ApplicationProtocolConnection createConnection(String protocol, QuicConnection quicConnection);
+    public abstract ApplicationProtocolConnection createConnection(
+            String protocol, QuicConnection quicConnection) throws Exception;
 }

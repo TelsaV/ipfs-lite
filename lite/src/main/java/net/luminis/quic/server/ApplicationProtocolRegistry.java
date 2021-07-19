@@ -37,7 +37,7 @@ public class ApplicationProtocolRegistry {
         return intersection.stream().findFirst();
     }
 
-    ApplicationProtocolConnection startApplicationProtocolConnection(String protocol, QuicConnection quicConnection) {
+    ApplicationProtocolConnection startApplicationProtocolConnection(String protocol, QuicConnection quicConnection) throws Exception {
         return registeredFactories.get(protocol).createConnection(protocol, quicConnection);
     }
 
