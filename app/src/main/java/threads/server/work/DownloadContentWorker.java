@@ -38,7 +38,6 @@ import threads.server.R;
 import threads.server.Settings;
 import threads.server.core.Content;
 import threads.server.core.DOCS;
-import threads.server.services.LiteService;
 import threads.server.services.MimeTypeService;
 import threads.server.utils.MimeType;
 

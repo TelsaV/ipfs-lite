@@ -17,10 +17,8 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import threads.lite.IPFS;
 import threads.lite.LogUtils;
 import threads.lite.cid.PeerId;
-import threads.lite.core.TimeoutCloseable;
 import threads.server.BuildConfig;
 import threads.server.R;
 import threads.server.core.Content;
