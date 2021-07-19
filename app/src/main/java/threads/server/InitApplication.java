@@ -4,6 +4,7 @@ import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -23,6 +24,7 @@ import threads.lite.LogUtils;
 import threads.lite.cid.PeerId;
 import threads.lite.host.ConnectionHandler;
 import threads.server.core.Content;
+import threads.server.core.events.EVENTS;
 import threads.server.core.pages.PAGES;
 import threads.server.core.peers.PEERS;
 import threads.server.work.InitApplicationWorker;
@@ -97,7 +99,9 @@ public class InitApplication extends Application {
                 public void incomingConnection(@NonNull PeerId peerId,
                                                @NonNull QuicConnection connection) {
                     LogUtils.error(TAG, "Incoming connection " + peerId);
-                    // TODO
+                    // TODO check if
+                    EVENTS.getInstance(getApplicationContext()).error(
+                            "Incoming connection " + peerId);
                 }
             });
         } catch (Throwable throwable) {

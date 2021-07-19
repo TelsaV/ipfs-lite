@@ -31,7 +31,7 @@ public class ServerHandler extends ApplicationProtocolConnection implements Cons
         Objects.requireNonNull(pubKey);
         peerId = PeerId.fromPubKey(pubKey);
         Objects.requireNonNull(peerId);
-        liteHost.handleConnection(peerId, connection, false);
+        liteHost.handleConnection(peerId, connection, true);
 
         connection.setPeerInitiatedStreamCallback(this);
 
